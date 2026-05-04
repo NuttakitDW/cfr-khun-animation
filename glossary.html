@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — CFR on Kuhn Poker</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  transition: all 0.15s;
+}
+.back-link:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+main {
+  padding: 16px 28px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.panel .desc { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+
+.glossary-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#glossary-search {
+  flex: 1;
+  min-width: 200px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+}
+#glossary-search:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+.glossary-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.glossary-tabs button {
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.glossary-tabs button:hover { color: var(--text); border-color: var(--accent); }
+.glossary-tabs button.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.glossary-entry {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: border-color 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.glossary-entry:hover { border-color: var(--accent); transform: translateY(-1px); }
+.glossary-entry.hidden { display: none; }
+
+.glossary-entry .head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.glossary-entry .term {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.glossary-entry .symbol {
+  font-family: "SF Mono", Menlo, monospace;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 500;
+}
+.glossary-entry .cat-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+  font-family: "SF Mono", Menlo, monospace;
+}
+.glossary-entry .cat-tag.cfr   { background: rgba(91,158,255,0.15);  color: var(--accent); }
+.glossary-entry .cat-tag.game  { background: rgba(63,223,142,0.15);  color: var(--green); }
+.glossary-entry .cat-tag.poker { background: rgba(255,140,66,0.15);  color: var(--orange); }
+.glossary-entry .short {
+  font-size: 12.5px;
+  color: var(--text);
+  margin: 4px 0 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.glossary-entry .long {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+.glossary-entry .long code {
+  background: var(--panel-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--yellow);
+  font-family: "SF Mono", Menlo, monospace;
+}
+.glossary-empty {
+  grid-column: 1 / -1;
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.glossary-empty.hidden { display: none; }
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <a href="index.html" class="back-link">← Back to visualization</a>
+    <h1>CFR Glossary</h1>
+    <span class="sub">Every term you need to know to follow Counterfactual Regret Minimization</span>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Reference</h2>
+    <h3>All technical terms used in the visualization</h3>
+    <p class="desc">Grouped into three categories: <b style="color:var(--accent)">CFR Algorithm</b>, <b style="color:var(--green)">Game Theory</b>, and <b style="color:var(--orange)">Poker</b>. Search matches term name, symbol, summary, and the long description.</p>
+
+    <div class="glossary-controls">
+      <input id="glossary-search" type="search" placeholder="Search terms (e.g. regret, info set, Nash)..." />
+      <div class="glossary-tabs">
+        <button class="active" data-cat="all">All</button>
+        <button data-cat="cfr">CFR Algorithm</button>
+        <button data-cat="game">Game Theory</button>
+        <button data-cat="poker">Poker</button>
+      </div>
+    </div>
+
+    <div class="glossary-grid" id="glossary-list">
+      <!-- entries inserted by JS -->
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="index.html">← Return to the CFR Kuhn Poker visualization</a>
+</footer>
+
+<script>
+"use strict";
+
+const GLOSSARY = [
+  // ---- CFR algorithm ----
+  { cat: 'cfr', term: 'CFR', symbol: 'Counterfactual Regret Minimization',
+    short: 'A self-play algorithm that learns Nash-equilibrium strategies by minimizing regret at every information set.',
+    long: 'Walks the game tree, computes counterfactual values, accumulates regret per (info set, action), then derives the next strategy by regret matching. The average strategy provably converges to a Nash equilibrium. No opponent model required.' },
+  { cat: 'cfr', term: 'Vanilla CFR',
+    short: 'The simplest CFR variant: full-tree traversal each iteration with plain regret matching. What this site implements.',
+    long: 'Visits every information set every iteration. Conceptually clean, slow per iteration. Faster variants: CFR+, MCCFR, Linear CFR, Discounted CFR.' },
+  { cat: 'cfr', term: 'Iteration',
+    short: 'One full pass of CFR over the game tree.',
+    long: 'In vanilla CFR on Kuhn, an iteration enumerates all 6 card permutations and recursively visits every decision point. Every info set gets one regret update per iteration.' },
+  { cat: 'cfr', term: 'Self-play',
+    short: 'The bot trains by playing against itself — no human or fixed opponent needed.',
+    long: 'Both seats in the simulated game read from the same regret tables, so as one side improves, both improve simultaneously. They co-converge to a Nash equilibrium.' },
+  { cat: 'cfr', term: 'Convergence',
+    short: 'The average strategy σ̄ approaches Nash as iterations → ∞.',
+    long: 'Zinkevich\'s 2007 theorem bounds average regret by O(1/√T). The current σ may oscillate forever, but σ̄ — the time-average — settles on Nash. Exploitability shrinks at the same rate.' },
+  { cat: 'cfr', term: 'Regret',
+    short: 'How much better an action would have been than what you actually played.',
+    long: 'For action a at info set I: regret = EV(a) − V(I), where V(I) is the EV of your current mixed strategy. Positive ⇒ "I should have played this more." Negative ⇒ "glad I didn\'t."' },
+  { cat: 'cfr', term: 'Instant regret', symbol: 'r(I, a)',
+    short: 'The regret from a single iteration alone.',
+    long: 'r(I, a) = EV(a) − V(I) computed using the current strategy at one specific iteration. Cumulative regret R(I, a) is the running sum.' },
+  { cat: 'cfr', term: 'Cumulative regret', symbol: 'R(I, a)',
+    short: 'Sum of instant regrets across every iteration so far.',
+    long: 'The bot\'s memory. Drives regret matching to produce the current strategy. Stored per info set per action — for Kuhn that\'s 12 × 2 = 24 numbers.' },
+  { cat: 'cfr', term: 'Counterfactual value', symbol: 'v(I, a)',
+    short: 'Expected payoff at an info set, weighted by the opponent\'s contribution to reach (not your own).',
+    long: 'v(I, a) = Σ over consistent paths of (opponent_reach × chance_prob × subgame_value). The "counterfactual" assumes you reached I deterministically; only opp + chance count toward the weight. Used in the regret update: <code>regret(I,a) += π_-i(I) · (v(I,a) − v(I))</code>.' },
+  { cat: 'cfr', term: 'Regret matching',
+    short: 'σ(I, a) = max(0, R(I, a)) / Σ max(0, R(I, ·))',
+    long: 'The rule for converting cumulative regrets into a strategy. Take only positive regrets, normalize. Negative regret ⇒ probability 0. Default to uniform when all regrets are zero. Winner-take-all: usually pure 0/100.' },
+  { cat: 'cfr', term: 'Strategy', symbol: 'σ(I, a)',
+    short: 'Probability of playing action a at information set I.',
+    long: 'σ(I, ·) is a probability distribution over the actions available at I. Pure strategies put 1.0 on one action; mixed strategies spread probability across multiple.' },
+  { cat: 'cfr', term: 'Current strategy', symbol: 'σ',
+    short: 'What the bot would play right now, derived freshly from current cumulative regret.',
+    long: 'Volatile by design. At mixed-Nash info sets, σ oscillates between pure strategies forever — a feature of regret matching, not a bug. The convergence theorem applies to σ̄, not σ.' },
+  { cat: 'cfr', term: 'Average strategy', symbol: 'σ̄',
+    short: 'σ̄(I, a) = strategySum / Σ strategySum — the running average across iterations.',
+    long: 'This is the actual output of CFR. The convergence theorem says σ̄ → Nash. When deploying the bot in real games, you use σ̄, not σ.' },
+  { cat: 'cfr', term: 'Pure / Mixed strategy',
+    short: 'Pure = always one action. Mixed = randomized.',
+    long: 'In Kuhn at Nash: P1 with K plays *pure* "always bet". P1 with J plays *mixed* "bet with probability ~1/3" — the bluff frequency that keeps the strategy unexploitable.' },
+  { cat: 'cfr', term: 'Best response', symbol: 'BR',
+    short: 'The strategy that maximizes your payoff against a fixed opponent strategy.',
+    long: 'BR is always pure (in finite games) — no reason to randomize when the opponent is fixed. CFR\'s exploitability metric is built from BR values: at Nash, neither player can improve by best-responding.' },
+  { cat: 'cfr', term: 'Exploitability',
+    short: 'How much an opponent could win by best-responding to your strategy.',
+    long: 'In zero-sum games: exploitability = ½ × (BR₁ + BR₂). Always ≥ 0; equals 0 only at Nash. Reported here in mbb/g. The headline metric for "how close to Nash am I?"' },
+
+  // ---- Game theory ----
+  { cat: 'game', term: 'Information set', symbol: 'I',
+    short: 'A "situation" you can distinguish — defined by what you know.',
+    long: 'In Kuhn: (your card, action history). "P1 holds Q, history pb" is one info set. Your opponent\'s card is hidden, so info sets group all states that look identical from your seat. Kuhn has 12 info sets total.' },
+  { cat: 'game', term: 'Game tree',
+    short: 'The branching structure of every possible play sequence.',
+    long: 'Root = chance deal. Internal nodes = decisions. Leaves = terminals with payoffs. Kuhn\'s tree has 30 terminal nodes (6 deals × 5 action sequences).' },
+  { cat: 'game', term: 'Decision node',
+    short: 'A point in the tree where some player must act.',
+    long: 'Each decision node belongs to exactly one info set. Multiple decision nodes can share an info set if the acting player can\'t distinguish them.' },
+  { cat: 'game', term: 'Terminal node',
+    short: 'A leaf where the game ends and payoffs are awarded.',
+    long: 'In Kuhn: showdown (sequences pp, pbb, bb) or fold-out (pbp, bp).' },
+  { cat: 'game', term: 'Chance node',
+    short: 'A random event in the game — typically the card deal.',
+    long: 'No player chooses — nature flips a coin. Kuhn has one chance node: the deal of two cards from {J, Q, K}, giving 6 equiprobable outcomes.' },
+  { cat: 'game', term: 'Reach probability', symbol: 'π(I)',
+    short: 'The probability that play reaches an info set, given current strategies.',
+    long: 'Decomposes as π(I) = π_i(I) × π_-i(I): your contribution times opponent + chance. Used to weight regret and strategy updates correctly across mixed strategies.' },
+  { cat: 'game', term: 'Counterfactual reach', symbol: 'π_-i(I)',
+    short: 'The reach probability *excluding* your own contribution.',
+    long: 'The product of opponent + chance probabilities along the path to I. The "counterfactual" assumption: assume you reached I deterministically; only opp + chance affect the weight applied to regret updates.' },
+  { cat: 'game', term: 'Nash equilibrium',
+    short: 'A strategy profile where no player can improve by deviating unilaterally.',
+    long: 'In zero-sum games, Nash is unique in *value* though strategies may not be. Kuhn\'s Nash gives P1 expected value −1/18 chips per hand — P1 is at a slight disadvantage.' },
+  { cat: 'game', term: 'ε-Nash equilibrium',
+    short: 'An approximate Nash within ε of the true equilibrium.',
+    long: 'After T CFR iterations, σ̄ is an O(1/√T)-Nash. Practical: vanilla CFR on Kuhn typically gets exploitability under 10⁻³ chips/hand by ~100K iterations.' },
+  { cat: 'game', term: 'Zero-sum game',
+    short: 'Players\' payoffs sum to zero — one\'s gain is the other\'s loss.',
+    long: 'Kuhn is zero-sum: every chip P1 wins, P2 loses. CFR\'s strongest convergence guarantees apply to two-player zero-sum games with imperfect information.' },
+  { cat: 'game', term: 'Imperfect information',
+    short: 'Players don\'t see the entire game state.',
+    long: 'In Kuhn, the opponent\'s card is hidden. That\'s why we have *information sets* — without hidden information, every game state would be its own decision point and CFR would reduce to ordinary backward induction.' },
+  { cat: 'game', term: 'Perfect recall',
+    short: 'Players remember all of their own past actions and observations.',
+    long: 'CFR\'s convergence proof requires perfect recall. Kuhn has perfect recall trivially — only one round of betting. Larger poker variants need careful info-set construction to preserve it.' },
+
+  // ---- Poker ----
+  { cat: 'poker', term: 'Kuhn poker',
+    short: '2-player simplified poker with 3 cards: J, Q, K. The smallest non-trivial poker game.',
+    long: 'Each player antes 1, gets 1 card, then takes turns checking/betting. Solved analytically (Kuhn 1950). Used as a CFR benchmark because the full strategy space fits in 12 information sets and convergence is fast.' },
+  { cat: 'poker', term: 'Ante',
+    short: 'A forced bet at the start of each hand.',
+    long: 'Each player puts 1 chip in before play starts. Without antes, both players could check every hand and never lose anything — antes give losers something to lose, creating real strategic incentive.' },
+  { cat: 'poker', term: 'Pot',
+    short: 'The total of all wagers, awarded to the winner.',
+    long: 'Kuhn pot starts at 2 chips (both antes). After "bb" or "pbb" the pot is 4. The showdown winner takes the pot; a folder loses their existing contribution but no more.' },
+  { cat: 'poker', term: 'Showdown',
+    short: 'Both players reveal cards; higher card takes the pot.',
+    long: 'Reached at terminal sequences pp, pbb, and bb — when no one folds. Card ranking: K > Q > J.' },
+  { cat: 'poker', term: 'Bluff',
+    short: 'A bet with a weak hand intended to make the opponent fold.',
+    long: 'In Kuhn at Nash, P1 bluffs J at the root with probability ~1/3. Without bluffing, opponents could safely fold mid-strength hands; bluffing keeps the strategy unexploitable. Bluff frequency is the parametric "α" in Kuhn\'s Nash family.' },
+  { cat: 'poker', term: 'Check / Bet / Call / Fold',
+    short: 'The four actions. Kuhn allows only check, bet (1 chip), call, fold.',
+    long: 'Action-history notation: <code>p</code> = pass (check or fold depending on context); <code>b</code> = bet (bet or call). Example: <code>pbb</code> = P1 checks, P2 bets, P1 calls.' },
+  { cat: 'poker', term: 'mbb/g',
+    short: 'Milli-big-blinds per game. The standard poker AI exploitability unit.',
+    long: '1 mbb/g = 0.001 big blinds lost per hand against a perfect opponent. In Kuhn (no blinds) we use 1 chip = 1 big blind. Lower = closer to Nash. Below ~50 mbb/g is competitive in larger poker variants.' },
+];
+
+const escape = (s) => s
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+const listEl = document.getElementById('glossary-list');
+const searchEl = document.getElementById('glossary-search');
+const tabsEl = document.querySelector('.glossary-tabs');
+
+let activeCat = 'all';
+let query = '';
+
+function render() {
+  let html = '';
+  for (const e of GLOSSARY) {
+    const symbolHtml = e.symbol ? `<span class="symbol">${escape(e.symbol)}</span>` : '';
+    const safeLong = e.long
+      ? e.long.replace(/<(?!\/?code\b)/g, '&lt;')
+      : '';
+    const haystack = `${e.term} ${e.symbol || ''} ${e.short} ${e.long || ''}`.toLowerCase();
+    html += `
+      <div class="glossary-entry" data-cat="${e.cat}" data-haystack="${escape(haystack)}">
+        <div class="head">
+          <h4 class="term">${escape(e.term)}</h4>
+          ${symbolHtml}
+          <span class="cat-tag ${e.cat}">${e.cat}</span>
+        </div>
+        <p class="short">${escape(e.short)}</p>
+        ${safeLong ? `<p class="long">${safeLong}</p>` : ''}
+      </div>
+    `;
+  }
+  html += `<div class="glossary-empty hidden" id="glossary-empty">No terms match — try a different search.</div>`;
+  listEl.innerHTML = html;
+}
+
+function applyFilter() {
+  const entries = listEl.querySelectorAll('.glossary-entry');
+  const emptyEl = listEl.querySelector('#glossary-empty');
+  let visibleCount = 0;
+  for (const el of entries) {
+    const cat = el.dataset.cat;
+    const haystack = el.dataset.haystack;
+    const catMatch = activeCat === 'all' || cat === activeCat;
+    const queryMatch = !query || haystack.includes(query);
+    const visible = catMatch && queryMatch;
+    el.classList.toggle('hidden', !visible);
+    if (visible) visibleCount++;
+  }
+  emptyEl.classList.toggle('hidden', visibleCount > 0);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+  searchEl.oninput = (e) => {
+    query = e.target.value.trim().toLowerCase();
+    applyFilter();
+  };
+  tabsEl.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      tabsEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      applyFilter();
+    };
+  });
+});
+</script>
+</body>
+</html>
