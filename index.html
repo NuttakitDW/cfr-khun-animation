@@ -881,8 +881,9 @@ footer a:hover { color: var(--accent); }
     </div>
     <div class="stats">
       <div class="stat"><span class="label">Iteration</span><span class="val" id="stat-iter">0</span></div>
+      <div class="stat"><span class="label">Info sets</span><span class="val" id="stat-isets">12</span></div>
       <div class="stat"><span class="label">Hands seen</span><span class="val" id="stat-hands">0</span></div>
-      <div class="stat"><span class="label">Exploitability</span><span class="val" id="stat-expl">—</span></div>
+      <div class="stat"><span class="label">Exploit. mbb/g</span><span class="val" id="stat-expl">—</span></div>
     </div>
   </div>
 </header>
@@ -999,6 +1000,26 @@ footer a:hover { color: var(--accent); }
       </div>
     </section>
   </div>
+
+  <!-- HOW EXPLOITABILITY IS COMPUTED -->
+  <section class="panel" style="grid-column: 1 / -1;">
+    <h2>How Exploitability is Computed</h2>
+    <h3>The Nash-distance metric — and why it equals 0 at convergence</h3>
+    <div class="expl-text">
+      <p><b>Exploitability</b> measures how much chip equity an opponent could win against your strategy by playing a <em>best response</em>. At Nash equilibrium no deviation helps either side, so exploitability = 0. Higher = further from Nash. Reported here in <b>milli-big-blinds per game (mbb/g)</b> — the standard poker AI metric (1 mbb/g = 0.001 chips lost per hand against a perfect opponent).</p>
+      <code class="formula">ε(σ) = ½ · ( BR_value(P1, σ̄_P2) + BR_value(P2, σ̄_P1) )</code>
+      <p>Where <b>BR_value(player, opp_strategy)</b> is what <em>player</em> achieves with their best response to a fixed <em>opp_strategy</em>. In a zero-sum game the Nash values cancel, so ε ≥ 0 always; ε = 0 only at Nash. Both BRs are computed against the average strategy <span class="mono" style="color:var(--gold)">σ̄</span>, not the current σ.</p>
+
+      <p><b>Computation in Kuhn — brute-force enumeration:</b></p>
+      <p>Each player has only <b>6 information sets</b>, each with <b>2 actions</b>. So each player has at most <b>2⁶ = 64 pure best-response strategies</b>. Cheap enough to brute-force:</p>
+      <code class="formula">for each of 64 candidate BR strategies σ_BR:
+  v = expected utility(σ_BR vs σ̄_opp) over all 6 deals
+BR_value = max v</code>
+      <p>The <b>crucial constraint</b>: the responder must <em>commit to one action per information set</em> — it can't peek at the opponent's card and pick differently per deal. (An earlier bug in this site let the BR cheat that way, which floored exploitability around 277 mbb/g instead of converging to 0.)</p>
+
+      <p><b>Why this approach doesn't scale to bigger games:</b> Leduc Poker (the next step up) has 144 info sets per player with 2 or 3 actions each. Brute force would need ~3¹⁴⁴ ≈ 10⁶⁸ strategies — infeasible. The <a href="leduc.html" style="color:var(--accent)">Leduc page</a> uses a topological dynamic-programming approach instead.</p>
+    </div>
+  </section>
 
 
 </main>
