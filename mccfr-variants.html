@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCCFR Variants — CS vs ES vs OS</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.08), transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(63,223,142,0.08), transparent 60%),
+    radial-gradient(ellipse at 80% 0%, rgba(255,140,66,0.08), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--green) 50%, var(--orange));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  transition: all 0.15s;
+}
+.nav-link:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px 28px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.panel .desc { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+.panel .desc b { color: var(--text); }
+.panel .desc em { color: var(--yellow); font-style: normal; }
+.panel .desc code {
+  background: var(--panel-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--yellow);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+/* Algorithm comparison cards */
+.algo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) { .algo-grid { grid-template-columns: 1fr; } }
+
+.algo-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+}
+.algo-card.cs { border-top: 3px solid var(--accent); }
+.algo-card.es { border-top: 3px solid var(--green); }
+.algo-card.os { border-top: 3px solid var(--orange); }
+.algo-card.es::after {
+  content: 'WINNER';
+  position: absolute;
+  top: -3px;
+  right: 12px;
+  background: var(--green);
+  color: var(--bg);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  letter-spacing: 0.6px;
+  border-radius: 0 0 4px 4px;
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+.algo-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.algo-card.cs .algo-name { color: var(--accent); }
+.algo-card.es .algo-name { color: var(--green); }
+.algo-card.os .algo-name { color: var(--orange); }
+.algo-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: "SF Mono", Menlo, monospace;
+}
+.algo-card.cs .algo-tag { background: rgba(91,158,255,0.18); color: var(--accent); }
+.algo-card.es .algo-tag { background: rgba(63,223,142,0.18); color: var(--green); }
+.algo-card.os .algo-tag { background: rgba(255,140,66,0.18); color: var(--orange); }
+.algo-fullname {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.algo-tree-wrap {
+  margin: 0 -2px 10px;
+  padding: 8px;
+  background: var(--panel-3);
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+}
+svg.algo-tree { width: 100%; height: 180px; max-width: 280px; }
+.algo-tree-caption {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: -4px;
+  margin-bottom: 10px;
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+.algo-attrs {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 4px 10px;
+  font-size: 11.5px;
+  margin-bottom: 10px;
+}
+.algo-attrs .key {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  align-self: start;
+  padding-top: 2px;
+}
+.algo-attrs .val { color: var(--text); }
+.algo-attrs .val .pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: "SF Mono", Menlo, monospace;
+  background: var(--panel-3);
+  color: var(--text);
+  margin-right: 4px;
+}
+.pill.high  { background: rgba(255,94,122,0.15);  color: var(--red); }
+.pill.med   { background: rgba(255,200,87,0.15);  color: var(--yellow); }
+.pill.low   { background: rgba(63,223,142,0.15);  color: var(--green); }
+.algo-when {
+  font-size: 11.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  line-height: 1.55;
+}
+.algo-when b { color: var(--text); }
+
+/* Comparison table */
+table.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-top: 4px;
+}
+table.compare th, table.compare td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+table.compare thead th {
+  background: var(--panel-2);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+table.compare thead th.cs { color: var(--accent); }
+table.compare thead th.es { color: var(--green); }
+table.compare thead th.os { color: var(--orange); }
+table.compare tbody th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: 200px;
+}
+table.compare td {
+  color: var(--text);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+}
+table.compare td b { color: var(--green); }
+table.compare tr:hover td { background: rgba(255,255,255,0.02); }
+
+.cost-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.cost-bar .meter {
+  height: 8px;
+  width: 60px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-block;
+}
+.cost-bar .meter .fill { height: 100%; border-radius: 2px; }
+.cost-bar .meter .fill.full   { width: 100%; background: var(--red); }
+.cost-bar .meter .fill.mid    { width: 50%;  background: var(--yellow); }
+.cost-bar .meter .fill.tiny   { width: 15%;  background: var(--green); }
+
+/* Decision flow */
+.decision-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 900px) { .decision-grid { grid-template-columns: 1fr; } }
+.decision-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.decision-card .when {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.decision-card .pick {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.decision-card.cs .pick { color: var(--accent); }
+.decision-card.es .pick { color: var(--green); }
+.decision-card.os .pick { color: var(--orange); }
+.decision-card .why {
+  font-size: 11.5px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.decision-card .why b { color: var(--muted); }
+
+/* Why ES wins layout */
+.win-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.win-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.win-card .num {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 700;
+  font-family: "SF Mono", Menlo, monospace;
+  letter-spacing: 0.5px;
+}
+.win-card .head {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 0 6px;
+  color: var(--text);
+}
+.win-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.win-card p b { color: var(--text); }
+
+footer {
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; padding: 0 4px; }
+footer a:hover { color: var(--accent); }
+
+/* SVG node styling */
+.tree-node circle { stroke-width: 1.5; }
+.tree-node.chance circle { fill: var(--panel-3); stroke: var(--purple); }
+.tree-node.p1 circle     { fill: var(--panel-3); stroke: var(--accent); }
+.tree-node.p2 circle     { fill: var(--panel-3); stroke: var(--orange); }
+.tree-node.leaf circle   { fill: var(--panel-3); stroke: var(--dim); }
+.tree-node.enumerated circle { fill: rgba(63,223,142,0.20); stroke: var(--green); stroke-width: 2; }
+.tree-node.sampled    circle { fill: rgba(255,213,74,0.22); stroke: var(--gold); stroke-width: 2; }
+.tree-node.skipped    { opacity: 0.22; }
+.tree-node text {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 8px;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  font-weight: 600;
+}
+.tree-edge { stroke: var(--border); stroke-width: 1; fill: none; }
+.tree-edge.enumerated { stroke: var(--green); stroke-width: 1.6; }
+.tree-edge.sampled    { stroke: var(--gold); stroke-width: 1.6; }
+.tree-edge.skipped    { stroke: var(--dim); opacity: 0.25; }
+
+.tree-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tree-legend span { display: inline-flex; align-items: center; gap: 5px; font-family: "SF Mono", Menlo, monospace; }
+.tree-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1px solid; }
+.tree-legend .dot.enum    { background: rgba(63,223,142,0.3); border-color: var(--green); }
+.tree-legend .dot.sample  { background: rgba(255,213,74,0.3); border-color: var(--gold); }
+.tree-legend .dot.skip    { background: var(--panel-3); border-color: var(--dim); opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>MCCFR Variants — Chance vs External vs Outcome Sampling</h1>
+    <span class="sub">Three sampling schemes from the 2009 Monte Carlo Counterfactual Regret Minimization paper, one clear winner</span>
+    <a href="glossary.html" class="nav-link">Glossary →</a>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2>The Choice</h2>
+    <h3>What does each algorithm sample, and what does it enumerate?</h3>
+    <p class="desc">
+      Lanctot, Waugh, Zinkevich and Bowling's 2009 paper on <b>Monte Carlo Counterfactual Regret Minimization (MCCFR)</b> introduced exactly <b>three sampling-based algorithms</b>: Chance Sampling, External Sampling, and Outcome Sampling. Each iteration, the algorithm visits some part of the game tree and updates regrets there. They differ in <em>which parts</em> get sampled (one branch picked at random) versus <em>enumerated</em> (every branch walked). This single design knob controls per-iteration cost, variance, and convergence speed.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Side-by-Side Comparison</h2>
+    <h3>Same game tree, three different traversal patterns</h3>
+    <p class="desc">
+      Each diagram below shows one iteration on the same toy game tree: chance node at the top with 3 outcomes, then two layers of player decisions (P1, P2). Coloring shows what gets touched: <span style="color:var(--green)">green = enumerated</span> (walk every branch), <span style="color:var(--gold)">gold = sampled</span> (pick one branch), faded gray = skipped this iteration.
+    </p>
+
+    <div class="algo-grid">
+
+      <!-- CS -->
+      <div class="algo-card cs">
+        <div class="algo-name">
+          <span class="algo-tag">CS</span> Chance Sampling
+        </div>
+        <div class="algo-fullname">Algorithm 1 — most conservative</div>
+
+        <div class="algo-tree-wrap">
+          <svg class="algo-tree" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" id="tree-cs"></svg>
+        </div>
+        <div class="algo-tree-caption">1 sampled chance · 4 enumerated player paths</div>
+
+        <div class="algo-attrs">
+          <div class="key">Samples</div><div class="val">Chance only</div>
+          <div class="key">Enumerates</div><div class="val">Both players</div>
+          <div class="key">Cost / iter</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill full"></span></span> high</span></div>
+          <div class="key">Variance</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill tiny"></span></span> low</span></div>
+        </div>
+
+        <div class="algo-when">
+          <b>When:</b> small games where you want clean, low-variance updates and chance enumeration alone is the bottleneck. Mostly historical — was used informally before the paper formalized it.
+        </div>
+      </div>
+
+      <!-- ES -->
+      <div class="algo-card es">
+        <div class="algo-name">
+          <span class="algo-tag">ES</span> External Sampling
+        </div>
+        <div class="algo-fullname">Algorithm 2 — the practical default</div>
+
+        <div class="algo-tree-wrap">
+          <svg class="algo-tree" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" id="tree-es"></svg>
+        </div>
+        <div class="algo-tree-caption">1 sampled chance · 2 enumerated own actions · 1 sampled opp per branch</div>
+
+        <div class="algo-attrs">
+          <div class="key">Samples</div><div class="val">Chance + opponent</div>
+          <div class="key">Enumerates</div><div class="val">Updating player only</div>
+          <div class="key">Cost / iter</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill mid"></span></span> medium</span></div>
+          <div class="key">Variance</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill mid"></span></span> medium</span></div>
+        </div>
+
+        <div class="algo-when">
+          <b>When:</b> almost always. Per-iteration cost is independent of the chance and opponent action spaces, while variance stays low enough for smooth convergence. <b>Used in Cepheus, Libratus, Pluribus.</b>
+        </div>
+      </div>
+
+      <!-- OS -->
+      <div class="algo-card os">
+        <div class="algo-name">
+          <span class="algo-tag">OS</span> Outcome Sampling
+        </div>
+        <div class="algo-fullname">Algorithm 3 — most aggressive</div>
+
+        <div class="algo-tree-wrap">
+          <svg class="algo-tree" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" id="tree-os"></svg>
+        </div>
+        <div class="algo-tree-caption">1 trajectory — every node sampled</div>
+
+        <div class="algo-attrs">
+          <div class="key">Samples</div><div class="val">Everything</div>
+          <div class="key">Enumerates</div><div class="val">Nothing</div>
+          <div class="key">Cost / iter</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill tiny"></span></span> low</span></div>
+          <div class="key">Variance</div><div class="val"><span class="cost-bar"><span class="meter"><span class="fill full"></span></span> high</span></div>
+        </div>
+
+        <div class="algo-when">
+          <b>When:</b> truly massive games where even ES is too slow per iteration. You'll need many more iterations to average out the noise, but each one is essentially free.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tree-legend">
+      <span><i class="dot enum"></i>Enumerated</span>
+      <span><i class="dot sample"></i>Sampled (1 branch)</span>
+      <span><i class="dot skip"></i>Skipped this iteration</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>The Numbers</h2>
+    <h3>How they compare on the same game</h3>
+    <p class="desc">For Big Leduc with R=10, K=3 (~150K info sets, ~10K distinct deals). Numbers are illustrative orders-of-magnitude on a typical browser-grade machine.</p>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="cs">Chance Sampling</th>
+          <th class="es">External Sampling</th>
+          <th class="os">Outcome Sampling</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>Per-iter work</th>
+          <td>~tree depth × player_actions²</td>
+          <td>~tree depth × own_actions</td>
+          <td>~tree depth (one trajectory)</td>
+        </tr>
+        <tr><th>Iter / second</th>
+          <td>~30</td>
+          <td>~1,000</td>
+          <td>~10,000</td>
+        </tr>
+        <tr><th>Variance per iter</th>
+          <td>Low — chance-only sampling</td>
+          <td>Moderate — opp σ governed</td>
+          <td>High — single trajectory</td>
+        </tr>
+        <tr><th>Iterations to ε=0.01</th>
+          <td>~20K</td>
+          <td>~50K</td>
+          <td>~500K</td>
+        </tr>
+        <tr><th>Wall-clock to ε=0.01</th>
+          <td>~10 minutes</td>
+          <td><b>~50 seconds</b></td>
+          <td>~50 seconds</td>
+        </tr>
+        <tr><th>Used by</th>
+          <td>Pre-2009 informal use</td>
+          <td>Cepheus · Libratus · Pluribus</td>
+          <td>Bluff(2,2) benchmarks · giant trees</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="desc" style="margin-top: 12px; font-style: italic;">
+      Notice that ES and OS reach the convergence target in similar wall-clock time — OS does many more iterations but each is noisier; ES does fewer but each is sharper. CS lags behind on wall-clock because per-iteration cost dominates iteration count.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Why ES is the Winner</h2>
+    <h3>Four reasons it's the de-facto default</h3>
+
+    <div class="win-grid">
+      <div class="win-card">
+        <div class="num">01</div>
+        <div class="head">Variance vs cost — the sweet spot</div>
+        <p>
+          OS gets the cheapest iterations but each update is so noisy that you need many more to average out. CS gets the cleanest updates but each iteration is expensive. ES sits at the optimum: <b>variance low enough that convergence is smooth, cost low enough that you can do thousands of iterations per second.</b>
+        </p>
+      </div>
+
+      <div class="win-card">
+        <div class="num">02</div>
+        <div class="head">Per-iter cost is game-size invariant</div>
+        <p>
+          ES per-iteration cost is <code>O(tree_depth × own_actions)</code> — it depends on <b>your</b> action tree, not the total deal count or the opponent's reach distribution. Scale up the chance space (more cards, more streets) and ES iter/sec barely moves. Vanilla CFR's grows linearly; OS becomes too noisy; ES holds steady.
+        </p>
+      </div>
+
+      <div class="win-card">
+        <div class="num">03</div>
+        <div class="head">Used by every major poker bot</div>
+        <p>
+          <b>Cepheus</b> (Heads-Up Limit Texas Hold'em essentially solved, 2015), <b>Libratus</b> (Heads-Up No-Limit Texas Hold'em beat humans, 2017), <b>Pluribus</b> (six-player No-Limit Texas Hold'em, 2019) — all built on External Sampling MCCFR or its descendants (with CFR+ updates layered on top). When the production-bot people picked, they picked External Sampling.
+        </p>
+      </div>
+
+      <div class="win-card">
+        <div class="num">04</div>
+        <div class="head">Composes cleanly with everything else</div>
+        <p>
+          ES plays well with CFR+ regret clipping, Linear / Discounted CFR weighting, and Deep CFR's neural-network-backed regret estimation. <b>Most "modern CFR variants" mean "ES plus update-rule X."</b> Picking ES doesn't lock you out of any improvement.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Decision Flow</h2>
+    <h3>Picking a sampling scheme by game characteristics</h3>
+    <div class="decision-grid">
+      <div class="decision-card cs">
+        <div class="when">If your game is</div>
+        <div class="pick">Small to medium</div>
+        <div class="why">
+          <b>(Kuhn, Leduc, ≤ ~5K info sets)</b><br>
+          Don't bother with sampling at all — vanilla CFR converges in seconds. CS is for the borderline case where vanilla is just slightly painful and you want to keep variance near zero.
+        </div>
+      </div>
+      <div class="decision-card es">
+        <div class="when">If your game is</div>
+        <div class="pick">Large but fits in memory</div>
+        <div class="why">
+          <b>(~10K to ~10⁸ info sets — most poker games)</b><br>
+          <b>Use External Sampling.</b> This is what Big Leduc, Bluff variants, Limit Texas Hold'em, and most subgames sit at. External Sampling is fast, smooth, and pairs naturally with CFR+ for further speedup.
+        </div>
+      </div>
+      <div class="decision-card os">
+        <div class="when">If your game is</div>
+        <div class="pick">Massive — abstraction-required</div>
+        <div class="why">
+          <b>(Heads-Up Limit Texas Hold'em scale, billions or more information sets)</b><br>
+          Even External Sampling becomes too expensive. Switch to Outcome Sampling, or to Outcome Sampling with importance-weighted variants. You'll pay variance for speed, but it's the only practical option.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>What's Next</h2>
+    <h3>If you're going to focus on ES, here's the study path</h3>
+    <p class="desc">
+      <b>1. Re-read section 3.2 of the 2009 paper</b> (External Sampling specifically) and Theorem 5 — the convergence bound has a constant <code>M_es</code> specific to ES. <br>
+      <b>2. Implement Algorithm 2 from scratch on a small tabular game</b> — Kuhn or a small Leduc variant. Each iteration: sample one chance outcome, alternate the updating player, enumerate own actions, sample opponent actions per σ.<br>
+      <b>3. Reproduce a small slice of the paper's Table 2</b> — run ES alongside vanilla CFR on the same game, plot iterations completed vs wall-clock time, and verify ES's per-iteration cost is independent of game size.<br>
+      <b>4. Layer CFR+ updates on top of ES</b> — clamp negative cumulative regret to 0 each iteration, weight strategy sums linearly. This is the combination Cepheus used.<br>
+      <b>5. Read <em>Solving Heads-Up Limit Texas Hold'em</em></b> (Tammelin et al., IJCAI 2015) for how ES + CFR+ scales to a real, solved poker game.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <a href="index.html">Kuhn</a>
+  <span style="color:var(--dim)">·</span>
+  <a href="glossary.html">Glossary</a>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
+    Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+  </div>
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Build the three traversal trees as SVG.
+// Tree shape: chance (3 children) → P1 (2 actions) → P2 (2 actions) → leaves
+// 1 chance × 2 × 2 = 4 leaves under sampled chance branch.
+// =============================================================
+const NS = "http://www.w3.org/2000/svg";
+
+function makeNode(svg, x, y, type, mode, label) {
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', `tree-node ${type} ${mode}`);
+  g.setAttribute('transform', `translate(${x},${y})`);
+  const c = document.createElementNS(NS, 'circle');
+  c.setAttribute('r', 9);
+  g.appendChild(c);
+  if (label) {
+    const t = document.createElementNS(NS, 'text');
+    t.textContent = label;
+    g.appendChild(t);
+  }
+  svg.appendChild(g);
+  return g;
+}
+function makeEdge(svg, x1, y1, x2, y2, mode) {
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('class', `tree-edge ${mode}`);
+  const cx = (x1 + x2) / 2;
+  const cy = (y1 + y2) / 2;
+  path.setAttribute('d', `M ${x1} ${y1 + 9} Q ${cx} ${cy} ${x2} ${y2 - 9}`);
+  svg.appendChild(path);
+}
+
+/**
+ * Build a single algorithm tree.
+ * config = {
+ *   chance: 'sampled' | 'enumerated',
+ *   p1:     'sampled' | 'enumerated',
+ *   p2:     'sampled' | 'enumerated',
+ * }
+ *
+ * Layout:
+ *   y=20:  chance (1 node, center)
+ *   y=60:  3 chance children — middle one is "active" (sampled), others skipped
+ *   y=105: 2 P1 nodes under the active chance branch (or all under all in CS)
+ *   y=150: P2 nodes under each P1
+ */
+function buildTree(svgId, config) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+
+  const chance = { x: 140, y: 20 };
+  const chanceChildren = [
+    { x: 60,  y: 60, mode: 'skipped' },
+    { x: 140, y: 60, mode: 'sampled' },
+    { x: 220, y: 60, mode: 'skipped' },
+  ];
+  // Active chance child = middle. P1 nodes branch from it.
+  const activeChance = chanceChildren[1];
+  const p1Mode = config.p1; // 'enumerated' or 'sampled'
+  const p1Nodes = [
+    { x: activeChance.x - 45, y: 110, mode: p1Mode },
+    { x: activeChance.x + 45, y: 110, mode: p1Mode },
+  ];
+  // Under sampled-mode for P1 (OS), only one is active; mark other as skipped
+  if (p1Mode === 'sampled') {
+    // Pick left as the sampled one
+    p1Nodes[1].mode = 'skipped';
+  }
+
+  // P2 nodes under each P1
+  const p2Nodes = [];
+  for (let i = 0; i < p1Nodes.length; i++) {
+    const p1 = p1Nodes[i];
+    const p1Active = p1.mode !== 'skipped';
+    const p2Mode = config.p2;
+    let leftMode = p2Mode, rightMode = p2Mode;
+    if (!p1Active) { leftMode = rightMode = 'skipped'; }
+    else if (p2Mode === 'sampled') { leftMode = 'sampled'; rightMode = 'skipped'; }
+    p2Nodes.push({ x: p1.x - 18, y: 158, mode: leftMode, parent: i });
+    p2Nodes.push({ x: p1.x + 18, y: 158, mode: rightMode, parent: i });
+  }
+
+  // === Draw edges first ===
+  // chance → its children
+  for (const cc of chanceChildren) {
+    makeEdge(svg, chance.x, chance.y, cc.x, cc.y, cc.mode);
+  }
+  // active chance → p1 nodes
+  for (const p1 of p1Nodes) {
+    makeEdge(svg, activeChance.x, activeChance.y, p1.x, p1.y, p1.mode);
+  }
+  // p1 → p2
+  for (const p2 of p2Nodes) {
+    const p1 = p1Nodes[p2.parent];
+    makeEdge(svg, p1.x, p1.y, p2.x, p2.y, p2.mode);
+  }
+
+  // === Draw nodes ===
+  makeNode(svg, chance.x, chance.y, 'chance', 'sampled', 'C');
+  for (const cc of chanceChildren) {
+    makeNode(svg, cc.x, cc.y, 'chance', cc.mode, '');
+  }
+  for (const p1 of p1Nodes) {
+    makeNode(svg, p1.x, p1.y, 'p1', p1.mode, 'P1');
+  }
+  for (const p2 of p2Nodes) {
+    makeNode(svg, p2.x, p2.y, 'p2', p2.mode, 'P2');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // CS: chance sampled (1 branch), both players enumerated
+  buildTree('tree-cs', { p1: 'enumerated', p2: 'enumerated' });
+  // ES: chance + opp sampled, own player enumerated. Updating player = P1.
+  // So P1 is enumerated, P2 (opponent) is sampled (1 of 2 branches).
+  buildTree('tree-es', { p1: 'enumerated', p2: 'sampled' });
+  // OS: everything sampled — single trajectory
+  buildTree('tree-os', { p1: 'sampled', p2: 'sampled' });
+});
+</script>
+</body>
+</html>

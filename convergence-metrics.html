@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convergence Metrics — Leduc Poker</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(63,223,142,0.08), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--green) 50%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  transition: all 0.15s;
+}
+.nav-link.last { margin-left: auto; }
+.nav-link:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.controls button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.controls button:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
+.controls button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.controls button.primary:hover { background: #4a8cee; color: white; }
+.speed-group {
+  display: flex;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.speed-group button {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 7px 11px;
+  border-right: 1px solid var(--border);
+}
+.speed-group button:last-child { border-right: none; }
+.speed-group button.active { background: var(--accent); color: white; }
+.stats {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat .val {
+  color: var(--text);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px 28px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.panel .desc { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+.panel .desc b { color: var(--text); }
+.panel .desc em { color: var(--yellow); font-style: normal; }
+.panel .desc code {
+  background: var(--panel-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--yellow);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+/* Live metric cards */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) { .metric-grid { grid-template-columns: 1fr; } }
+
+.metric-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+}
+.metric-card.exploit { border-top: 3px solid var(--accent); }
+.metric-card.ci      { border-top: 3px solid var(--green); }
+.metric-card.regret  { border-top: 3px solid var(--orange); }
+
+.metric-name {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.metric-card.exploit .metric-name { color: var(--accent); }
+.metric-card.ci      .metric-name { color: var(--green); }
+.metric-card.regret  .metric-name { color: var(--orange); }
+
+.metric-headline {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+.metric-unit {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, monospace;
+  margin-bottom: 10px;
+}
+
+canvas.metric-spark {
+  width: 100%;
+  height: 80px;
+  display: block;
+  background: var(--panel-3);
+  border-radius: 5px;
+}
+
+.metric-threshold {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, monospace;
+}
+.metric-threshold .ok    { color: var(--green); }
+.metric-threshold .close { color: var(--yellow); }
+.metric-threshold .far   { color: var(--red); }
+
+.metric-formula {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, monospace;
+  background: var(--panel-3);
+  padding: 6px 8px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+/* Combined chart */
+canvas#chart-combined {
+  width: 100%;
+  height: 320px;
+  display: block;
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-family: "SF Mono", Menlo, monospace; }
+.chart-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+
+/* Explainer cards (one per metric) */
+.explainer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) { .explainer-grid { grid-template-columns: 1fr; } }
+
+.explainer-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.explainer-card.exploit { border-left: 3px solid var(--accent); }
+.explainer-card.ci      { border-left: 3px solid var(--green); }
+.explainer-card.regret  { border-left: 3px solid var(--orange); }
+.explainer-card h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.explainer-card.exploit h4 { color: var(--accent); }
+.explainer-card.ci      h4 { color: var(--green); }
+.explainer-card.regret  h4 { color: var(--orange); }
+.explainer-card .sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.explainer-card .row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 6px 10px;
+  font-size: 11.5px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.explainer-card .row .key {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  padding-top: 1px;
+}
+.explainer-card .row .val { color: var(--text); }
+.explainer-card .row .val code {
+  background: var(--panel-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  color: var(--yellow);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+/* Comparison table */
+table.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+table.compare th, table.compare td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+table.compare thead th {
+  background: var(--panel-2);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+table.compare thead th.exploit { color: var(--accent); }
+table.compare thead th.ci      { color: var(--green); }
+table.compare thead th.regret  { color: var(--orange); }
+table.compare tbody th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: 200px;
+}
+table.compare td { color: var(--text); font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; }
+
+footer {
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; padding: 0 4px; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Convergence Metrics — Leduc Poker</h1>
+    <span class="sub">Three ways to measure "is this strategy at Nash yet?" running side-by-side</span>
+    <a href="index.html" class="nav-link">Vanilla CFR</a>
+    <a href="mccfr.html" class="nav-link">External Sampling MCCFR</a>
+    <a href="glossary.html" class="nav-link last">Glossary →</a>
+  </div>
+  <div class="controls">
+    <button id="btn-play" class="primary">Play</button>
+    <button id="btn-step">Step</button>
+    <button id="btn-reset">Reset</button>
+    <div class="speed-group">
+      <button data-speed="slow">Slow</button>
+      <button data-speed="med" class="active">Medium</button>
+      <button data-speed="fast">Fast</button>
+      <button data-speed="turbo">Turbo</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Iteration</span><span class="val" id="stat-iter">0</span></div>
+      <div class="stat"><span class="label">Hands seen</span><span class="val" id="stat-hands">0</span></div>
+      <div class="stat"><span class="label">Snapshot every</span><span class="val">10 iter</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2>What This Page Shows</h2>
+    <h3>Vanilla CFR on Leduc poker, three convergence metrics tracked in parallel</h3>
+    <p class="desc">
+      Knowing <em>when to stop training</em> is the most practical question in CFR. Exploitability is the gold standard, but it's expensive. <b>Convergence Indicator (CI)</b> and <b>Max Positive Regret Rate</b> are cheaper proxies that solver software uses in practice. This page runs Vanilla Counterfactual Regret Minimization on <b>Leduc poker</b> (6-card deck, two betting rounds, community card revealed between rounds) and tracks all three metrics live, so you can compare how they decay and which thresholds correspond to "essentially converged." Leduc has a unique Nash equilibrium, so all three metrics are expected to converge cleanly — unlike Kuhn poker, which has a one-parameter family of Nash equilibria that prevents CI from settling.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Live Metrics</h2>
+    <h3>Current values, sparkline history, and convergence threshold</h3>
+    <div class="metric-grid">
+
+      <div class="metric-card exploit">
+        <div class="metric-name">Exploitability</div>
+        <div class="metric-headline" id="m-exploit-val">—</div>
+        <div class="metric-unit">milli-big-blinds per game (mbb/g)</div>
+        <canvas class="metric-spark" id="spark-exploit"></canvas>
+        <div class="metric-threshold">
+          <span>Target: <span id="m-exploit-status" class="far">—</span></span>
+          <span>Converged: &lt; 1 mbb/g</span>
+        </div>
+        <div class="metric-formula">ε(σ) = ½ · ( BR(P1) + BR(P2) ) × 1000</div>
+      </div>
+
+      <div class="metric-card ci">
+        <div class="metric-name">Convergence Indicator (CI)</div>
+        <div class="metric-headline" id="m-ci-val">—</div>
+        <div class="metric-unit">reach-weighted TV drift × 1000</div>
+        <canvas class="metric-spark" id="spark-ci"></canvas>
+        <div class="metric-threshold">
+          <span>Target: <span id="m-ci-status" class="far">—</span></span>
+          <span>Converged: &lt; 5</span>
+        </div>
+        <div class="metric-formula">CI = Σ_I w(I)·TV(σ̄_T(I), σ̄_{T/2}(I)) / Σ_I w(I) × 1000   where w(I) = total strategy sum</div>
+      </div>
+
+      <div class="metric-card regret">
+        <div class="metric-name">Max Positive Regret Rate</div>
+        <div class="metric-headline" id="m-regret-val">—</div>
+        <div class="metric-unit">max R⁺(I,a) / iteration</div>
+        <canvas class="metric-spark" id="spark-regret"></canvas>
+        <div class="metric-threshold">
+          <span>Target: <span id="m-regret-status" class="far">—</span></span>
+          <span>Converged: &lt; 10⁻³</span>
+        </div>
+        <div class="metric-formula">max R⁺/T = max_{I,a} max(0, R(I,a)) / T</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Combined Convergence Chart</h2>
+    <h3>All three metrics over iterations — log scale, normalized to their thresholds</h3>
+    <p class="desc">Each line is plotted as <code>value / threshold</code> on a log scale. When a line crosses below 1.0 (the dashed white line), that metric has reached its convergence threshold. Look at the <em>order</em> the lines cross and the <em>shape</em> of decay — they tell different but correlated stories.</p>
+    <canvas id="chart-combined"></canvas>
+    <div class="chart-legend">
+      <span style="color:var(--accent)"><i style="background:var(--accent)"></i>Exploitability / 1 mbb/g</span>
+      <span style="color:var(--green)"><i style="background:var(--green)"></i>CI / 5</span>
+      <span style="color:var(--orange)"><i style="background:var(--orange)"></i>Max positive regret rate / 10⁻³</span>
+      <span style="color:rgba(255,255,255,0.6)"><i style="background:rgba(255,255,255,0.5)"></i>Convergence threshold (= 1)</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>How Each Metric Works</h2>
+    <h3>The equation each metric uses</h3>
+
+    <div class="explainer-grid">
+
+      <div class="explainer-card exploit">
+        <h4>Exploitability</h4>
+        <div class="row"><span class="key">Equation</span><span class="val"><code>ε(σ̄) = ½·(BR_value(P1, σ̄_2) + BR_value(P2, σ̄_1))</code></span></div>
+        <div class="row"><span class="key">Tells you</span><span class="val">Exact Nash distance. <code>O(1/√T)</code> decay.</span></div>
+        <div class="row"><span class="key">Threshold</span><span class="val"><b>&lt; 1 mbb/g</b> = essentially solved.</span></div>
+      </div>
+
+      <div class="explainer-card ci">
+        <h4>Convergence Indicator (CI)</h4>
+        <div class="row"><span class="key">Equation</span><span class="val"><code>CI = (Σ_I w(I)·TV(σ̄_T(I), σ̄_{T/2}(I)) / Σ_I w(I)) × 1000</code><br>where <code>w(I) = total strategy sum</code>, comparison window is half the elapsed iterations</span></div>
+        <div class="row"><span class="key">Tells you</span><span class="val">Drift between σ̄ now and σ̄ at the half-way point. <code>O(1/√T)</code> decay — same rate as exploitability.</span></div>
+        <div class="row"><span class="key">Threshold</span><span class="val"><b>&lt; 5</b> now corresponds roughly to exploitability ≈ 1 mbb/g, not just "stable."</span></div>
+      </div>
+
+      <div class="explainer-card regret">
+        <h4>Max Positive Regret Rate</h4>
+        <div class="row"><span class="key">Equation</span><span class="val"><code>max R⁺/T = max_{I,a} max(0, R(I,a)) / T</code></span></div>
+        <div class="row"><span class="key">Tells you</span><span class="val">CFR-theorem upper bound on exploitability: <code>ε ≤ const · max R⁺/T</code>. <code>O(1/√T)</code> decay.</span></div>
+        <div class="row"><span class="key">Threshold</span><span class="val"><b>&lt; 10⁻³</b> ≈ exploit ≲ a few mbb/g.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Side-by-Side Comparison</h2>
+    <h3>The trade-offs at a glance</h3>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="exploit">Exploitability</th>
+          <th class="ci">Convergence Indicator</th>
+          <th class="regret">Max Positive Regret Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>What it measures</th>
+          <td>Distance from Nash, exact</td>
+          <td>Strategy drift between snapshots</td>
+          <td>Max positive cumulative regret per iteration</td>
+        </tr>
+        <tr><th>Theoretical link to Nash</th>
+          <td>Direct (= Nash gap)</td>
+          <td>Indirect (proxy)</td>
+          <td>Upper bound (CFR theorem)</td>
+        </tr>
+        <tr><th>Cost on Leduc</th>
+          <td>~10–50 ms (BR DP)</td>
+          <td>~0.1 ms</td>
+          <td>~0.1 ms</td>
+        </tr>
+        <tr><th>Cost on Heads-Up Limit Texas Hold'em</th>
+          <td>CPU-days with engineering</td>
+          <td>~ms (linear scan)</td>
+          <td>~ms (linear scan)</td>
+        </tr>
+        <tr><th>Cost on Heads-Up No-Limit Texas Hold'em</th>
+          <td>Infeasible without abstraction; use Local Best Response as lower bound</td>
+          <td>Cheap, runs every iteration</td>
+          <td>Cheap, runs every iteration</td>
+        </tr>
+        <tr><th>Best used for</th>
+          <td>Final validation, paper claims</td>
+          <td>Live monitoring, early stopping</td>
+          <td>Sanity check, theoretical bound</td>
+        </tr>
+        <tr><th>Convergence threshold</th>
+          <td>&lt; 1 mbb/g</td>
+          <td>&lt; 5</td>
+          <td>&lt; 10⁻³</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+</main>
+
+<footer>
+  Vanilla CFR on Leduc Poker (288 information sets) — convergence-metric comparison page. Snapshots taken every 10 iterations.
+  <br>
+  <a href="index.html">Vanilla CFR</a>
+  <span style="color:var(--dim)">·</span>
+  <a href="mccfr.html">External Sampling MCCFR</a>
+  <span style="color:var(--dim)">·</span>
+  <a href="mccfr-variants.html">MCCFR Variants</a>
+  <span style="color:var(--dim)">·</span>
+  <a href="glossary.html">Glossary</a>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
+    Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+  </div>
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Constants (Leduc poker — 6-card, 2-round, max 2 raises per round)
+// =============================================================
+const NUM_RANKS = 3;
+const RANK_NAMES = ['J', 'Q', 'K'];
+const DECK_MULTI = 2;          // 2 copies of each rank
+const ANTE = 1;
+const BET_R1 = 2;              // round-1 bet size
+const BET_R2 = 4;              // round-2 bet size
+const MAX_RAISES = 2;          // per round
+const F = 0, C = 1, R = 2;     // fold, check/call, raise
+const ACT_CHAR = ['f', 'c', 'r'];
+
+// Round-1 outcomes that proceed (no fold) to round 2
+const R1_OUTCOMES = ['cc', 'rc', 'crc', 'rrc', 'crrc'];
+// Histories within a round where each player acts (max 2 raises)
+const P1_ROUND_HISTS = ['', 'cr', 'rr'];
+const P2_ROUND_HISTS = ['c', 'r', 'crr'];
+
+// Convergence thresholds
+const TH_EXPLOIT = 1.0;        // mbb/g
+const TH_CI      = 5.0;        // total-variation × 1000
+const TH_REGRET  = 1e-3;       // max R⁺/T
+const SNAPSHOT_EVERY = 10;     // CI sampling cadence (iterations)
+
+// ---- Game-logic helpers ----
+function legalActions(history) {
+  if (history === '') return [C, R];
+  const last = history[history.length - 1];
+  let numR = 0;
+  for (const ch of history) if (ch === 'r') numR++;
+  if (last === 'r') return numR >= MAX_RAISES ? [F, C] : [F, C, R];
+  if (last === 'c') return [C, R];
+  return [];
+}
+function isRoundEnd(h) {
+  if (h === '') return false;
+  if (h.endsWith('f')) return true;
+  if (h === 'cc') return true;
+  if (h.length >= 2 && h.endsWith('c')) return true;
+  return false;
+}
+function makeKey(player, card, round, r1Hist, board, r2Hist) {
+  return round === 1
+    ? `${player}|${card}|${r1Hist}|-|`
+    : `${player}|${card}|${r1Hist}|${board}|${r2Hist}`;
+}
+
+// =============================================================
+// InfoSet — variable action count (2 or 3 depending on history)
+// =============================================================
+class InfoSet {
+  constructor(player, card, round, r1Hist, board, r2Hist) {
+    this.player = player;
+    this.card = card;
+    this.round = round;
+    this.r1Hist = r1Hist;
+    this.board = board;
+    this.r2Hist = r2Hist;
+    this.actions = legalActions(round === 1 ? r1Hist : r2Hist);
+    this.numActions = this.actions.length;
+    this.key = makeKey(player, card, round, r1Hist, board, r2Hist);
+    this.regretSum = new Array(this.numActions).fill(0);
+    this.strategySum = new Array(this.numActions).fill(0);
+  }
+  getStrategy() {
+    let s = 0;
+    const out = new Array(this.numActions);
+    for (let a = 0; a < this.numActions; a++) {
+      out[a] = Math.max(0, this.regretSum[a]);
+      s += out[a];
+    }
+    if (s > 0) for (let a = 0; a < this.numActions; a++) out[a] /= s;
+    else { const u = 1 / this.numActions; for (let a = 0; a < this.numActions; a++) out[a] = u; }
+    return out;
+  }
+  getAverageStrategy() {
+    let s = 0;
+    for (const v of this.strategySum) s += v;
+    if (s === 0) return new Array(this.numActions).fill(1 / this.numActions);
+    return this.strategySum.map(v => v / s);
+  }
+}
+
+// =============================================================
+// Vanilla CFR Trainer (Leduc poker)
+// =============================================================
+class CFRTrainer {
+  constructor() {
+    this.deals = this._enumerateDeals();
+    this.reset();
+  }
+  reset() {
+    this.infoSets = new Map();
+    this.iter = 0;
+    this.handsPlayed = 0;
+    this._buildAllInfoSets();
+  }
+  _enumerateDeals() {
+    const out = [];
+    for (let p1 = 0; p1 < NUM_RANKS; p1++) {
+      for (let p2 = 0; p2 < NUM_RANKS; p2++) {
+        for (let board = 0; board < NUM_RANKS; board++) {
+          let prob = DECK_MULTI / 6;
+          const remP2 = (p2 === p1) ? DECK_MULTI - 1 : DECK_MULTI;
+          if (remP2 <= 0) continue;
+          prob *= remP2 / 5;
+          let remBoard = DECK_MULTI;
+          if (board === p1) remBoard--;
+          if (board === p2) remBoard--;
+          if (remBoard <= 0) continue;
+          prob *= remBoard / 4;
+          out.push({ p1, p2, board, prob });
+        }
+      }
+    }
+    return out;
+  }
+  _buildAllInfoSets() {
+    // Round 1 information sets
+    for (let card = 0; card < NUM_RANKS; card++) {
+      for (const h of P1_ROUND_HISTS) this.infoSets.set(makeKey(0, card, 1, h, -1, ''), new InfoSet(0, card, 1, h, -1, ''));
+      for (const h of P2_ROUND_HISTS) this.infoSets.set(makeKey(1, card, 1, h, -1, ''), new InfoSet(1, card, 1, h, -1, ''));
+    }
+    // Round 2 information sets
+    for (const r1Out of R1_OUTCOMES) {
+      for (let board = 0; board < NUM_RANKS; board++) {
+        for (let card = 0; card < NUM_RANKS; card++) {
+          for (const h of P1_ROUND_HISTS) this.infoSets.set(makeKey(0, card, 2, r1Out, board, h), new InfoSet(0, card, 2, r1Out, board, h));
+          for (const h of P2_ROUND_HISTS) this.infoSets.set(makeKey(1, card, 2, r1Out, board, h), new InfoSet(1, card, 2, r1Out, board, h));
+        }
+      }
+    }
+  }
+  getInfoSet(player, card, round, r1Hist, board, r2Hist) {
+    return this.infoSets.get(makeKey(player, card, round, r1Hist, board, r2Hist));
+  }
+  isTerminal(r1Hist, r2Hist) {
+    if (r1Hist.endsWith('f')) return true;
+    if (r2Hist.endsWith('f')) return true;
+    if (r1Hist !== '' && !r1Hist.endsWith('f') && isRoundEnd(r1Hist)) {
+      if (r2Hist !== '' && isRoundEnd(r2Hist)) return true;
+    }
+    return false;
+  }
+  whichRound(r1Hist) {
+    if (r1Hist === '') return 1;
+    if (r1Hist.endsWith('f')) return null;
+    return isRoundEnd(r1Hist) ? 2 : 1;
+  }
+  computeContributions(r1Hist, r2Hist) {
+    let p1 = ANTE, p2 = ANTE;
+    function process(hist, betSize) {
+      let stake = 0, actor = 0;
+      for (const a of hist) {
+        if (a === 'r') {
+          const toAdd = stake + betSize;
+          if (actor === 0) p1 += toAdd; else p2 += toAdd;
+          stake = betSize;
+        } else if (a === 'c') {
+          if (actor === 0) p1 += stake; else p2 += stake;
+          stake = 0;
+        }
+        actor = 1 - actor;
+      }
+    }
+    process(r1Hist, BET_R1);
+    if (r2Hist) process(r2Hist, BET_R2);
+    return [p1, p2];
+  }
+  payoffP1(r1Hist, r2Hist, p1Card, p2Card, board) {
+    const [p1C, p2C] = this.computeContributions(r1Hist, r2Hist);
+    if (r1Hist.endsWith('f')) {
+      const folder = (r1Hist.length - 1) % 2;
+      return folder === 0 ? -p1C : p2C;
+    }
+    if (r2Hist && r2Hist.endsWith('f')) {
+      const folder = (r2Hist.length - 1) % 2;
+      return folder === 0 ? -p1C : p2C;
+    }
+    const p1Pair = p1Card === board;
+    const p2Pair = p2Card === board;
+    let win;
+    if (p1Pair && !p2Pair) win = 0;
+    else if (p2Pair && !p1Pair) win = 1;
+    else if (p1Card === p2Card) win = -1;
+    else win = p1Card > p2Card ? 0 : 1;
+    if (win === 0) return p2C;
+    if (win === 1) return -p1C;
+    return 0;
+  }
+  cfr(r1Hist, r2Hist, p1Card, p2Card, board, p1Reach, p2Reach) {
+    if (this.isTerminal(r1Hist, r2Hist)) {
+      return this.payoffP1(r1Hist, r2Hist, p1Card, p2Card, board);
+    }
+    const round = this.whichRound(r1Hist);
+    const history = round === 1 ? r1Hist : r2Hist;
+    const player = history.length % 2;
+    const card = player === 0 ? p1Card : p2Card;
+    const node = this.getInfoSet(player, card, round, r1Hist, board, r2Hist);
+    const σ = node.getStrategy();
+    const numA = node.numActions;
+    const u = new Array(numA);
+    let nodeUtil = 0;
+    for (let ai = 0; ai < numA; ai++) {
+      const ch = ACT_CHAR[node.actions[ai]];
+      const newR1 = round === 1 ? r1Hist + ch : r1Hist;
+      const newR2 = round === 1 ? r2Hist : r2Hist + ch;
+      u[ai] = (player === 0)
+        ? this.cfr(newR1, newR2, p1Card, p2Card, board, p1Reach * σ[ai], p2Reach)
+        : this.cfr(newR1, newR2, p1Card, p2Card, board, p1Reach, p2Reach * σ[ai]);
+      nodeUtil += σ[ai] * u[ai];
+    }
+    const sign = player === 0 ? 1 : -1;
+    const cfReach = player === 0 ? p2Reach : p1Reach;
+    const ownReach = player === 0 ? p1Reach : p2Reach;
+    for (let ai = 0; ai < numA; ai++) {
+      const r = sign * u[ai] - sign * nodeUtil;
+      node.regretSum[ai]   += cfReach * r;
+      node.strategySum[ai] += ownReach * σ[ai];
+    }
+    return nodeUtil;
+  }
+  trainOne() {
+    this.iter++;
+    for (const d of this.deals) {
+      this.cfr('', '', d.p1, d.p2, d.board, d.prob, d.prob);
+      this.handsPlayed++;
+    }
+  }
+  trainMany(n) { for (let i = 0; i < n; i++) this.trainOne(); }
+
+  // ----- Metrics -----
+  /**
+   * Max positive cumulative regret per iteration. The CFR convergence theorem
+   * bounds this as O(1/√T). |R|/T would NOT decay (negative-regret accumulation
+   * at pure-Nash off-actions grows linearly).
+   */
+  maxPosRegretPerIter() {
+    if (this.iter === 0) return Infinity;
+    let maxR = 0;
+    for (const n of this.infoSets.values()) {
+      for (const r of n.regretSum) {
+        const pos = Math.max(0, r);
+        if (pos > maxR) maxR = pos;
+      }
+    }
+    return maxR / this.iter;
+  }
+  snapshotAvg() {
+    const out = new Map();
+    for (const [k, n] of this.infoSets) out.set(k, n.getAverageStrategy());
+    return out;
+  }
+  exploitability() {
+    if (this.iter === 0) return Infinity;
+    const avg = this.snapshotAvg();
+    const br0 = this.bestResponseValue(0, avg);
+    const br1 = this.bestResponseValue(1, avg);
+    return (br0 + br1) / 2;
+  }
+
+  // ----- Best-response DP for exploitability (Leduc has 144 IS per player,
+  // brute-force enumeration of 3^144 strategies is infeasible) -----
+  _infoSetTopoOrder(brPlayer) {
+    // Process round 2 (longest history first), then round 1
+    const order = [];
+    const r2H = brPlayer === 0 ? P1_ROUND_HISTS : P2_ROUND_HISTS;
+    const r2HSorted = [...r2H].sort((a, b) => b.length - a.length);
+    for (const h of r2HSorted) {
+      for (const r1Out of R1_OUTCOMES) {
+        for (let board = 0; board < NUM_RANKS; board++) {
+          for (let card = 0; card < NUM_RANKS; card++) {
+            const k = makeKey(brPlayer, card, 2, r1Out, board, h);
+            if (this.infoSets.has(k)) order.push(k);
+          }
+        }
+      }
+    }
+    const r1H = brPlayer === 0 ? P1_ROUND_HISTS : P2_ROUND_HISTS;
+    const r1HSorted = [...r1H].sort((a, b) => b.length - a.length);
+    for (const h of r1HSorted) {
+      for (let card = 0; card < NUM_RANKS; card++) {
+        const k = makeKey(brPlayer, card, 1, h, -1, '');
+        if (this.infoSets.has(k)) order.push(k);
+      }
+    }
+    return order;
+  }
+  _oppReachToInfoSet(node, deal, brPlayer, strategies) {
+    let reach = 1;
+    let cur = '';
+    for (const ch of node.r1Hist) {
+      const player = cur.length % 2;
+      if (player !== brPlayer) {
+        const card = player === 0 ? deal.p1 : deal.p2;
+        const subKey = makeKey(player, card, 1, cur, -1, '');
+        const subNode = this.infoSets.get(subKey);
+        const stratArr = strategies.get(subKey);
+        const action = ACT_CHAR.indexOf(ch);
+        const idx = subNode.actions.indexOf(action);
+        if (idx === -1) return 0;
+        reach *= stratArr[idx];
+        if (reach === 0) return 0;
+      }
+      cur += ch;
+    }
+    if (node.round === 2) {
+      let cur2 = '';
+      for (const ch of node.r2Hist) {
+        const player = cur2.length % 2;
+        if (player !== brPlayer) {
+          const card = player === 0 ? deal.p1 : deal.p2;
+          const subKey = makeKey(player, card, 2, node.r1Hist, node.board, cur2);
+          const subNode = this.infoSets.get(subKey);
+          const stratArr = strategies.get(subKey);
+          const action = ACT_CHAR.indexOf(ch);
+          const idx = subNode.actions.indexOf(action);
+          if (idx === -1) return 0;
+          reach *= stratArr[idx];
+          if (reach === 0) return 0;
+        }
+        cur2 += ch;
+      }
+    }
+    return reach;
+  }
+  _evalSubtree(r1Hist, r2Hist, p1, p2, board, brPlayer, strategies, brStrat) {
+    if (this.isTerminal(r1Hist, r2Hist)) {
+      const pay = this.payoffP1(r1Hist, r2Hist, p1, p2, board);
+      return brPlayer === 0 ? pay : -pay;
+    }
+    const round = this.whichRound(r1Hist);
+    const history = round === 1 ? r1Hist : r2Hist;
+    const player = history.length % 2;
+    const card = player === 0 ? p1 : p2;
+    const node = this.getInfoSet(player, card, round, r1Hist, board, r2Hist);
+    const stratArr = (player === brPlayer) ? brStrat.get(node.key) : strategies.get(node.key);
+    let val = 0;
+    for (let ai = 0; ai < node.numActions; ai++) {
+      if (!stratArr || stratArr[ai] === 0) continue;
+      const ch = ACT_CHAR[node.actions[ai]];
+      const nr1 = round === 1 ? r1Hist + ch : r1Hist;
+      const nr2 = round === 1 ? r2Hist : r2Hist + ch;
+      val += stratArr[ai] * this._evalSubtree(nr1, nr2, p1, p2, board, brPlayer, strategies, brStrat);
+    }
+    return val;
+  }
+  bestResponseValue(brPlayer, strategies) {
+    const brStrat = new Map();
+    const order = this._infoSetTopoOrder(brPlayer);
+    for (const key of order) {
+      const node = this.infoSets.get(key);
+      const cfv = new Array(node.numActions).fill(0);
+      for (const d of this.deals) {
+        const myCard = brPlayer === 0 ? d.p1 : d.p2;
+        if (myCard !== node.card) continue;
+        if (node.round === 2 && d.board !== node.board) continue;
+        const oppReach = this._oppReachToInfoSet(node, d, brPlayer, strategies);
+        if (oppReach === 0) continue;
+        for (let ai = 0; ai < node.numActions; ai++) {
+          const ch = ACT_CHAR[node.actions[ai]];
+          let nr1 = node.r1Hist, nr2 = node.r2Hist;
+          if (node.round === 1) nr1 += ch;
+          else nr2 += ch;
+          const v = this._evalSubtree(nr1, nr2, d.p1, d.p2, d.board, brPlayer, strategies, brStrat);
+          cfv[ai] += d.prob * oppReach * v;
+        }
+      }
+      let best = 0;
+      for (let i = 1; i < cfv.length; i++) if (cfv[i] > cfv[best]) best = i;
+      const arr = new Array(node.numActions).fill(0);
+      arr[best] = 1;
+      brStrat.set(key, arr);
+    }
+    let total = 0;
+    for (const d of this.deals) {
+      total += d.prob * this._evalSubtree('', '', d.p1, d.p2, d.board, brPlayer, strategies, brStrat);
+    }
+    return total;
+  }
+}
+
+// =============================================================
+// Convergence Indicator helper
+// =============================================================
+class CIMonitor {
+  constructor() {
+    // Exponentially-spaced checkpoints: snapshots at iters 1, 2, 4, 8, 16, ...
+    // At iter T, compare current σ̄ to the most-recent checkpoint with iter ≤ T/2.
+    // This proportional window gives CI a decay rate of O(1/√T), matching
+    // exploitability — instead of the O(1/T) decay you'd get with a fixed Δ.
+    this.checkpoints = [];
+    this.lastValue = null;
+  }
+  /**
+   * Reach-weighted total-variation drift between σ̄_T and σ̄_{T/2}, scaled by
+   * 1000. Decays as O(1/√T) — same rate as exploitability and max R⁺/T —
+   * so the three convergence metrics are now mutually calibrated.
+   *
+   * Reach-weighting (rather than max-over-info-sets) keeps the metric stable:
+   * frequently-visited info sets dominate, rare-reach info sets contribute
+   * proportionally to how much they've been visited.
+   */
+  update(currentSnapshot, currentIter, infoSetsMap) {
+    const copy = new Map();
+    for (const [k, v] of currentSnapshot) copy.set(k, [...v]);
+
+    // Add a new checkpoint when we've at least doubled since the last one.
+    const last = this.checkpoints[this.checkpoints.length - 1];
+    if (!last || currentIter >= 2 * last.iter) {
+      this.checkpoints.push({ iter: currentIter, snap: copy });
+    }
+
+    // Find the most-recent checkpoint at or before T/2.
+    let oldEntry = null;
+    for (const entry of this.checkpoints) {
+      if (entry.iter <= currentIter / 2) oldEntry = entry;
+      else break;
+    }
+
+    // Trim: keep checkpoints in [T/4, T] — we never need older than T/4.
+    while (this.checkpoints.length > 2 && this.checkpoints[1].iter * 4 <= currentIter) {
+      this.checkpoints.shift();
+    }
+
+    if (!oldEntry) return this.lastValue;   // not enough history yet
+
+    let weightedTV = 0;
+    let totalWeight = 0;
+    for (const [k, cur] of currentSnapshot) {
+      const old = oldEntry.snap.get(k);
+      if (!old) continue;
+      const node = infoSetsMap.get(k);
+      let w = 0;
+      for (const v of node.strategySum) w += v;
+      if (w < 1e-9) continue;   // skip never/barely-visited info sets
+      let tv = 0;
+      for (let a = 0; a < cur.length; a++) tv += Math.abs(cur[a] - old[a]);
+      tv *= 0.5;
+      weightedTV += w * tv;
+      totalWeight += w;
+    }
+    this.lastValue = totalWeight > 0 ? (weightedTV / totalWeight) * 1000 : 0;
+    return this.lastValue;
+  }
+  reset() { this.checkpoints = []; this.lastValue = null; }
+}
+
+// =============================================================
+// Sparkline (for per-metric mini-charts)
+// =============================================================
+class Sparkline {
+  constructor(canvas, color, threshold) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.color = color;
+    this.threshold = threshold;
+    this.data = [];
+    this.maxPoints = 400;
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  }
+  resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const r = this.canvas.getBoundingClientRect();
+    this.canvas.width = r.width * dpr;
+    this.canvas.height = r.height * dpr;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
+    this.W = r.width; this.H = r.height;
+    this.draw();
+  }
+  push(iter, val) {
+    if (!isFinite(val)) return;
+    this.data.push({ iter, val });
+    if (this.data.length > this.maxPoints) {
+      const next = [];
+      for (let i = 0; i < this.data.length; i += 2) next.push(this.data[i]);
+      this.data = next;
+    }
+  }
+  reset() { this.data = []; this.draw(); }
+  draw() {
+    const { ctx, W, H } = this;
+    ctx.clearRect(0, 0, W, H);
+    if (this.data.length === 0) {
+      ctx.fillStyle = '#4a5266';
+      ctx.font = '11px -apple-system';
+      ctx.textAlign = 'center';
+      ctx.fillText('press Play', W / 2, H / 2);
+      ctx.textAlign = 'start';
+      return;
+    }
+    // log scale
+    const vals = this.data.map(p => p.val).filter(v => v > 0);
+    if (vals.length === 0) return;
+    const lo = Math.max(1e-6, Math.min(...vals, this.threshold * 0.5));
+    const hi = Math.max(...vals, this.threshold * 2);
+    const lLo = Math.log10(lo), lHi = Math.log10(hi);
+    const minIter = this.data[0].iter;
+    const maxIter = Math.max(this.data[this.data.length - 1].iter, minIter + 1);
+    const padT = 6, padB = 6, padL = 6, padR = 6;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    // threshold line
+    const tY = padT + (1 - (Math.log10(this.threshold) - lLo) / (lHi - lLo || 1)) * plotH;
+    if (tY >= padT && tY <= padT + plotH) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padL, tY); ctx.lineTo(padL + plotW, tY); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // line
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    let started = false;
+    for (const p of this.data) {
+      const x = padL + ((p.iter - minIter) / Math.max(maxIter - minIter, 1)) * plotW;
+      const v = Math.max(p.val, 1e-12);
+      const y = padT + (1 - (Math.log10(v) - lLo) / (lHi - lLo || 1)) * plotH;
+      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+// =============================================================
+// Combined chart — three metrics normalized to thresholds, log scale
+// =============================================================
+class CombinedChart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.data = [];   // {iter, normExploit, normCI, normRegret}
+    this.maxPoints = 600;
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  }
+  resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const r = this.canvas.getBoundingClientRect();
+    this.canvas.width = r.width * dpr;
+    this.canvas.height = r.height * dpr;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
+    this.W = r.width; this.H = r.height;
+    this.draw();
+  }
+  push(iter, exploit, ci, regret) {
+    this.data.push({
+      iter,
+      normExploit: exploit / TH_EXPLOIT,
+      normCI: ci != null ? ci / TH_CI : null,
+      normRegret: regret / TH_REGRET,
+    });
+    if (this.data.length > this.maxPoints) {
+      const next = [];
+      for (let i = 0; i < this.data.length; i += 2) next.push(this.data[i]);
+      this.data = next;
+    }
+  }
+  reset() { this.data = []; this.draw(); }
+  draw() {
+    const { ctx, W, H } = this;
+    ctx.clearRect(0, 0, W, H);
+    const padL = 56, padR = 14, padT = 12, padB = 28;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+
+    // Y range: log scale from ~10⁻³ to ~10⁴
+    const yLo = 1e-3, yHi = 1e4;
+    const lLo = Math.log10(yLo), lHi = Math.log10(yHi);
+
+    // Grid + Y labels
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.fillStyle = '#7a8499';
+    for (let exp = Math.floor(lLo); exp <= Math.ceil(lHi); exp++) {
+      const v = Math.pow(10, exp);
+      const y = padT + (1 - (Math.log10(v) - lLo) / (lHi - lLo)) * plotH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+      ctx.fillText(`10^${exp}`, 4, y + 3);
+    }
+
+    // Convergence threshold line (= 1, normalized)
+    const tY = padT + (1 - (0 - lLo) / (lHi - lLo)) * plotH;   // log10(1) = 0
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, tY); ctx.lineTo(padL + plotW, tY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (this.data.length === 0) {
+      ctx.fillStyle = '#4a5266';
+      ctx.font = '12px -apple-system';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data — press Play', W / 2, H / 2);
+      ctx.textAlign = 'start';
+      return;
+    }
+
+    // X labels
+    const minIter = this.data[0].iter;
+    const maxIter = Math.max(this.data[this.data.length - 1].iter, minIter + 1);
+    ctx.fillStyle = '#7a8499';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 4; i++) {
+      const x = padL + (plotW * i) / 4;
+      const v = Math.round(minIter + (maxIter - minIter) * (i / 4));
+      let s;
+      if (v >= 1_000_000) s = (v / 1_000_000).toFixed(1) + 'M';
+      else if (v >= 1000) s = (v / 1000).toFixed(1) + 'K';
+      else s = v.toString();
+      ctx.fillText(s, x, H - 8);
+    }
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#4a5266';
+    ctx.fillText('iter →', padL + plotW, H - 8);
+    ctx.textAlign = 'start';
+
+    const drawSeries = (key, color) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      for (const p of this.data) {
+        const v = p[key];
+        if (v == null || !isFinite(v) || v <= 0) continue;
+        const x = padL + ((p.iter - minIter) / Math.max(maxIter - minIter, 1)) * plotW;
+        const lv = Math.log10(Math.max(v, 1e-12));
+        const y = padT + (1 - (lv - lLo) / (lHi - lLo)) * plotH;
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    };
+    drawSeries('normExploit', '#5b9eff');
+    drawSeries('normCI',      '#3fdf8e');
+    drawSeries('normRegret',  '#ff8c42');
+
+    // Threshold label
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.fillText('threshold = 1', padL + 6, tY - 4);
+  }
+}
+
+// =============================================================
+// App
+// =============================================================
+class App {
+  constructor() {
+    this.trainer = new CFRTrainer();
+    this.ciMon = new CIMonitor();
+
+    this.sparkExploit = new Sparkline(document.getElementById('spark-exploit'), '#5b9eff', TH_EXPLOIT);
+    this.sparkCI      = new Sparkline(document.getElementById('spark-ci'),      '#3fdf8e', TH_CI);
+    this.sparkRegret  = new Sparkline(document.getElementById('spark-regret'),  '#ff8c42', TH_REGRET);
+    this.combined     = new CombinedChart(document.getElementById('chart-combined'));
+
+    this.elIter   = document.getElementById('stat-iter');
+    this.elHands  = document.getElementById('stat-hands');
+    this.elExploitVal    = document.getElementById('m-exploit-val');
+    this.elExploitStatus = document.getElementById('m-exploit-status');
+    this.elCIVal         = document.getElementById('m-ci-val');
+    this.elCIStatus      = document.getElementById('m-ci-status');
+    this.elRegretVal     = document.getElementById('m-regret-val');
+    this.elRegretStatus  = document.getElementById('m-regret-status');
+
+    this.btnPlay  = document.getElementById('btn-play');
+    this.btnStep  = document.getElementById('btn-step');
+    this.btnReset = document.getElementById('btn-reset');
+
+    this.playing = false;
+    this.speed = 'med';
+    this.tickHandle = null;
+
+    this.bindControls();
+    this.refresh();
+  }
+
+  bindControls() {
+    this.btnPlay.onclick = () => this.togglePlay();
+    this.btnStep.onclick = () => { this.pause(); this.step(); };
+    this.btnReset.onclick = () => this.reset();
+    document.querySelectorAll('.speed-group button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.speed-group button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.speed = btn.dataset.speed;
+        if (this.playing) { this.pause(); this.play(); }
+      };
+    });
+  }
+  togglePlay() { this.playing ? this.pause() : this.play(); }
+  play() {
+    this.playing = true;
+    this.btnPlay.textContent = 'Pause';
+    this.btnPlay.classList.remove('primary');
+    this.scheduleTick();
+  }
+  pause() {
+    this.playing = false;
+    this.btnPlay.textContent = 'Play';
+    this.btnPlay.classList.add('primary');
+    if (this.tickHandle) { clearTimeout(this.tickHandle); this.tickHandle = null; }
+  }
+  reset() {
+    this.pause();
+    this.trainer.reset();
+    this.ciMon.reset();
+    this.sparkExploit.reset();
+    this.sparkCI.reset();
+    this.sparkRegret.reset();
+    this.combined.reset();
+    this.refresh();
+  }
+  step() { this.trainer.trainOne(); this.measureAndRender(); }
+  scheduleTick() {
+    if (!this.playing) return;
+    const delays = { slow: 500, med: 80, fast: 20, turbo: 1 };
+    const burst  = { slow: 1, med: 1, fast: 5, turbo: 50 };
+    this.tickHandle = setTimeout(() => {
+      this.trainer.trainMany(burst[this.speed]);
+      this.measureAndRender();
+      this.scheduleTick();
+    }, delays[this.speed]);
+  }
+  measureAndRender() {
+    const iter = this.trainer.iter;
+    // Max positive regret rate — bounded by O(1/√T) by the CFR theorem.
+    const regret = this.trainer.maxPosRegretPerIter();
+    // CI: only update on snapshot boundaries
+    // CI: snapshot every render. CIMonitor's sliding window does the right
+    // thing — it returns null until enough iterations have elapsed for the
+    // window to fill, then updates every render thereafter.
+    const snap = this.trainer.snapshotAvg();
+    const ci = iter > 0 ? this.ciMon.update(snap, iter, this.trainer.infoSets) : null;
+    // Exploitability via topological best-response DP — moderate cost on Leduc, run every iter
+    const exploit = this.trainer.exploitability() * 1000;
+
+    // Charts
+    this.sparkExploit.push(iter, exploit);
+    if (ci != null) this.sparkCI.push(iter, Math.max(ci, 1e-3));
+    this.sparkRegret.push(iter, regret);
+    this.sparkExploit.draw();
+    this.sparkCI.draw();
+    this.sparkRegret.draw();
+
+    this.combined.push(iter, exploit, ci, regret);
+    this.combined.draw();
+
+    // Stats
+    this.elIter.textContent = iter.toLocaleString();
+    this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
+    this.elExploitVal.textContent = exploit.toFixed(2);
+    this.elCIVal.textContent     = ci != null ? ci.toFixed(2) : '—';
+    this.elRegretVal.textContent = regret.toExponential(2);
+    this._renderStatus(this.elExploitStatus, exploit, TH_EXPLOIT);
+    this._renderStatus(this.elCIStatus,      ci, TH_CI);
+    this._renderStatus(this.elRegretStatus,  regret, TH_REGRET);
+  }
+  _renderStatus(el, val, threshold) {
+    el.classList.remove('ok', 'close', 'far');
+    if (val == null || !isFinite(val)) { el.textContent = '—'; return; }
+    if (val <= threshold)        { el.textContent = 'CONVERGED'; el.classList.add('ok'); }
+    else if (val <= threshold*5) { el.textContent = 'CLOSE';     el.classList.add('close'); }
+    else                         { el.textContent = 'FAR';       el.classList.add('far'); }
+  }
+  refresh() {
+    this.elIter.textContent = '0';
+    this.elHands.textContent = '0';
+    this.elExploitVal.textContent = '—';
+    this.elCIVal.textContent = '—';
+    this.elRegretVal.textContent = '—';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { new App(); });
+</script>
+</body>
+</html>
