@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Watching a Poker Bot Learn — External Sampling MCCFR on Kuhn Poker</title>
+<title>Watching a Poker Bot Learn — CFR+ on Kuhn Poker</title>
 <style>
 :root {
   --bg: #0a0e1a;
@@ -286,11 +286,6 @@ svg.tree { width: 100%; height: 360px; display: block; }
   stroke: var(--gold);
   stroke-width: 3;
   filter: drop-shadow(0 0 4px var(--gold));
-}
-.tree-edge.enumerated {
-  stroke: var(--green);
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 3px var(--green));
 }
 .tree-edge.dimmed { stroke: var(--dim); opacity: 0.45; }
 
@@ -870,12 +865,11 @@ footer a:hover { color: var(--accent); }
 
 <header>
   <div class="title-row">
-    <h1>Watching a Poker Bot Learn — External Sampling MCCFR on Kuhn Poker</h1>
-    <span class="sub">External Sampling Monte Carlo Counterfactual Regret Minimization · Lanctot, Waugh, Zinkevich, Bowling — 2009</span>
-    <a href="index.html" class="nav-link">Vanilla CFR →</a>
-    <a href="cfr-plus.html" class="nav-link">CFR+ →</a>
-    <a href="mccfr-variants.html" class="nav-link">MCCFR Variants →</a>
-    <a href="glossary.html" class="nav-link">Glossary →</a>
+    <h1>Watching a Poker Bot Learn — CFR+ on Kuhn Poker</h1>
+    <span class="sub">Counterfactual Regret Minimization Plus (CFR+) · Tammelin, 2014</span>
+    <a href="index.html" class="nav-link">Vanilla CFR ←</a>
+    <a href="mccfr.html" class="nav-link">External Sampling MCCFR →</a>
+    <a href="/cfr-simulation/glossary" class="nav-link">Glossary →</a>
   </div>
   <div class="controls">
     <button id="btn-play" class="primary">Play</button>
@@ -901,8 +895,8 @@ footer a:hover { color: var(--accent); }
   <!-- LEFT: Current Iteration -->
   <section class="panel">
     <h2>Current Iteration</h2>
-    <h3>What External Sampling MCCFR does each step</h3>
-    <p class="desc">Unlike Vanilla Counterfactual Regret Minimization which sweeps every deal, <b>External Sampling</b> picks <em>one</em> random deal per iteration, alternates which player's regrets get updated, and then walks the tree: <span class="mono" style="color:var(--green)">enumerates the updating player's actions</span> (visits every branch) but <span class="mono" style="color:var(--gold)">samples one branch</span> wherever the opponent acts. Cheap per iteration, unbiased in expectation.</p>
+    <h3>What the bot is doing right now</h3>
+    <p class="desc">CFR+ does <b>two passes per iteration</b> — one pass updates Player 1's regrets, the next pass updates Player 2's (alternating updates). Each pass walks all 6 card permutations. The gold path shows the most recent traversal.</p>
 
     <div class="hand-display">
       <div class="player-side">
@@ -924,13 +918,12 @@ footer a:hover { color: var(--accent); }
         <span><span class="dot" style="background:var(--accent)"></span>Player 1 decision</span>
         <span><span class="dot" style="background:var(--purple)"></span>Player 2 decision</span>
         <span><span class="dot" style="background:var(--panel-3); border:1px solid var(--border)"></span>Showdown / fold</span>
-        <span><span class="dot" style="background:var(--green)"></span>Updating player — enumerated</span>
-        <span><span class="dot" style="background:var(--gold)"></span>Opponent — sampled (one branch)</span>
+        <span><span class="dot" style="background:var(--gold)"></span>Path traversed this iteration</span>
       </div>
     </div>
 
     <div class="trace" id="trace">
-      <span class="step-tag">Idle</span>Press <b>Play</b> to start. Each iteration: sample one deal, alternate which player updates, enumerate that player's actions, sample the opponent's. Same Nash convergence as Vanilla Counterfactual Regret Minimization, but each iteration is much cheaper.
+      <span class="step-tag">Idle</span>Press <b>Play</b> to start training. The bot begins with no knowledge — every action is a 50/50 coin flip.
     </div>
   </section>
 
@@ -938,7 +931,7 @@ footer a:hover { color: var(--accent); }
   <section class="panel">
     <h2>The Bot's Brain — 12 Information Sets</h2>
     <h3>What does the bot know in each situation?</h3>
-    <p class="desc">In Kuhn poker, the bot only sees its <em>own</em> card plus the action history. That's <b>12 distinct situations</b>. For each, it tracks <span class="mono" style="color:var(--green)">cumulative regrets</span>, then derives the <span class="mono" style="color:var(--accent)">current strategy σ</span> (the bar) by regret matching — directly proportional to positive regret. The smaller <span class="mono" style="color:var(--muted)">avg %</span> is the strategy averaged over <em>all</em> iterations — that's the quantity that converges to Nash. <b>Important difference from Vanilla Counterfactual Regret Minimization:</b> External Sampling alternates which player's regrets get updated, so on any given iteration only <em>half</em> of the cards (the updating player's six information sets) actually change.</p>
+    <p class="desc">In Kuhn poker, the bot only sees its <em>own</em> card plus the action history. That's <b>12 distinct situations</b>. CFR+'s defining trick: <span class="mono" style="color:var(--green)">cumulative regret</span> is <b>clamped to ≥ 0 immediately</b> after every update — bad actions get forgotten on the spot instead of slowly clawing back from a deep hole. Notice the regret cells below never go red. The <span class="mono" style="color:var(--accent)">current strategy σ</span> (the bar) is regret-matching+ on those non-negative regrets; the smaller <span class="mono" style="color:var(--muted)">avg %</span> is the <em>weighted</em> average across iterations using weight w<sub>T</sub> = max(T−d, 0).</p>
 
     <div class="infosets-grid" id="infosets">
       <!-- populated by JS -->
@@ -948,8 +941,8 @@ footer a:hover { color: var(--accent); }
   <!-- LIVE MATH WALKTHROUGH -->
   <section class="panel inspector-panel">
     <h2>Live Math Walkthrough</h2>
-    <h3>How <span style="color:var(--accent)">expected value</span> and <span style="color:var(--green)">frequency</span> are calculated for one decision</h3>
-    <p class="desc">Pick one information set to inspect. The bot does this three-step calculation only on the iterations where (a) the sampled deal reaches this information set, and (b) this set's player is the current updating player. So most iterations skip most sets — that's <em>why</em> per-iteration cost is so much lower than Vanilla Counterfactual Regret Minimization.</p>
+    <h3>How <span style="color:var(--accent)">EV</span> and <span style="color:var(--green)">frequency</span> are calculated for one decision</h3>
+    <p class="desc">Every iteration, the bot does the three-step calculation below for <em>each</em> of its 12 information sets. Pick one to inspect — the numbers update live as training proceeds.</p>
 
     <div class="inspector-controls">
       <span class="ctrl-label">Inspecting</span>
@@ -965,13 +958,13 @@ footer a:hover { color: var(--accent); }
         <div id="ev-block"></div>
       </div>
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">2</span>Regret update</div>
-        <p class="step-desc">Regret of an action = how much better it would have been than what I did. Cumulative regret <span class="mono" style="color:var(--gold)">R(I,a)</span> sums this over every iteration so far.</p>
+        <div class="step-header"><span class="step-num">2</span>Regret update (CFR+)</div>
+        <p class="step-desc">Regret of an action = how much better it would have been than what I did. CFR+ stores cumulative regret <span class="mono" style="color:var(--gold)">R<sup>+</sup>(I,a)</span> = <em>max(0, previous + this iteration's regret)</em> — negative regret never accumulates.</p>
         <div id="regret-block"></div>
       </div>
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">3</span>Frequency = regret matching</div>
-        <p class="step-desc">Play each action proportional to its <em>positive</em> regret. Negative regret? Don't play it. The <em>average</em> strategy across iterations is what converges to Nash.</p>
+        <div class="step-header"><span class="step-num">3</span>Frequency = regret-matching+</div>
+        <p class="step-desc">Play each action proportional to its (already non-negative) cumulative regret. Average across iterations is <em>weighted</em>: w<sub>T</sub> = max(T−d, 0). Both the current and weighted-average strategies converge — the average just gets there faster and more stably.</p>
         <div id="strategy-block"></div>
       </div>
     </div>
@@ -981,8 +974,8 @@ footer a:hover { color: var(--accent); }
   <div class="bottom-row">
     <section class="panel">
       <h2>Strategy Convergence</h2>
-      <h3>Watch strategies stabilize toward Nash equilibrium</h3>
-      <p class="desc">Each line tracks one decision (the bot's <em>average</em> betting probability for a given hand). Dashed lines mark the Nash-equilibrium target — convergence means the bot is unexploitable. Lines may look slightly noisier than the Vanilla Counterfactual Regret Minimization version because each External Sampling iteration is a single sampled trajectory rather than a full sweep, but the average strategy still converges at the same O(1/√T) rate.</p>
+      <h3>CFR+ snaps to Nash an order of magnitude faster than vanilla CFR</h3>
+      <p class="desc">Each line tracks the <em>weighted-average</em> betting probability σ̄ for one decision. Dashed lines mark the Nash target. In Tammelin's experiments CFR+ reached 1 mbb/hand exploitability in roughly 100 iterations vs ~1000 for vanilla CFR — flip to Turbo and watch the lines lock in.</p>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
@@ -997,58 +990,19 @@ footer a:hover { color: var(--accent); }
     </section>
 
     <section class="panel">
-      <h2>How External Sampling MCCFR Works</h2>
-      <h3>Same Nash convergence as Vanilla CFR — but each iteration is a single sampled trajectory</h3>
+      <h2>What CFR+ Changes vs Vanilla CFR</h2>
+      <h3>Three small tweaks, ~10× faster convergence</h3>
       <div class="expl-text">
-        <p><b>1. Sample one chance outcome.</b> Pick a single deal from the deck according to its natural probability. Vanilla Counterfactual Regret Minimization sweeps every deal each iteration; this samples one.</p>
-        <p><b>2. Pick the updating player.</b> Alternate each iteration: odd iterations update Player 1's regrets, even iterations update Player 2's.</p>
-        <p><b>3. Walk the tree, asymmetrically.</b> At <span class="mono" style="color:var(--green)">updating-player nodes</span> enumerate every action and recurse into each. At <span class="mono" style="color:var(--gold)">opponent nodes</span> sample one action according to the current strategy σ and recurse into only that branch.</p>
-        <p><b>4. Update regrets only at the updating player's information sets along the path.</b> Standard counterfactual-regret update — but the chance-probability factor is absorbed into the sampling, so the per-update math is simpler.</p>
-        <code class="formula">regret(I, a) += π_opp(I) · ( v(I, a) − v(I) )</code>
-        <p>Where π_opp(I) is the product of the <em>opponent's</em> strategy probabilities along the path to this information set. Chance probabilities aren't multiplied in here — they're already accounted for by the sampling step.</p>
-        <p><b>5. Match strategy to regret</b> — exactly the same as Vanilla CFR.</p>
-        <code class="formula">σ(I, a) = max(0, R(I,a)) / Σ max(0, R(I,·))</code>
-        <p>The result: the per-iteration regret update is an <em>unbiased estimator</em> of what Vanilla CFR would have computed. So the same Nash convergence theorem applies (Lanctot et al. 2009, Theorem 5) — and you get there with iterations that are orders of magnitude cheaper to compute on large games.</p>
+        <p><b>1. Regret-matching+ (the "+").</b> After each regret update, clamp the cumulative value to ≥ 0. In vanilla CFR a bad action's regret can drop to −10,000; even when it starts looking good again you wait forever for the regret to climb back above zero. CFR+ wipes that debt instantly.</p>
+        <code class="formula">R⁺(I, a) ← max( R⁺(I, a) + π_{-i}(I) · ( v(I,a) − v(I) ), 0 )</code>
+        <p><b>2. Alternating updates.</b> Instead of updating both players in one pass, do two passes per iteration — pass 1 only touches Player 1's regrets and strategy sum, pass 2 only touches Player 2's. The other player's strategy is held fixed during each pass.</p>
+        <p><b>3. Weighted averaging.</b> When accumulating the average strategy, weight the contribution from iteration T by w<sub>T</sub> = max(T − d, 0). Later iterations have already shaken off early noise, so they should count more. d is an optional delay (here d = 0).</p>
+        <code class="formula">σ̄(I, a) ∝ Σ_T  w_T · π_i(I) · σ_T(I, a)</code>
+        <p><b>Bonus: current strategy converges too.</b> Plain CFR only converges <em>on average</em> — you must track σ̄. With CFR+, σ itself approximately converges, so even without averaging you get a usable strategy.</p>
+        <p>And because most regrets stay at zero (no negative drift), the regret tables compress dramatically — important when you're solving Heads-Up Limit Hold'em on hardware with finite memory.</p>
       </div>
     </section>
   </div>
-
-  <!-- WHY MCCFR LOOKS SLOWER ON KUHN -->
-  <section class="panel" style="grid-column: 1 / -1;">
-    <h2>Why MCCFR Looks Slower on Kuhn</h2>
-    <h3>Run Vanilla and MCCFR side-by-side and Vanilla wins — that's expected, here's why</h3>
-    <div class="expl-text">
-      <p>If you train this page and the <a href="index.html">Vanilla Counterfactual Regret Minimization page</a> for the same number of iterations, Vanilla's exploitability drops to 0 faster. That isn't a bug in the External Sampling implementation — it's a fundamental property of sampling-based algorithms on tiny games. There are three compounding reasons:</p>
-
-      <p><b>1. Higher per-iteration variance.</b></p>
-      <p>Vanilla CFR walks the full game tree every iteration. Every regret update uses the <em>exact</em> counterfactual value at every information set. Zero variance — each iteration moves the cumulative regret table in the precisely correct direction.</p>
-      <p>External Sampling MCCFR samples one deal and one opponent action sequence per iteration. The regret update is an <em>unbiased estimator</em> of the true counterfactual value (matches in expectation), but each individual update is noisy. The expectation matches, but the variance around it doesn't shrink unless you average over many iterations.</p>
-      <code class="formula">E[ ES regret update ] = Vanilla regret update     ← same expectation
-Var[ ES regret update ] > 0                       ← but noisy</code>
-      <p>That noise translates into a slower decay of cumulative regret per iteration.</p>
-
-      <p><b>2. Alternating updates halve the work per iteration.</b></p>
-      <p>Vanilla CFR updates <em>both</em> players' regrets every iteration. External Sampling alternates: odd iterations only update Player 1, even iterations only update Player 2. So in iteration count <code>T</code>, External Sampling has effectively done T/2 updates per player versus Vanilla's T per player.</p>
-      <p>This isn't strictly worse for convergence — it's how the unbiasedness math works out — but it means External Sampling needs roughly twice as many iterations to give each player the same number of updates as Vanilla.</p>
-
-      <p><b>3. The convergence-rate constant is bigger.</b></p>
-      <p>Both algorithms satisfy the same asymptotic bound, but with different constants:</p>
-      <code class="formula">Vanilla:   max |R⁺(I,a)| / T  ≤  C_v / √T
-External:  max |R⁺(I,a)| / T  ≤  C_es / √T  with C_es > C_v</code>
-      <p>The bound is the same shape (both decay as <code>1/√T</code>), but External Sampling's constant absorbs the variance penalty: <code>C_es</code> includes a factor proportional to <code>1/min_reach_prob</code> across the tree (Lanctot et al. 2009, Theorem 5). On Kuhn — where deals are uniform and strategies stay relatively spread out — the penalty is modest but visible. On a much larger game with rare reach probabilities, the penalty would be larger in <em>per-iteration</em> terms, but irrelevant in <em>wall-clock</em> terms because each iteration is so much cheaper to compute.</p>
-
-      <p><b>So when does External Sampling win?</b></p>
-      <p>The whole point of External Sampling MCCFR isn't faster <em>per-iteration</em> convergence — it's that each iteration is dramatically cheaper, and on big games this matters enormously:</p>
-      <code class="formula">cost_per_iter(Vanilla)   =  O(|deals| × tree_size)
-cost_per_iter(External)  =  O(updating_player_tree)        ← independent of deal count</code>
-      <p>For Kuhn: |deals| = 6 and tree_size ≈ 5 nodes. Vanilla's per-iteration cost is around 30 node visits — fast enough that on a modern machine you can run millions of iterations per second. The slight per-iteration disadvantage of External Sampling shows up directly in convergence speed because you can run roughly the same number of iterations in the same wall-clock time.</p>
-      <p>For Heads-Up Limit Texas Hold'em: |deals| has trillions of distinct chance outcomes (different card permutations) and the tree has billions of nodes. Vanilla can't finish a single full iteration in any practical time. External Sampling does thousands of iterations per second regardless. The variance penalty is still there, but the iteration-rate advantage is so large that External Sampling converges to Nash in hours where Vanilla would take millennia.</p>
-
-      <p><b>Practical takeaway:</b></p>
-      <p>On Kuhn — and on any game small enough that Vanilla CFR finishes a sweep in microseconds — <b>use Vanilla CFR</b>. It converges faster per iteration with no variance penalty.</p>
-      <p>External Sampling MCCFR earns its place when the per-iteration cost of Vanilla becomes the bottleneck. The Kuhn page on this site is mostly a <em>demonstration</em> that External Sampling produces the same Nash equilibrium, not that it's faster here. The wall-clock advantage shows up at games big enough that you can't enumerate the chance space comfortably — which is, in practice, almost any real poker variant.</p>
-    </div>
-  </section>
 
   <!-- HOW EXPLOITABILITY IS COMPUTED -->
   <section class="panel" style="grid-column: 1 / -1;">
@@ -1074,14 +1028,8 @@ best_response_value = max v</code>
 </main>
 
 <footer>
-  External Sampling MCCFR on Kuhn Poker — 12 information sets, one sampled deal per iteration, alternating updating player.
-  <br>Algorithm: Lanctot, Waugh, Zinkevich, Bowling — NeurIPS 2009 (Algorithm 2).
-  <br><br>
-  <a href="index.html">Vanilla CFR (Kuhn)</a>
-  <span style="color:var(--dim)">·</span>
-  <a href="mccfr-variants.html">MCCFR Variants</a>
-  <span style="color:var(--dim)">·</span>
-  <a href="glossary.html">Glossary</a>
+  CFR+ on Kuhn Poker — 12 information sets, 6 card permutations × 2 update passes per iteration.
+  <br>Algorithm: Oskari Tammelin, "Solving Large Imperfect Information Games Using CFR+", arXiv:1407.5042, 2014.
   <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
     Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
   </div>
@@ -1142,10 +1090,14 @@ class InfoSet {
 }
 
 // =============================================================
-// External Sampling MCCFR Trainer
+// CFR+ Trainer
 // =============================================================
-class ESMCCFRTrainer {
+class CFRTrainer {
   constructor() {
+    // Averaging delay d: weight at iteration T is max(T - d, 0).
+    // d=0 gives linear weights (1, 2, 3, ...), which is what the original
+    // CFR+ paper uses by default.
+    this.averagingDelay = 0;
     this.reset();
   }
 
@@ -1153,12 +1105,15 @@ class ESMCCFRTrainer {
     this.infoSets = new Map();
     this.iter = 0;
     this.handsPlayed = 0;
-    this.history = [];
+    this.history = [];   // {iter, strategies: Map(key -> [p1,p2 avg])}
     this.lastVisited = new Set();
+    this.updatingPlayer = 0; // alternating updates: 0 then 1 each iteration
+    // Pre-build 12 info sets
     this.buildAllInfoSets();
   }
 
   buildAllInfoSets() {
+    // P1 acts at history "" and "pb". P2 acts at history "p" and "b".
     const p1Histories = ['', 'pb'];
     const p2Histories = ['p', 'b'];
     for (const h of p1Histories) {
@@ -1196,74 +1151,114 @@ class ESMCCFRTrainer {
   }
 
   /**
-   * External Sampling Monte Carlo CFR. Returns updating player's expected payoff at this node.
-   * - At updating player nodes: enumerate all actions, update regrets and strategy sums.
-   * - At opponent nodes: sample one action according to current strategy σ.
-   * π_i is the updating player's reach probability so far.
-   * π_oth is the opponent's reach probability so far (chance was already sampled, so no chance factor).
+   * CFR+. Returns the payoff at this node from P1's perspective.
+   * Two CFR+ differences vs vanilla CFR:
+   *   1. Regret-matching+: cumulative regret is max-clamped to >= 0 immediately
+   *      after every update. Negative regret never accumulates.
+   *   2. Alternating updates: only the `updatingPlayer`'s regrets and strategy
+   *      sum are touched on each pass. The other player is held fixed.
+   *   3. Weighted averaging: strategy contributions are scaled by `weight`,
+   *      where weight_T = max(T - d, 0).
    */
-  esCfr(history, p1Card, p2Card, p_i, p_oth, updatingPlayer, trace) {
+  cfr(history, p1Card, p2Card, p1Reach, p2Reach, updatingPlayer, weight, trace) {
     if (this.isTerminal(history)) {
-      const p1Pay = this.payoffP1(history, p1Card, p2Card);
-      return updatingPlayer === 0 ? p1Pay : -p1Pay;
+      return this.payoffP1(history, p1Card, p2Card);
     }
     const player = history.length % 2;
     const card = player === 0 ? p1Card : p2Card;
     const node = this.getInfoSet(player, card, history);
     const strategy = node.getStrategy();
 
+    if (trace) {
+      this.lastVisited.add(node.key);
+      trace.visited.push({ key: node.key, history, player, card, strategy: [...strategy] });
+    }
+
+    // util[a] = P1 payoff if action a is taken
+    const util = [0, 0];
+    let nodeUtilP1 = 0;
+    for (let a = 0; a < 2; a++) {
+      const next = history + ACTION_SHORT[a];
+      let childUtilP1;
+      if (player === 0) {
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach * strategy[a], p2Reach, updatingPlayer, weight, trace);
+      } else {
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach, p2Reach * strategy[a], updatingPlayer, weight, trace);
+      }
+      util[a] = childUtilP1;
+      nodeUtilP1 += strategy[a] * childUtilP1;
+    }
+
+    // CFR+: only update the player whose pass this is.
     if (player === updatingPlayer) {
-      // Enumerate own actions — same regret-matching math as Vanilla CFR.
-      if (trace) {
-        this.lastVisited.add(node.key);
-        trace.visited.push({ key: node.key, history, player, card, strategy: [...strategy], mode: 'enumerated' });
-      }
-      const util = [0, 0];
-      let nodeUtil = 0;
-      for (let a = 0; a < 2; a++) {
-        const next = history + ACTION_SHORT[a];
-        util[a] = this.esCfr(next, p1Card, p2Card, p_i * strategy[a], p_oth, updatingPlayer, trace);
-        nodeUtil += strategy[a] * util[a];
-      }
+      const sign = player === 0 ? 1 : -1;
+      const cfReach = player === 0 ? p2Reach : p1Reach;
+      const ownReach = player === 0 ? p1Reach : p2Reach;
+
+      const myNodeUtil = sign * nodeUtilP1;
       const deltaRegret = [0, 0];
       for (let a = 0; a < 2; a++) {
-        const regret = util[a] - nodeUtil;
-        const dr = p_oth * regret;
-        node.regretSum[a] += dr;
-        node.strategySum[a] += p_i * strategy[a];
-        deltaRegret[a] = dr;
+        const myActUtil = sign * util[a];
+        const regret = myActUtil - myNodeUtil;
+        const dr = cfReach * regret;
+        // Regret-matching+: clamp cumulative regret to >= 0 immediately.
+        const newR = Math.max(node.regretSum[a] + dr, 0);
+        deltaRegret[a] = newR - node.regretSum[a];
+        node.regretSum[a] = newR;
+        // Weighted strategy averaging.
+        node.strategySum[a] += weight * ownReach * strategy[a];
       }
       node.lastDelta = deltaRegret;
       node.lastVisitIter = this.iter;
-      return nodeUtil;
-    } else {
-      // Sample one opponent action from σ. Reach probability for opponent
-      // multiplies by sampled action's probability.
-      const r = Math.random();
-      const sampledAction = r < strategy[0] ? 0 : 1;
-      const next = history + ACTION_SHORT[sampledAction];
-      if (trace) {
-        trace.visited.push({
-          key: node.key, history, player, card,
-          strategy: [...strategy],
-          mode: 'sampled', sampledAction,
-        });
-      }
-      return this.esCfr(next, p1Card, p2Card, p_i, p_oth * strategy[sampledAction], updatingPlayer, trace);
     }
+
+    return nodeUtilP1;
   }
 
-  /** One External Sampling iteration: pick a deal, alternate updating player, walk tree. */
+  _weight() {
+    return Math.max(this.iter - this.averagingDelay, 0);
+  }
+
+  /** One full CFR+ iteration: two passes (alternating updating player), 6 deals each. */
   trainOne(captureTrace = false) {
     this.iter++;
     this.lastVisited.clear();
-    // Sample one deal uniformly from the six possible (P1 card, P2 card) permutations.
-    const dealIdx = Math.floor(Math.random() * DEALS.length);
+    let trace = captureTrace ? { visited: [], deals: [] } : null;
+    const w = this._weight();
+
+    for (let up = 0; up < 2; up++) {
+      this.updatingPlayer = up;
+      for (const [c1, c2] of DEALS) {
+        let dealTrace = null;
+        if (trace) {
+          dealTrace = { p1: c1, p2: c2, visited: [] };
+          trace.currentDeal = dealTrace;
+        }
+        this.cfr('', c1, c2, 1, 1, up, w, dealTrace ? trace : null);
+        if (dealTrace) {
+          dealTrace.visited = trace.visited.slice(dealTrace.startIdx ?? 0);
+        }
+        this.handsPlayed++;
+      }
+    }
+    if (trace) trace.lastP1 = DEALS[5][0];
+    return trace;
+  }
+
+  /**
+   * Train one mini-step (used for slow/medium animation).
+   * stepIdx ∈ [0..11]: stepIdx 0..5 → updating P1 across the 6 deals,
+   *                    stepIdx 6..11 → updating P2 across the 6 deals.
+   */
+  trainOneDeal(stepIdx) {
+    const updatingPlayer = stepIdx < 6 ? 0 : 1;
+    const dealIdx = stepIdx % 6;
     const [c1, c2] = DEALS[dealIdx];
-    // Alternate updating player: odd iterations update P1, even iterations update P2.
-    const updatingPlayer = (this.iter - 1) % 2;
-    const trace = captureTrace ? { visited: [], p1: c1, p2: c2, dealIdx, updatingPlayer } : null;
-    this.esCfr('', c1, c2, 1, 1, updatingPlayer, trace);
+    this.updatingPlayer = updatingPlayer;
+    this.lastVisited.clear();
+    const trace = { visited: [], p1: c1, p2: c2, dealIdx, stepIdx, updatingPlayer };
+    const w = this._weight();
+    this.cfr('', c1, c2, 1, 1, updatingPlayer, w, trace);
     this.handsPlayed++;
     return trace;
   }
@@ -1271,7 +1266,15 @@ class ESMCCFRTrainer {
   /** Bulk train without tracing — used for fast/turbo. */
   trainMany(n) {
     for (let i = 0; i < n; i++) {
-      this.trainOne(false);
+      this.iter++;
+      const w = this._weight();
+      for (let up = 0; up < 2; up++) {
+        this.updatingPlayer = up;
+        for (const [c1, c2] of DEALS) {
+          this.cfr('', c1, c2, 1, 1, up, w, null);
+          this.handsPlayed++;
+        }
+      }
     }
   }
 
@@ -2062,12 +2065,12 @@ class MathWalkthrough {
         r(${labels[1]}) = ${evs[1].ev.toFixed(3)} − ${nodeUtil.toFixed(3)} = <span class="num ${signClass(instantRegret[1])}">${fmt(instantRegret[1])}</span>
       </div>
 
-      <div class="subhead">Cumulative regret  R(I,a) = Σ over iterations</div>
+      <div class="subhead">Cumulative regret-plus  R<sup>+</sup>(I,a) = max(0, R<sup>+</sup>_prev + r(I,a))</div>
       <div class="formula-line result ${signClass(cumRegret[0])}">
-        <span class="var">R(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
+        <span class="var">R<sup>+</sup>(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
       </div>
       <div class="formula-line result ${signClass(cumRegret[1])}">
-        <span class="var">R(${labels[1]})</span> = <span class="num ${signClass(cumRegret[1])}">${fmt(cumRegret[1], 2)}</span>
+        <span class="var">R<sup>+</sup>(${labels[1]})</span> = <span class="num ${signClass(cumRegret[1])}">${fmt(cumRegret[1], 2)}</span>
       </div>
     `;
     this.regretEl.innerHTML = html;
@@ -2076,19 +2079,19 @@ class MathWalkthrough {
   renderStrategy(posR, sumPos, newStrat, avgStrat, labels) {
     const html = `
       <div class="formula-line">
-        <span class="var">σ(I,a)</span> = max(0, R(I,a)) / Σ max(0, R(I,·))
+        <span class="var">σ(I,a)</span> = R<sup>+</sup>(I,a) / Σ R<sup>+</sup>(I,·)
       </div>
       <div class="formula-line">
-        max(0, R(${labels[0]})) = <span class="num">${posR[0].toFixed(2)}</span>
+        R<sup>+</sup>(${labels[0]}) = <span class="num">${posR[0].toFixed(2)}</span>
       </div>
       <div class="formula-line">
-        max(0, R(${labels[1]})) = <span class="num">${posR[1].toFixed(2)}</span>
+        R<sup>+</sup>(${labels[1]}) = <span class="num">${posR[1].toFixed(2)}</span>
       </div>
       <div class="formula-line">
         total = <span class="num">${sumPos.toFixed(2)}</span> ${sumPos === 0 ? '<span class="op">→ uniform fallback</span>' : ''}
       </div>
 
-      <div class="subhead">Current strategy σ(I,·)</div>
+      <div class="subhead">Current strategy σ(I,·) — also converges in CFR+</div>
       <div class="strat-bar-row pass">
         <span class="name">${labels[0]}</span>
         <div class="track"><div class="fill" style="width:${newStrat[0]*100}%"></div></div>
@@ -2100,7 +2103,7 @@ class MathWalkthrough {
         <span class="pct">${(newStrat[1]*100).toFixed(1)}%</span>
       </div>
 
-      <div class="subhead">Average strategy σ̄(I,·) — converges to Nash</div>
+      <div class="subhead">Weighted-average strategy σ̄(I,·) — converges to Nash</div>
       <div class="strat-bar-row pass">
         <span class="name">${labels[0]}</span>
         <div class="track"><div class="fill" style="width:${avgStrat[0]*100}%"></div></div>
@@ -2121,7 +2124,7 @@ class MathWalkthrough {
 // =============================================================
 class App {
   constructor() {
-    this.trainer = new ESMCCFRTrainer();
+    this.trainer = new CFRTrainer();
     window.__trainer__ = this.trainer;
 
     this.tree = new GameTreeView(document.getElementById('tree'));
@@ -2160,6 +2163,7 @@ class App {
     this.playing = false;
     this.speed = 'med';
     this.tickHandle = null;
+    this.dealAnimIdx = 0;
 
     this.bindControls();
     this.refresh();
@@ -2212,6 +2216,7 @@ class App {
     this.pause();
     this.trainer.reset();
     this.chart.reset();
+    this.dealAnimIdx = 0;
     this.hand.hide();
     this.grid.update(null);
     this.grid.setInspecting(this.walkthrough.selectedKey);
@@ -2219,7 +2224,7 @@ class App {
     this.elIter.textContent = '0';
     this.elHands.textContent = '0';
     this.elExpl.textContent = '—';
-    this.elTrace.innerHTML = '<span class="step-tag">Reset</span>Bot reinitialized. Strategies back to 50/50. Press Play to start External Sampling MCCFR — one sampled deal per iteration, alternating updating player.';
+    this.elTrace.innerHTML = '<span class="step-tag">Reset</span>Bot reinitialized. Strategies back to 50/50.';
     this.tree.showDeal(2, 1, new Map());
   }
 
@@ -2238,107 +2243,108 @@ class App {
 
   runTicks(n) {
     if (this.speed === 'slow' || this.speed === 'med') {
-      // One ES-MCCFR iteration with full animation
-      this.stepOne();
+      // Animate one deal at a time (partial iterations)
+      this.stepOneDeal();
     } else {
-      // Bulk-train n iterations, then update display
+      // Bulk train n iterations, then update display
       this.trainer.trainMany(n);
       this.refresh(n > 1);
     }
   }
 
-  /** Animate one External Sampling MCCFR iteration: sample deal, run esCfr with trace. */
-  stepOne() {
-    const trace = this.trainer.trainOne(true);
+  /** Animate one mini-step. CFR+ has 12 mini-steps per iteration: 2 update passes × 6 deals. */
+  stepOneDeal() {
+    // If we're at the start of a new iteration, increment iter counter.
+    if (this.dealAnimIdx === 0) {
+      this.trainer.iter++;
+    }
+    const stepIdx = this.dealAnimIdx;
+    const trace = this.trainer.trainOneDeal(stepIdx);
 
+    // Display
     this.hand.setCards(trace.p1, trace.p2);
 
+    // Strategies snapshot for the tree
     const strats = new Map();
     for (const [k, n] of this.trainer.infoSets) strats.set(k, n.getStrategy());
     this.tree.showDeal(trace.p1, trace.p2, strats);
 
-    // Highlight enumerated (updating-player) and sampled (opponent) branches separately
+    // Animate path traversal
     this.animatePath(trace);
+
+    // Update trace text
     this.updateTraceText(trace);
 
-    const activeKeys = new Set(
-      trace.visited
-        .filter(v => v.mode === 'enumerated')
-        .map(v => `${v.player}|${CARDS[v.card]}|${v.history}`)
-    );
+    // Update grid (with active highlights)
+    const activeKeys = new Set(trace.visited.map(v => `${v.player}|${CARDS[v.card]}|${v.history}`));
     this.grid.update(activeKeys);
     this.grid.flashRegret(activeKeys);
     this.grid.setInspecting(this.walkthrough.selectedKey);
     this.walkthrough.update();
 
-    // Chart and exploitability update every iteration (each ES iter is one full update)
-    this.chart.push(this.trainer.iter, this.trainer.snapshot());
-    this.chart.draw();
+    // Push to chart at the end of each full iteration (after both passes done).
+    if (this.dealAnimIdx === 11) {
+      this.chart.push(this.trainer.iter, this.trainer.snapshot());
+      this.chart.draw();
+    }
 
+    this.dealAnimIdx = (this.dealAnimIdx + 1) % 12;
+
+    // Update stats
     this.elIter.textContent = this.trainer.iter.toLocaleString();
     this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
-    if (this.trainer.iter % 25 === 0) {
+    if (this.trainer.iter % 10 === 0 && this.dealAnimIdx === 0) {
       this.elExpl.textContent = (this.trainer.exploitability() * 1000).toFixed(1);
     }
   }
 
   animatePath(trace) {
-    // ES-MCCFR animation: enumerated branches (updating-player nodes) shown green;
-    // sampled branches (opponent nodes) shown gold. Visited nodes themselves get
-    // the active highlight.
+    // Highlight path through tree based on trace.visited
+    // Each visited entry is a decision node; we need to know which action was taken (but vanilla CFR explores all).
+    // For visualization, pick one path: either show the action with highest current strategy probability,
+    // or just light up all visited nodes. Let's light up visited + dim siblings.
     const visited = trace.visited;
     if (!visited || visited.length === 0) return;
+
+    // Build a sample path from root following the highest-probability action.
+    // Map history -> nodeId
     const histToNode = {
       '': 'p1_root',
       'p': 'p2_p',
       'b': 'p2_b',
       'pb': 'p1_pb',
     };
-    // Clear stale classes so a previous iteration's highlights don't bleed in.
-    const svg = this.tree.svg;
-    svg.querySelectorAll('.tree-edge').forEach(e => e.classList.remove('active', 'enumerated'));
-    svg.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
-    // Always mark the chance->p1_root edge gold (chance was sampled)
-    const chanceEdge = svg.querySelector('path.tree-edge[data-from="chance"][data-to="p1_root"]');
-    if (chanceEdge) chanceEdge.classList.add('active');
-    const chanceNode = svg.querySelector('g.tree-node[data-id="chance"]');
-    if (chanceNode) chanceNode.classList.add('active');
-    // Walk visited info sets, mark each node and its outgoing edges.
-    for (const v of visited) {
-      const fromId = histToNode[v.history];
-      if (!fromId) continue;
-      const nodeEl = svg.querySelector(`g.tree-node[data-id="${fromId}"]`);
-      if (nodeEl) nodeEl.classList.add('active');
-      if (v.mode === 'enumerated') {
-        for (let a = 0; a < 2; a++) {
-          const next = v.history + ACTION_SHORT[a];
-          const toId = this.trainer.isTerminal(next) ? next : histToNode[next];
-          if (!toId) continue;
-          const edge = svg.querySelector(`path.tree-edge[data-from="${fromId}"][data-to="${toId}"]`);
-          if (edge) edge.classList.add('enumerated');
-          const childNode = svg.querySelector(`g.tree-node[data-id="${toId}"]`);
-          if (childNode) childNode.classList.add('active');
-        }
-      } else if (v.mode === 'sampled') {
-        const next = v.history + ACTION_SHORT[v.sampledAction];
-        const toId = this.trainer.isTerminal(next) ? next : histToNode[next];
-        if (!toId) continue;
-        const edge = svg.querySelector(`path.tree-edge[data-from="${fromId}"][data-to="${toId}"]`);
-        if (edge) edge.classList.add('active');
-        const childNode = svg.querySelector(`g.tree-node[data-id="${toId}"]`);
-        if (childNode) childNode.classList.add('active');
-      }
+
+    // We'll trace one specific path: start at chance, deal cards, pick path by strategy, terminate.
+    const pathNodes = ['chance', 'p1_root'];
+    const pathEdges = [{ from: 'chance', to: 'p1_root' }];
+
+    let history = '';
+    let p1Card = trace.p1, p2Card = trace.p2;
+    while (!this.trainer.isTerminal(history)) {
+      const player = history.length % 2;
+      const card = player === 0 ? p1Card : p2Card;
+      const node = this.trainer.getInfoSet(player, card, history);
+      const s = node.getStrategy();
+      // Pick the action with highest strategy (sample-mode would be cooler but we want determinism per call)
+      const action = s[1] > s[0] ? 1 : (s[0] === s[1] ? Math.random() < 0.5 ? 0 : 1 : 0);
+      const fromId = histToNode[history];
+      const nextHist = history + ACTION_SHORT[action];
+      const toId = this.trainer.isTerminal(nextHist) ? nextHist : histToNode[nextHist];
+      pathEdges.push({ from: fromId, to: toId });
+      pathNodes.push(toId);
+      history = nextHist;
     }
+
+    this.tree.highlightPath(pathEdges, pathNodes);
   }
 
   updateTraceText(trace) {
     const dealStr = `<span class="pur">P1=${CARDS[trace.p1]}, P2=${CARDS[trace.p2]}</span>`;
-    const updatingStr = `<span class="yel">P${trace.updatingPlayer + 1}</span>`;
 
-    // Find the most-impactful enumerated info set this step (largest |delta|)
+    // Find the most-impactful info set this step (largest |delta|)
     let topNode = null, topAbs = 0, topAction = 0;
     for (const v of trace.visited) {
-      if (v.mode !== 'enumerated') continue;
       const node = this.trainer.getInfoSet(v.player, v.card, v.history);
       for (let a = 0; a < 2; a++) {
         if (Math.abs(node.lastDelta[a]) > topAbs) {
@@ -2348,6 +2354,7 @@ class App {
         }
       }
     }
+
     let lesson = '';
     if (topNode) {
       const sign = topNode.lastDelta[topAction] > 0 ? 'pos' : 'neg';
@@ -2357,15 +2364,17 @@ class App {
           : (topAction === 0 ? 'folded' : 'called'))
         : (topNode.history === 'p' ? (topAction === 0 ? 'checked' : 'bet')
           : (topAction === 0 ? 'folded' : 'called'));
+      const heldCard = ['jack', 'queen', 'king'][topNode.card].toUpperCase().slice(0,1);
+      const cardCls = topNode.lastDelta[topAction] > 0 ? 'pos' : 'neg';
       lesson = `<br>Biggest update: <b>P${topNode.player + 1}</b> with <b>${CARDS[topNode.card]}</b> ${verb} <span class="${sign}">${action}</span> more (Δregret = <span class="${sign}">${topNode.lastDelta[topAction] > 0 ? '+' : ''}${topNode.lastDelta[topAction].toFixed(3)}</span>).`;
-    } else {
-      lesson = `<br>No regret update this iteration — the sampled trajectory didn't reach any of P${trace.updatingPlayer + 1}'s information sets.`;
     }
 
+    const upTag = trace.updatingPlayer === 0 ? 'P1-update' : 'P2-update';
     this.elTrace.innerHTML =
-      `<span class="step-tag">Iter ${this.trainer.iter}</span>` +
-      `Sampled deal ${dealStr}. Updating player: ${updatingStr}. ` +
-      `Green branches were enumerated (${updatingStr}'s actions), gold was sampled (opponent's σ).` +
+      `<span class="step-tag">Iter ${this.trainer.iter}.${trace.dealIdx + 1} · ${upTag}</span>` +
+      `Dealing ${dealStr}. Walking the tree to update <b>P${trace.updatingPlayer + 1}</b> only — ` +
+      `regrets get clamped to <span class="pos">≥ 0</span> on the way up, and average-strategy ` +
+      `weight is <span class="yel">w = ${this.trainer._weight().toFixed(0)}</span>.` +
       lesson;
   }
 
@@ -2394,12 +2403,12 @@ class App {
     this.hand.setCards(sampleDeal[0], sampleDeal[1]);
 
     this.elTrace.innerHTML = `<span class="step-tag">Iter ${this.trainer.iter}</span>` +
-      `Bulk-trained via External Sampling. Showing one representative deal: <span class="pur">P1=${CARDS[sampleDeal[0]]}, P2=${CARDS[sampleDeal[1]]}</span>. ` +
-      `Each iteration sampled one deal, alternated the updating player, and walked one trajectory. Strategies on the right are converging at the same O(1/√T) rate as Vanilla Counterfactual Regret Minimization.`;
+      `Bulk-trained. Sampled a representative hand: <span class="pur">P1=${CARDS[sampleDeal[0]]}, P2=${CARDS[sampleDeal[1]]}</span>. ` +
+      `Watch the strategy bars on the right inch toward Nash (white markers).`;
   }
 
   step() {
-    this.stepOne();
+    this.stepOneDeal();
   }
 }
 
