@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Watching a Poker Bot Learn — CFR on Kuhn Poker</title>
+<title>Watching a Poker Bot Learn — Discounted CFR on Kuhn Poker</title>
 <style>
 :root {
   --bg: #0a0e1a;
@@ -865,10 +865,10 @@ footer a:hover { color: var(--accent); }
 
 <header>
   <div class="title-row">
-    <h1>Watching a Poker Bot Learn — CFR on Kuhn Poker</h1>
-    <span class="sub">Counterfactual Regret Minimization · Zinkevich et al., 2007</span>
-    <a href="cfr-plus.html" class="nav-link">CFR+ →</a>
-    <a href="dcfr.html" class="nav-link">DCFR →</a>
+    <h1>Watching a Poker Bot Learn — Discounted CFR on Kuhn Poker</h1>
+    <span class="sub">Discounted Counterfactual Regret Minimization (DCFR), α=3/2, β=0, γ=2 · Brown &amp; Sandholm, 2019</span>
+    <a href="index.html" class="nav-link">Vanilla CFR ←</a>
+    <a href="cfr-plus.html" class="nav-link">CFR+ ←</a>
     <a href="mccfr.html" class="nav-link">External Sampling MCCFR →</a>
     <a href="/cfr-simulation/glossary" class="nav-link">Glossary →</a>
   </div>
@@ -897,7 +897,7 @@ footer a:hover { color: var(--accent); }
   <section class="panel">
     <h2>Current Iteration</h2>
     <h3>What the bot is doing right now</h3>
-    <p class="desc">Each iteration the bot deals random cards, plays out every action path, computes <em>"what if I'd done X instead?"</em>, and adjusts its regrets. Watch the gold path — that's what just happened.</p>
+    <p class="desc">Like CFR+, DCFR uses <b>alternating updates</b> — pass 1 updates Player 1's regrets, pass 2 updates Player 2's. After both passes, accumulated regrets and strategy contributions get <b>discounted</b>: positive regrets ×t<sup>3/2</sup>/(t<sup>3/2</sup>+1), negative regrets halved, average-strategy contributions ×(t/(t+1))<sup>2</sup>. The gold path shows the most recent traversal.</p>
 
     <div class="hand-display">
       <div class="player-side">
@@ -932,7 +932,7 @@ footer a:hover { color: var(--accent); }
   <section class="panel">
     <h2>The Bot's Brain — 12 Information Sets</h2>
     <h3>What does the bot know in each situation?</h3>
-    <p class="desc">In Kuhn poker, the bot only sees its <em>own</em> card plus the action history. That's <b>12 distinct situations</b>. For each, it tracks <span class="mono" style="color:var(--green)">cumulative regrets</span>, then derives the <span class="mono" style="color:var(--accent)">current strategy σ</span> (the bar) by regret matching — directly proportional to positive regret. The smaller <span class="mono" style="color:var(--muted)">avg %</span> is the strategy averaged over <em>all</em> iterations — that's the quantity that converges to Nash (and what the chart below tracks).</p>
+    <p class="desc">In Kuhn poker, the bot sees only its <em>own</em> card plus the action history — <b>12 distinct situations</b>. Unlike CFR+, DCFR <em>does</em> let cumulative regret go negative — but the negative half is <b>halved every iteration</b> (β=0), so red cells decay geometrically toward zero instead of being wiped instantly. Positive regrets get a gentle multiplicative discount of t<sup>3/2</sup>/(t<sup>3/2</sup>+1) per iteration. The <span class="mono" style="color:var(--accent)">current strategy σ</span> bar is regret matching on the positive part; the smaller <span class="mono" style="color:var(--muted)">avg %</span> is the <em>quadratically</em> weighted average across iterations.</p>
 
     <div class="infosets-grid" id="infosets">
       <!-- populated by JS -->
@@ -959,13 +959,13 @@ footer a:hover { color: var(--accent); }
         <div id="ev-block"></div>
       </div>
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">2</span>Regret update</div>
-        <p class="step-desc">Regret of an action = how much better it would have been than what I did. Cumulative regret <span class="mono" style="color:var(--gold)">R(I,a)</span> sums this over every iteration so far.</p>
+        <div class="step-header"><span class="step-num">2</span>Regret update (DCFR)</div>
+        <p class="step-desc">Cumulative regret <span class="mono" style="color:var(--gold)">R(I,a)</span> = previous + this iteration's regret. At iteration end, multiply by <span class="mono" style="color:var(--green)">t<sup>α</sup>/(t<sup>α</sup>+1)</span> if positive (α=3/2) or <span class="mono" style="color:var(--red)">t<sup>β</sup>/(t<sup>β</sup>+1) = 1/2</span> if negative (β=0). Negatives decay geometrically; positives are softened toward recent values.</p>
         <div id="regret-block"></div>
       </div>
       <div class="inspector-col">
         <div class="step-header"><span class="step-num">3</span>Frequency = regret matching</div>
-        <p class="step-desc">Play each action proportional to its <em>positive</em> regret. Negative regret? Don't play it. The <em>average</em> strategy across iterations is what converges to Nash.</p>
+        <p class="step-desc">Play each action proportional to <em>positive</em> cumulative regret (negatives are ignored even though they aren't zero). Average strategy is computed with iteration-t weight ∝ t<sup>γ</sup> = t<sup>2</sup> — so recent iterations dominate the output.</p>
         <div id="strategy-block"></div>
       </div>
     </div>
@@ -975,8 +975,8 @@ footer a:hover { color: var(--accent); }
   <div class="bottom-row">
     <section class="panel">
       <h2>Strategy Convergence</h2>
-      <h3>Watch strategies stabilize toward Nash equilibrium</h3>
-      <p class="desc">Each line tracks one decision (the bot's <em>average</em> betting probability for a given hand). Dashed lines mark the Nash-equilibrium target — convergence means the bot is unexploitable.</p>
+      <h3>DCFR(3/2, 0, 2) is the first algorithm to consistently beat CFR+</h3>
+      <p class="desc">Each line tracks the <em>quadratically weighted</em> average betting probability σ̄ for one decision. Dashed lines mark the Nash target. In the Brown &amp; Sandholm experiments DCFR matched or outperformed CFR+ in every game tested, typically by a factor of 2–3× — most pronounced in games with severe mistake actions.</p>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
@@ -991,15 +991,16 @@ footer a:hover { color: var(--accent); }
     </section>
 
     <section class="panel">
-      <h2>How CFR Actually Works</h2>
-      <h3>Three loops, no opponent model needed</h3>
+      <h2>What DCFR Changes vs CFR+</h2>
+      <h3>Three knobs (α, β, γ) instead of one extreme corner</h3>
       <div class="expl-text">
-        <p><b>1. Walk the game tree.</b> For every possible card deal and action sequence, recursively visit every decision point.</p>
-        <p><b>2. Compute counterfactuals.</b> At each information set, ask: <em>"If I'd reached here and played action A, what would I get?"</em> Subtract the EV of what I actually did. That's the <span class="mono" style="color:var(--green)">regret</span>.</p>
-        <code class="formula">regret(I, a) += π_{-i}(I) · ( v(I,a) - v(I) )</code>
-        <p><b>3. Match strategy to regret.</b> Next iteration, play actions <em>proportional to positive regret</em> — actions you wish you'd played more, you play more.</p>
-        <code class="formula">σ(I, a) = max(0, R(I,a)) / Σ max(0, R(I,·))</code>
-        <p>The magic: averaging strategies across iterations converges to a <b>Nash equilibrium</b>. The bot becomes unexploitable without ever modeling its opponent — it just plays itself and stops regretting.</p>
+        <p>CFR+ is conceptually the corner case <span class="mono" style="color:var(--gold)">DCFR(∞, −∞, 2)</span> — never discount positives, wipe negatives instantly, quadratic averaging. DCFR introduces three tunable knobs and the authors' empirical sweet spot is <b>(α, β, γ) = (3/2, 0, 2)</b>, which softens both extremes.</p>
+        <p><b>1. Discount POSITIVE regrets (α = 3/2).</b> CFR+ never forgets positive regret — a great early-iteration bet keeps influencing the strategy forever. DCFR multiplies positive regret by t<sup>α</sup>/(t<sup>α</sup>+1) per iteration, gently decaying old wins. As t grows the multiplier approaches 1, so the discount is mild but always present.</p>
+        <code class="formula">R(I,a) ← R(I,a) · t<sup>α</sup> / (t<sup>α</sup> + 1)   [if positive]</code>
+        <p><b>2. Discount NEGATIVE regrets (β = 0).</b> CFR+ wipes negatives to exactly 0 (β = −∞). DCFR with β = 0 multiplies negatives by t<sup>0</sup>/(t<sup>0</sup>+1) = <b>1/2</b> every iteration — geometric decay toward zero. They never quite hit zero, which sounds like a bug but lets you run regret-based pruning algorithms (CFR+ can't do this without modification).</p>
+        <code class="formula">R(I,a) ← R(I,a) · 1/2   [if negative, with β = 0]</code>
+        <p><b>3. Discount AVERAGE-strategy contributions (γ = 2).</b> Same quadratic weighting CFR+ uses in practice: iteration t contributes ∝ t<sup>2</sup> to σ̄, so the early uninformed iterations get drowned out by the later ones. Implemented in rolling form by multiplying the strategy sum by (t/(t+1))<sup>2</sup> each step.</p>
+        <p><b>The motivating example (from the paper):</b> three actions with payoffs 0, 1, and −1,000,000. CFR+ takes ~471,407 iterations to lock onto the obviously-best action because every iteration carries equal weight, including the disastrous first one. With discounting, the first iteration's bad regret signal gets shrunk away — convergence in ~970 iterations.</p>
       </div>
     </section>
   </div>
@@ -1028,8 +1029,8 @@ best_response_value = max v</code>
 </main>
 
 <footer>
-  Vanilla CFR on Kuhn Poker — 12 information sets, 6 card permutations per iteration.
-  <br>Algorithm: Zinkevich, Bowling et al., NeurIPS 2007.
+  Discounted CFR (α=3/2, β=0, γ=2) on Kuhn Poker — 12 information sets, 6 card permutations × 2 update passes per iteration, end-of-iteration discount step.
+  <br>Algorithm: Noam Brown and Tuomas Sandholm, "Solving Imperfect-Information Games via Discounted Regret Minimization", AAAI 2019, arXiv:1809.04040.
   <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
     Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
   </div>
@@ -1090,10 +1091,17 @@ class InfoSet {
 }
 
 // =============================================================
-// CFR Trainer
+// DCFR Trainer (Discounted CFR with α=3/2, β=0, γ=2)
 // =============================================================
 class CFRTrainer {
   constructor() {
+    // DCFR(α, β, γ) parameters (Brown & Sandholm 2019, recommended setting):
+    //   α = 3/2  → positive regrets multiplied by t^α / (t^α + 1) per iteration
+    //   β = 0    → negative regrets multiplied by t^0 / (t^0 + 1) = 1/2 per iteration
+    //   γ = 2    → average-strategy contributions multiplied by (t/(t+1))^γ per iteration
+    this.alpha = 1.5;
+    this.beta = 0;
+    this.gamma = 2;
     this.reset();
   }
 
@@ -1103,8 +1111,28 @@ class CFRTrainer {
     this.handsPlayed = 0;
     this.history = [];   // {iter, strategies: Map(key -> [p1,p2 avg])}
     this.lastVisited = new Set();
+    this.updatingPlayer = 0; // alternating updates: 0 then 1 each iteration
     // Pre-build 12 info sets
     this.buildAllInfoSets();
+  }
+
+  /** End-of-iteration DCFR discounts. Apply once per iteration after both passes. */
+  applyDiscounts() {
+    const t = this.iter;
+    if (t < 1) return;
+    const tA = Math.pow(t, this.alpha);
+    const posMul = tA / (tA + 1);
+    const tB = Math.pow(t, this.beta);
+    const negMul = tB / (tB + 1);
+    const gammaMul = Math.pow(t / (t + 1), this.gamma);
+    for (const node of this.infoSets.values()) {
+      for (let a = 0; a < 2; a++) {
+        const r = node.regretSum[a];
+        if (r > 0) node.regretSum[a] = r * posMul;
+        else if (r < 0) node.regretSum[a] = r * negMul;
+        node.strategySum[a] *= gammaMul;
+      }
+    }
   }
 
   buildAllInfoSets() {
@@ -1146,10 +1174,14 @@ class CFRTrainer {
   }
 
   /**
-   * Vanilla CFR. Returns the payoff at this node from P1's perspective.
-   * Updates regretSum and strategySum on the way up.
+   * DCFR traversal. Like CFR+ this uses alternating updates (only the
+   * `updatingPlayer`'s regrets and strategy sum are touched). Unlike CFR+ we
+   * do NOT max-clamp negative regrets per visit and we do NOT pre-weight the
+   * strategy contribution. Both transformations happen once per iteration in
+   * applyDiscounts(): positive regrets shrink by t^α/(t^α+1), negative regrets
+   * by t^β/(t^β+1), strategy sums by (t/(t+1))^γ.
    */
-  cfr(history, p1Card, p2Card, p1Reach, p2Reach, trace) {
+  cfr(history, p1Card, p2Card, p1Reach, p2Reach, updatingPlayer, trace) {
     if (this.isTerminal(history)) {
       return this.payoffP1(history, p1Card, p2Card);
     }
@@ -1170,66 +1202,78 @@ class CFRTrainer {
       const next = history + ACTION_SHORT[a];
       let childUtilP1;
       if (player === 0) {
-        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach * strategy[a], p2Reach, trace);
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach * strategy[a], p2Reach, updatingPlayer, trace);
       } else {
-        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach, p2Reach * strategy[a], trace);
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach, p2Reach * strategy[a], updatingPlayer, trace);
       }
       util[a] = childUtilP1;
       nodeUtilP1 += strategy[a] * childUtilP1;
     }
 
-    // Update regrets and strategy sum
-    // Convert to current player's perspective
-    const sign = player === 0 ? 1 : -1;
-    const cfReach = player === 0 ? p2Reach : p1Reach;
-    const ownReach = player === 0 ? p1Reach : p2Reach;
+    if (player === updatingPlayer) {
+      const sign = player === 0 ? 1 : -1;
+      const cfReach = player === 0 ? p2Reach : p1Reach;
+      const ownReach = player === 0 ? p1Reach : p2Reach;
 
-    const myNodeUtil = sign * nodeUtilP1;
-    const deltaRegret = [0, 0];
-    for (let a = 0; a < 2; a++) {
-      const myActUtil = sign * util[a];
-      const regret = myActUtil - myNodeUtil;
-      const dr = cfReach * regret;
-      node.regretSum[a] += dr;
-      node.strategySum[a] += ownReach * strategy[a];
-      deltaRegret[a] = dr;
+      const myNodeUtil = sign * nodeUtilP1;
+      const deltaRegret = [0, 0];
+      for (let a = 0; a < 2; a++) {
+        const myActUtil = sign * util[a];
+        const regret = myActUtil - myNodeUtil;
+        const dr = cfReach * regret;
+        node.regretSum[a] += dr;
+        node.strategySum[a] += ownReach * strategy[a];
+        deltaRegret[a] = dr;
+      }
+      node.lastDelta = deltaRegret;
+      node.lastVisitIter = this.iter;
     }
-    node.lastDelta = deltaRegret;
-    node.lastVisitIter = this.iter;
 
     return nodeUtilP1;
   }
 
-  /** One full vanilla CFR iteration: traverse all 6 deals. */
+  /** One full DCFR iteration: two passes (alternating updating player), 6 deals each, then discount. */
   trainOne(captureTrace = false) {
     this.iter++;
     this.lastVisited.clear();
     let trace = captureTrace ? { visited: [], deals: [] } : null;
 
-    for (const [c1, c2] of DEALS) {
-      let dealTrace = null;
-      if (trace) {
-        dealTrace = { p1: c1, p2: c2, visited: [] };
-        trace.currentDeal = dealTrace;
+    for (let up = 0; up < 2; up++) {
+      this.updatingPlayer = up;
+      for (const [c1, c2] of DEALS) {
+        let dealTrace = null;
+        if (trace) {
+          dealTrace = { p1: c1, p2: c2, visited: [] };
+          trace.currentDeal = dealTrace;
+        }
+        this.cfr('', c1, c2, 1, 1, up, dealTrace ? trace : null);
+        if (dealTrace) {
+          dealTrace.visited = trace.visited.slice(dealTrace.startIdx ?? 0);
+        }
+        this.handsPlayed++;
       }
-      this.cfr('', c1, c2, 1, 1, dealTrace ? trace : null);
-      if (dealTrace) {
-        // Move visited from trace to dealTrace
-        dealTrace.visited = trace.visited.slice(dealTrace.startIdx ?? 0);
-      }
-      this.handsPlayed++;
     }
+    this.applyDiscounts();
     if (trace) trace.lastP1 = DEALS[5][0];
     return trace;
   }
 
-  /** Train one of the 6 deals only. Used for slow animation. */
-  trainOneDeal(dealIdx) {
+  /**
+   * Train one mini-step (used for slow/medium animation).
+   * stepIdx ∈ [0..11]: stepIdx 0..5 → updating P1 across the 6 deals,
+   *                    stepIdx 6..11 → updating P2 across the 6 deals.
+   * Discounts apply at stepIdx === 11 (end of iteration).
+   */
+  trainOneDeal(stepIdx) {
+    const updatingPlayer = stepIdx < 6 ? 0 : 1;
+    const dealIdx = stepIdx % 6;
     const [c1, c2] = DEALS[dealIdx];
+    this.updatingPlayer = updatingPlayer;
     this.lastVisited.clear();
-    const trace = { visited: [], p1: c1, p2: c2, dealIdx };
-    this.cfr('', c1, c2, 1, 1, trace);
+    const trace = { visited: [], p1: c1, p2: c2, dealIdx, stepIdx, updatingPlayer };
+    this.cfr('', c1, c2, 1, 1, updatingPlayer, trace);
     this.handsPlayed++;
+    if (stepIdx === 11) this.applyDiscounts();
     return trace;
   }
 
@@ -1237,10 +1281,14 @@ class CFRTrainer {
   trainMany(n) {
     for (let i = 0; i < n; i++) {
       this.iter++;
-      for (const [c1, c2] of DEALS) {
-        this.cfr('', c1, c2, 1, 1, null);
-        this.handsPlayed++;
+      for (let up = 0; up < 2; up++) {
+        this.updatingPlayer = up;
+        for (const [c1, c2] of DEALS) {
+          this.cfr('', c1, c2, 1, 1, up, null);
+          this.handsPlayed++;
+        }
       }
+      this.applyDiscounts();
     }
   }
 
@@ -2031,7 +2079,10 @@ class MathWalkthrough {
         r(${labels[1]}) = ${evs[1].ev.toFixed(3)} − ${nodeUtil.toFixed(3)} = <span class="num ${signClass(instantRegret[1])}">${fmt(instantRegret[1])}</span>
       </div>
 
-      <div class="subhead">Cumulative regret  R(I,a) = Σ over iterations</div>
+      <div class="subhead">Cumulative regret R(I,a) — discounted at end of iteration</div>
+      <div class="formula-line">
+        positive ×<span class="num">${(Math.pow(this.trainer.iter, this.trainer.alpha) / (Math.pow(this.trainer.iter, this.trainer.alpha) + 1)).toFixed(3)}</span>, negative ×<span class="num">0.500</span> per iteration t = ${this.trainer.iter}
+      </div>
       <div class="formula-line result ${signClass(cumRegret[0])}">
         <span class="var">R(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
       </div>
@@ -2069,7 +2120,7 @@ class MathWalkthrough {
         <span class="pct">${(newStrat[1]*100).toFixed(1)}%</span>
       </div>
 
-      <div class="subhead">Average strategy σ̄(I,·) — converges to Nash</div>
+      <div class="subhead">Weighted-average strategy σ̄(I,·) — γ=2 quadratic, converges to Nash</div>
       <div class="strat-bar-row pass">
         <span class="name">${labels[0]}</span>
         <div class="track"><div class="fill" style="width:${avgStrat[0]*100}%"></div></div>
@@ -2218,14 +2269,14 @@ class App {
     }
   }
 
-  /** Animate one deal: one of the 6 card permutations of one CFR iteration. */
+  /** Animate one mini-step. CFR+ has 12 mini-steps per iteration: 2 update passes × 6 deals. */
   stepOneDeal() {
-    // If we're at the start of a new iteration, increment iter counter
+    // If we're at the start of a new iteration, increment iter counter.
     if (this.dealAnimIdx === 0) {
       this.trainer.iter++;
     }
-    const dealIdx = this.dealAnimIdx;
-    const trace = this.trainer.trainOneDeal(dealIdx);
+    const stepIdx = this.dealAnimIdx;
+    const trace = this.trainer.trainOneDeal(stepIdx);
 
     // Display
     this.hand.setCards(trace.p1, trace.p2);
@@ -2248,13 +2299,13 @@ class App {
     this.grid.setInspecting(this.walkthrough.selectedKey);
     this.walkthrough.update();
 
-    // Push to chart every full iteration
-    if (this.dealAnimIdx === 5) {
+    // Push to chart at the end of each full iteration (after both passes done).
+    if (this.dealAnimIdx === 11) {
       this.chart.push(this.trainer.iter, this.trainer.snapshot());
       this.chart.draw();
     }
 
-    this.dealAnimIdx = (this.dealAnimIdx + 1) % 6;
+    this.dealAnimIdx = (this.dealAnimIdx + 1) % 12;
 
     // Update stats
     this.elIter.textContent = this.trainer.iter.toLocaleString();
@@ -2335,10 +2386,18 @@ class App {
       lesson = `<br>Biggest update: <b>P${topNode.player + 1}</b> with <b>${CARDS[topNode.card]}</b> ${verb} <span class="${sign}">${action}</span> more (Δregret = <span class="${sign}">${topNode.lastDelta[topAction] > 0 ? '+' : ''}${topNode.lastDelta[topAction].toFixed(3)}</span>).`;
     }
 
+    const upTag = trace.updatingPlayer === 0 ? 'P1-update' : 'P2-update';
+    const t = this.trainer.iter;
+    const tA = Math.pow(t, this.trainer.alpha);
+    const posMul = (tA / (tA + 1)).toFixed(3);
+    const isLastStep = trace.stepIdx === 11;
+    const discountNote = isLastStep
+      ? `End of iteration: positive regrets ×<span class="yel">${posMul}</span>, negatives ×<span class="yel">0.500</span>, strategy sums ×<span class="yel">${Math.pow(t/(t+1), 2).toFixed(3)}</span>.`
+      : `Discounts apply at end of iteration (after both passes).`;
     this.elTrace.innerHTML =
-      `<span class="step-tag">Iter ${this.trainer.iter}.${trace.dealIdx + 1}</span>` +
-      `Dealing ${dealStr}. The bot walks every path, sees the actual payoff, then asks ` +
-      `<span class="yel">"what if I'd done X instead?"</span> and updates regrets.` +
+      `<span class="step-tag">Iter ${this.trainer.iter}.${trace.dealIdx + 1} · ${upTag}</span>` +
+      `Dealing ${dealStr}. Walking the tree to update <b>P${trace.updatingPlayer + 1}</b> only — ` +
+      `instantaneous regret accumulates raw on the way up. ${discountNote}` +
       lesson;
   }
 
