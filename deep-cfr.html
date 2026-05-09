@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Watching a Poker Bot Learn — CFR on Kuhn Poker</title>
+<title>Watching a Poker Bot Learn — Deep CFR on Kuhn Poker</title>
 <style>
 :root {
   --bg: #0a0e1a;
@@ -865,12 +865,12 @@ footer a:hover { color: var(--accent); }
 
 <header>
   <div class="title-row">
-    <h1>Watching a Poker Bot Learn — CFR on Kuhn Poker</h1>
-    <span class="sub">Counterfactual Regret Minimization · Zinkevich et al., 2007</span>
-    <a href="cfr-plus.html" class="nav-link">CFR+ →</a>
-    <a href="dcfr.html" class="nav-link">DCFR →</a>
-    <a href="deep-cfr.html" class="nav-link">Deep CFR →</a>
-    <a href="mccfr.html" class="nav-link">External Sampling MCCFR →</a>
+    <h1>Watching a Poker Bot Learn — Deep CFR on Kuhn Poker</h1>
+    <span class="sub">Deep Counterfactual Regret Minimization · Brown, Lerer, Gross, Sandholm — ICML 2019</span>
+    <a href="index.html" class="nav-link">Vanilla CFR ←</a>
+    <a href="cfr-plus.html" class="nav-link">CFR+ ←</a>
+    <a href="dcfr.html" class="nav-link">DCFR ←</a>
+    <a href="mccfr.html" class="nav-link">MCCFR →</a>
     <a href="/cfr-simulation/glossary" class="nav-link">Glossary →</a>
   </div>
   <div class="controls">
@@ -883,10 +883,14 @@ footer a:hover { color: var(--accent); }
       <button data-speed="fast">Fast</button>
       <button data-speed="turbo">Turbo</button>
     </div>
+    <div class="speed-group" title="Replay memory type">
+      <button data-mem="reservoir" class="active">Reservoir</button>
+      <button data-mem="sliding">Sliding window</button>
+    </div>
     <div class="stats">
       <div class="stat"><span class="label">Iteration</span><span class="val" id="stat-iter">0</span></div>
-      <div class="stat"><span class="label">Info sets</span><span class="val" id="stat-isets">12</span></div>
-      <div class="stat"><span class="label">Hands seen</span><span class="val" id="stat-hands">0</span></div>
+      <div class="stat"><span class="label">P1 mem / P2 mem</span><span class="val" id="stat-mem">0 / 0</span></div>
+      <div class="stat"><span class="label">P1 loss / P2 loss</span><span class="val" id="stat-loss">— / —</span></div>
       <div class="stat"><span class="label">Exploit. mbb/g</span><span class="val" id="stat-expl">—</span></div>
     </div>
   </div>
@@ -898,7 +902,7 @@ footer a:hover { color: var(--accent); }
   <section class="panel">
     <h2>Current Iteration</h2>
     <h3>What the bot is doing right now</h3>
-    <p class="desc">Each iteration the bot deals random cards, plays out every action path, computes <em>"what if I'd done X instead?"</em>, and adjusts its regrets. Watch the gold path — that's what just happened.</p>
+    <p class="desc">Each iteration: do <b>K external-sampling traversals</b> per player (sample chance and the opponent's actions, fully expand the traverser's actions), dump <em>(info-set, sampled regret)</em> tuples into a reservoir-sampled memory, then <b>retrain the advantage network from scratch</b> on that memory. The gold path shows the most recent traversal.</p>
 
     <div class="hand-display">
       <div class="player-side">
@@ -931,9 +935,9 @@ footer a:hover { color: var(--accent); }
 
   <!-- RIGHT: Information Sets -->
   <section class="panel">
-    <h2>The Bot's Brain — 12 Information Sets</h2>
-    <h3>What does the bot know in each situation?</h3>
-    <p class="desc">In Kuhn poker, the bot only sees its <em>own</em> card plus the action history. That's <b>12 distinct situations</b>. For each, it tracks <span class="mono" style="color:var(--green)">cumulative regrets</span>, then derives the <span class="mono" style="color:var(--accent)">current strategy σ</span> (the bar) by regret matching — directly proportional to positive regret. The smaller <span class="mono" style="color:var(--muted)">avg %</span> is the strategy averaged over <em>all</em> iterations — that's the quantity that converges to Nash (and what the chart below tracks).</p>
+    <h2>The Bot's Brain — Two Tiny Neural Networks</h2>
+    <h3>No regret table — predicted advantages instead</h3>
+    <p class="desc">There's <b>no tabular regret</b> any more. Each player has a small multi-layer perceptron <span class="mono" style="color:var(--green)">V<sub>p</sub>(I, a | θ<sub>p</sub>)</span> that takes an info-set's features (card + action history) and predicts an advantage per action. The 12 cards below show those <em>predicted</em> advantages. Strategy is regret matching on the network output. With only 12 info-sets the network is overkill — the lesson here is the <em>mechanism</em>, not the speedup. (In real poker the table would be 10<sup>14</sup> entries; here the network just memorizes 12 of them.)</p>
 
     <div class="infosets-grid" id="infosets">
       <!-- populated by JS -->
@@ -943,8 +947,8 @@ footer a:hover { color: var(--accent); }
   <!-- LIVE MATH WALKTHROUGH -->
   <section class="panel inspector-panel">
     <h2>Live Math Walkthrough</h2>
-    <h3>How <span style="color:var(--accent)">EV</span> and <span style="color:var(--green)">frequency</span> are calculated for one decision</h3>
-    <p class="desc">Every iteration, the bot does the three-step calculation below for <em>each</em> of its 12 information sets. Pick one to inspect — the numbers update live as training proceeds.</p>
+    <h3>From info-set features → network output → regret matching</h3>
+    <p class="desc">For one info-set, here's what the network sees, what it predicts, and the strategy that comes out. The "true" subtree EV is shown for comparison — that's what tabular CFR would compute, and what the network is being trained to approximate.</p>
 
     <div class="inspector-controls">
       <span class="ctrl-label">Inspecting</span>
@@ -955,18 +959,18 @@ footer a:hover { color: var(--accent); }
 
     <div class="inspector-grid">
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">1</span>Counterfactual EV per action</div>
-        <p class="step-desc">For each action, what payoff do I expect if I play it — averaging over the opponent's possible cards and their current strategies in the subtree?</p>
+        <div class="step-header"><span class="step-num">1</span>Subtree counterfactual EV</div>
+        <p class="step-desc">If we computed the EV of each action by walking the actual subtree (what tabular CFR does), we'd get these numbers. The network's job is to approximate the resulting <em>instantaneous regret</em> r(a) = EV(a) − V(I) from sampled tuples in its memory.</p>
         <div id="ev-block"></div>
       </div>
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">2</span>Regret update</div>
-        <p class="step-desc">Regret of an action = how much better it would have been than what I did. Cumulative regret <span class="mono" style="color:var(--gold)">R(I,a)</span> sums this over every iteration so far.</p>
+        <div class="step-header"><span class="step-num">2</span>Network prediction</div>
+        <p class="step-desc">The advantage network V<sub>p</sub>(I, ·) takes the info-set's 7-d feature vector (3 card + 4 history one-hots) and outputs one predicted advantage per action. After training, these should track the instantaneous regrets on the left.</p>
         <div id="regret-block"></div>
       </div>
       <div class="inspector-col">
-        <div class="step-header"><span class="step-num">3</span>Frequency = regret matching</div>
-        <p class="step-desc">Play each action proportional to its <em>positive</em> regret. Negative regret? Don't play it. The <em>average</em> strategy across iterations is what converges to Nash.</p>
+        <div class="step-header"><span class="step-num">3</span>Strategy = regret matching on V</div>
+        <p class="step-desc">Same regret matching as tabular CFR, applied to the network's predicted advantages instead of cumulative regret table values. When all predictions ≤ 0, pick the highest-advantage action with prob 1 (Deep CFR's ablation finding).</p>
         <div id="strategy-block"></div>
       </div>
     </div>
@@ -976,8 +980,8 @@ footer a:hover { color: var(--accent); }
   <div class="bottom-row">
     <section class="panel">
       <h2>Strategy Convergence</h2>
-      <h3>Watch strategies stabilize toward Nash equilibrium</h3>
-      <p class="desc">Each line tracks one decision (the bot's <em>average</em> betting probability for a given hand). Dashed lines mark the Nash-equilibrium target — convergence means the bot is unexploitable.</p>
+      <h3>Slower and noisier than tabular — that's the honest result on Kuhn</h3>
+      <p class="desc">Each line tracks the <em>linearly weighted</em> average betting probability σ̄ derived from the network's predictions. Dashed lines mark the Nash target. Convergence on Kuhn is roughly 10–20× worse than tabular CFR+ because the function approximator is overkill for 12 info-sets — but the same algorithm scales to 10<sup>17</sup>-node games where tabular CFR is impossible.</p>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
@@ -992,15 +996,19 @@ footer a:hover { color: var(--accent); }
     </section>
 
     <section class="panel">
-      <h2>How CFR Actually Works</h2>
-      <h3>Three loops, no opponent model needed</h3>
+      <h2>What Deep CFR Changes vs Tabular CFR</h2>
+      <h3>Throw out the regret table, predict regrets with a neural network</h3>
       <div class="expl-text">
-        <p><b>1. Walk the game tree.</b> For every possible card deal and action sequence, recursively visit every decision point.</p>
-        <p><b>2. Compute counterfactuals.</b> At each information set, ask: <em>"If I'd reached here and played action A, what would I get?"</em> Subtract the EV of what I actually did. That's the <span class="mono" style="color:var(--green)">regret</span>.</p>
-        <code class="formula">regret(I, a) += π_{-i}(I) · ( v(I,a) - v(I) )</code>
-        <p><b>3. Match strategy to regret.</b> Next iteration, play actions <em>proportional to positive regret</em> — actions you wish you'd played more, you play more.</p>
-        <code class="formula">σ(I, a) = max(0, R(I,a)) / Σ max(0, R(I,·))</code>
-        <p>The magic: averaging strategies across iterations converges to a <b>Nash equilibrium</b>. The bot becomes unexploitable without ever modeling its opponent — it just plays itself and stops regretting.</p>
+        <p>All previous CFR variants — vanilla, CFR+, DCFR — share one bottleneck: a <b>giant regret table</b>, one entry per (info-set, action) pair. Heads-Up Limit Hold'em has 10<sup>14</sup> info-sets; No-Limit has 10<sup>17</sup>. Won't fit in any computer. The historical workaround is hand-crafted <b>abstraction</b> — bucket similar situations together — but abstraction is lossy, domain-specific, and a chicken-and-egg problem.</p>
+        <p>Deep CFR's pitch: <b>throw out the table, predict regrets with a small neural network</b> that takes an info-set's features as input. The network generalizes across similar info-sets automatically, with no manual feature engineering for what counts as "similar".</p>
+        <p><b>1. External-sampling MCCFR traversal.</b> Each iteration, do K traversals per player. At the traverser's nodes expand all actions; at chance and opponent nodes sample. Compute a <em>sampled instantaneous regret</em> r̃(I, a) = v(a) − Σ σ(a)·v(a) and dump the (info-set, regrets, iteration) tuple into a replay memory.</p>
+        <code class="formula">advMemory.add( (encode(I), [r̃(a₀), r̃(a₁)], t) )</code>
+        <p><b>2. Reservoir sampling.</b> The memory is reservoir-sampled, so a sample from iteration 1 has the same survival probability as a sample from iteration 1000. This is crucial: the paper's Figure 4 shows that <em>sliding-window</em> memory makes exploitability INCREASE once the buffer fills.</p>
+        <p><b>3. Retrain the network from scratch each iteration.</b> Sample mini-batches from memory, minimize MSE between the network's predicted advantage V(I, a | θ) and the stored sampled regrets. Fine-tuning from the previous iteration's weights gets stuck in bad local minima as the regression target shifts.</p>
+        <code class="formula">θ_p ← argmin_θ  E<sub>(I, t, r̃)~M_V,p</sub> [ t · Σ<sub>a</sub> ( r̃(a) − V(I, a | θ) )<sup>2</sup> ]</code>
+        <p><b>4. Strategy = regret matching on network output.</b> Once trained, V(I, ·) plays the role the regret table used to play. When all predicted advantages are negative, pick the highest-advantage action with prob 1 (the paper's ablation: this beats uniform under approximation error).</p>
+        <p><b>Why this matters:</b> the first non-tabular CFR variant that actually scales. In Heads-Up Limit Hold'em, Deep CFR loses to a 3.3·10<sup>8</sup>-bucket tabular abstraction by only 11 mbb/g and beats Neural Fictitious Self-Play by 43 mbb/g — with <em>no</em> domain knowledge. Pluribus (multi-player No-Limit) and ReBeL build on this foundation.</p>
+        <p style="margin-top:14px;padding:10px 12px;background:rgba(255,140,66,0.08);border-left:3px solid var(--orange);border-radius:4px"><b>About this visualization.</b> Kuhn poker has only 12 info-sets — a regret table fits comfortably and the network is strictly worse than tabular here. Expect convergence to be slower and noisier than CFR+/DCFR on the other pages. The point is to show <em>how</em> the algorithm works, not why it wins. The win shows up only at scale.</p>
       </div>
     </section>
   </div>
@@ -1029,8 +1037,8 @@ best_response_value = max v</code>
 </main>
 
 <footer>
-  Vanilla CFR on Kuhn Poker — 12 information sets, 6 card permutations per iteration.
-  <br>Algorithm: Zinkevich, Bowling et al., NeurIPS 2007.
+  Deep CFR on Kuhn Poker — two tiny advantage networks (7→16→16→2, ~400 params each), reservoir-sampled replay memory, retrain-from-scratch each iteration. Pure JavaScript, no deep-learning framework.
+  <br>Algorithm: Brown, Lerer, Gross, Sandholm, "Deep Counterfactual Regret Minimization", ICML 2019, arXiv:1811.00164.
   <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
     Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
   </div>
@@ -1053,34 +1061,185 @@ const DEALS = [
 ];
 
 // =============================================================
-// Information Set
+// Tiny MLP — pure JS, no framework. Layout: [in, hidden..., out]
+// Hidden layers use ReLU; output layer is linear. SGD with MSE loss.
+// =============================================================
+class MLP {
+  constructor(layers) {
+    this.layers = layers;
+    this.W = [];
+    this.b = [];
+    for (let i = 0; i < layers.length - 1; i++) {
+      const inDim = layers[i], outDim = layers[i + 1];
+      // He init for ReLU
+      const scale = Math.sqrt(2.0 / inDim);
+      const W = new Float64Array(outDim * inDim);
+      for (let j = 0; j < W.length; j++) W[j] = (Math.random() * 2 - 1) * scale;
+      this.W.push(W);
+      this.b.push(new Float64Array(outDim));
+    }
+  }
+
+  /** Returns [x, h1, h2, ..., yOut] — activations at every layer. */
+  forward(x) {
+    const acts = [x];
+    let h = x;
+    for (let i = 0; i < this.W.length; i++) {
+      const inDim = this.layers[i], outDim = this.layers[i + 1];
+      const z = new Float64Array(outDim);
+      const W = this.W[i], b = this.b[i];
+      for (let o = 0; o < outDim; o++) {
+        let s = b[o];
+        const off = o * inDim;
+        for (let k = 0; k < inDim; k++) s += W[off + k] * h[k];
+        z[o] = s;
+      }
+      const isLast = i === this.W.length - 1;
+      if (!isLast) for (let o = 0; o < outDim; o++) if (z[o] < 0) z[o] = 0;
+      acts.push(z);
+      h = z;
+    }
+    return acts;
+  }
+
+  predict(x) {
+    return this.forward(x)[this.W.length];
+  }
+
+  /**
+   * One SGD step on a single (x, target) pair with MSE loss.
+   * `sampleWeight` scales the gradient (used for linear weighting).
+   * Returns the squared error (scalar loss).
+   */
+  trainStep(x, target, lr, sampleWeight = 1) {
+    const acts = this.forward(x);
+    const L = this.W.length;
+    const out = acts[L];
+    let dz = new Float64Array(out.length);
+    let loss = 0;
+    for (let i = 0; i < out.length; i++) {
+      const d = out[i] - target[i];
+      dz[i] = sampleWeight * d;
+      loss += d * d;
+    }
+    loss *= 0.5;
+
+    for (let i = L - 1; i >= 0; i--) {
+      const inDim = this.layers[i], outDim = this.layers[i + 1];
+      const prev = acts[i];
+      const W = this.W[i], b = this.b[i];
+      for (let o = 0; o < outDim; o++) {
+        const off = o * inDim;
+        const g = dz[o];
+        for (let k = 0; k < inDim; k++) W[off + k] -= lr * g * prev[k];
+        b[o] -= lr * g;
+      }
+      if (i > 0) {
+        const dzPrev = new Float64Array(inDim);
+        for (let k = 0; k < inDim; k++) {
+          let s = 0;
+          for (let o = 0; o < outDim; o++) s += W[o * inDim + k] * dz[o];
+          if (prev[k] <= 0) s = 0; // ReLU derivative
+          dzPrev[k] = s;
+        }
+        dz = dzPrev;
+      }
+    }
+    return loss;
+  }
+
+  paramCount() {
+    let n = 0;
+    for (let i = 0; i < this.W.length; i++) n += this.W[i].length + this.b[i].length;
+    return n;
+  }
+}
+
+// =============================================================
+// Memories for Deep CFR sample replay
+// =============================================================
+class Reservoir {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.buffer = [];
+    this.count = 0;
+  }
+  add(item) {
+    this.count++;
+    if (this.buffer.length < this.capacity) this.buffer.push(item);
+    else {
+      const idx = Math.floor(Math.random() * this.count);
+      if (idx < this.capacity) this.buffer[idx] = item;
+    }
+  }
+  size() { return this.buffer.length; }
+  full() { return this.buffer.length >= this.capacity; }
+  sample(n) {
+    const out = [];
+    if (this.buffer.length === 0) return out;
+    for (let i = 0; i < n; i++) out.push(this.buffer[Math.floor(Math.random() * this.buffer.length)]);
+    return out;
+  }
+}
+
+class SlidingWindow {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.buffer = [];
+    this.count = 0;
+  }
+  add(item) {
+    this.count++;
+    this.buffer.push(item);
+    if (this.buffer.length > this.capacity) this.buffer.shift();
+  }
+  size() { return this.buffer.length; }
+  full() { return this.buffer.length >= this.capacity; }
+  sample(n) {
+    const out = [];
+    if (this.buffer.length === 0) return out;
+    for (let i = 0; i < n; i++) out.push(this.buffer[Math.floor(Math.random() * this.buffer.length)]);
+    return out;
+  }
+}
+
+// =============================================================
+// 7-d feature encoding for an info-set: card one-hot (3) + history one-hot (4)
+// =============================================================
+const HIST_IDX = { '': 0, 'p': 1, 'b': 2, 'pb': 3 };
+function encodeInfoSet(player, card, history) {
+  const x = new Float64Array(7);
+  x[card] = 1;
+  x[3 + HIST_IDX[history]] = 1;
+  return x;
+}
+
+// =============================================================
+// Information Set (display record). regretSum is REPURPOSED to hold the
+// network's currently-predicted advantage; strategySum accumulates the average
+// strategy (stand-in for the policy network in this toy visualizer).
 // =============================================================
 class InfoSet {
   constructor(player, card, history) {
-    this.player = player;       // 0 or 1
-    this.card = card;           // 0=J 1=Q 2=K
-    this.history = history;     // string of actions
+    this.player = player;
+    this.card = card;
+    this.history = history;
     this.key = `${player}|${CARDS[card]}|${history}`;
-    this.regretSum = [0, 0];
-    this.strategySum = [0, 0];
+    this.regretSum = [0, 0];      // predicted advantage from V_p(I, ·)
+    this.strategySum = [0, 0];    // linearly weighted average strategy contributions
     this.lastVisitIter = -1;
     this.lastDelta = [0, 0];
+    this.lastSampledRegret = [0, 0];
   }
 
+  /** Strategy from regret matching on the network's predicted advantages. */
   getStrategy() {
-    let normSum = 0;
-    const s = [0, 0];
-    for (let a = 0; a < 2; a++) {
-      s[a] = Math.max(this.regretSum[a], 0);
-      normSum += s[a];
-    }
-    if (normSum > 0) {
-      s[0] /= normSum;
-      s[1] /= normSum;
-    } else {
-      s[0] = 0.5; s[1] = 0.5;
-    }
-    return s;
+    const pos0 = Math.max(this.regretSum[0], 0);
+    const pos1 = Math.max(this.regretSum[1], 0);
+    const sum = pos0 + pos1;
+    if (sum > 0) return [pos0 / sum, pos1 / sum];
+    // Deep CFR ablation: pick highest-advantage action with prob 1 when all <= 0
+    return this.regretSum[0] >= this.regretSum[1] ? [1, 0] : [0, 1];
   }
 
   getAverageStrategy() {
@@ -1091,21 +1250,65 @@ class InfoSet {
 }
 
 // =============================================================
-// CFR Trainer
+// Deep CFR Trainer
+// One advantage network per player, external-sampling MCCFR traversal,
+// reservoir-sampled replay memory, retrain-from-scratch each iteration.
 // =============================================================
 class CFRTrainer {
   constructor() {
+    // Hyperparameters tuned for in-browser real-time training on Kuhn.
+    // (Variance is high — Kuhn is too small to play to Deep CFR's strengths.
+    // Real Deep CFR uses 10k-batch SGD with 4000 steps per iteration.)
+    this.numTraversals = 8;       // K traversals per player per CFR iteration
+    this.sgdEpochs = 8;           // full passes over the memory per network retrain
+    this.batchSize = 32;          // (unused with full-batch training; kept for display)
+    this.learningRate = 0.003;
+    this.memoryCapacity = 1024;
+    this.memoryType = 'reservoir'; // 'reservoir' | 'sliding'
+    this.trainFromScratch = true;
+    this.linearWeighting = true;
+    this.netSpec = [7, 16, 16, 2]; // ~400 params per net, ~800 total
     this.reset();
+  }
+
+  _mkMemory() {
+    return this.memoryType === 'reservoir'
+      ? new Reservoir(this.memoryCapacity)
+      : new SlidingWindow(this.memoryCapacity);
   }
 
   reset() {
     this.infoSets = new Map();
     this.iter = 0;
     this.handsPlayed = 0;
-    this.history = [];   // {iter, strategies: Map(key -> [p1,p2 avg])}
+    this.history = [];
     this.lastVisited = new Set();
-    // Pre-build 12 info sets
+    this.updatingPlayer = 0;
+    // One advantage network per player.
+    this.advNet = [
+      new MLP(this.netSpec),
+      new MLP(this.netSpec),
+    ];
+    this.advMemory = [this._mkMemory(), this._mkMemory()];
+    this.lastTrainLoss = [0, 0];
+    this.trainLossHistory = []; // [{iter, l0, l1}]
     this.buildAllInfoSets();
+    this._refreshPredictions();
+  }
+
+  setMemoryType(type) {
+    this.memoryType = type;
+    this.advMemory = [this._mkMemory(), this._mkMemory()];
+  }
+
+  /** Refresh InfoSet.regretSum to reflect each network's current prediction. */
+  _refreshPredictions() {
+    for (const node of this.infoSets.values()) {
+      const x = encodeInfoSet(node.player, node.card, node.history);
+      const out = this.advNet[node.player].predict(x);
+      node.regretSum[0] = out[0];
+      node.regretSum[1] = out[1];
+    }
   }
 
   buildAllInfoSets() {
@@ -1147,12 +1350,15 @@ class CFRTrainer {
   }
 
   /**
-   * Vanilla CFR. Returns the payoff at this node from P1's perspective.
-   * Updates regretSum and strategySum on the way up.
+   * External-sampling MCCFR traversal as `traverser`. Sample the opponent's
+   * actions; expand all of the traverser's actions. At each traverser node we
+   * compute a sampled instantaneous regret r̃(I, a) = v(a) − Σ σ(a)·v(a) and
+   * add it (along with the info-set features) to advMemory[traverser].
    */
-  cfr(history, p1Card, p2Card, p1Reach, p2Reach, trace) {
+  traverse(history, p1Card, p2Card, traverser, trace) {
     if (this.isTerminal(history)) {
-      return this.payoffP1(history, p1Card, p2Card);
+      const p1Pay = this.payoffP1(history, p1Card, p2Card);
+      return traverser === 0 ? p1Pay : -p1Pay;
     }
     const player = history.length % 2;
     const card = player === 0 ? p1Card : p2Card;
@@ -1164,85 +1370,127 @@ class CFRTrainer {
       trace.visited.push({ key: node.key, history, player, card, strategy: [...strategy] });
     }
 
-    // util[a] = P1 payoff if action a is taken
-    const util = [0, 0];
-    let nodeUtilP1 = 0;
-    for (let a = 0; a < 2; a++) {
-      const next = history + ACTION_SHORT[a];
-      let childUtilP1;
-      if (player === 0) {
-        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach * strategy[a], p2Reach, trace);
-      } else {
-        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach, p2Reach * strategy[a], trace);
+    if (player === traverser) {
+      const v = [0, 0];
+      let nodeUtil = 0;
+      for (let a = 0; a < 2; a++) {
+        v[a] = this.traverse(history + ACTION_SHORT[a], p1Card, p2Card, traverser, trace);
+        nodeUtil += strategy[a] * v[a];
       }
-      util[a] = childUtilP1;
-      nodeUtilP1 += strategy[a] * childUtilP1;
+      const r = [v[0] - nodeUtil, v[1] - nodeUtil];
+      const x = encodeInfoSet(player, card, history);
+      this.advMemory[player].add({ x, r, t: this.iter });
+      node.lastSampledRegret = r;
+      node.lastDelta = r;
+      node.lastVisitIter = this.iter;
+      return nodeUtil;
+    } else {
+      // Opponent: collect strategy sample (linear-weighted) and sample one action.
+      node.strategySum[0] += this.iter * strategy[0];
+      node.strategySum[1] += this.iter * strategy[1];
+      const u = Math.random();
+      const a = u < strategy[0] ? 0 : 1;
+      if (trace) trace.visited[trace.visited.length - 1].sampledAction = a;
+      return this.traverse(history + ACTION_SHORT[a], p1Card, p2Card, traverser, trace);
     }
-
-    // Update regrets and strategy sum
-    // Convert to current player's perspective
-    const sign = player === 0 ? 1 : -1;
-    const cfReach = player === 0 ? p2Reach : p1Reach;
-    const ownReach = player === 0 ? p1Reach : p2Reach;
-
-    const myNodeUtil = sign * nodeUtilP1;
-    const deltaRegret = [0, 0];
-    for (let a = 0; a < 2; a++) {
-      const myActUtil = sign * util[a];
-      const regret = myActUtil - myNodeUtil;
-      const dr = cfReach * regret;
-      node.regretSum[a] += dr;
-      node.strategySum[a] += ownReach * strategy[a];
-      deltaRegret[a] = dr;
-    }
-    node.lastDelta = deltaRegret;
-    node.lastVisitIter = this.iter;
-
-    return nodeUtilP1;
   }
 
-  /** One full vanilla CFR iteration: traverse all 6 deals. */
+  /** Train one player's advantage network on samples from its memory. */
+  trainAdvNet(player) {
+    const mem = this.advMemory[player];
+    if (mem.size() === 0) return 0;
+    if (this.trainFromScratch) {
+      this.advNet[player] = new MLP(this.netSpec);
+    }
+    const buf = mem.buffer;
+    const T = Math.max(this.iter, 1);
+    let totalLoss = 0;
+    let count = 0;
+    for (let step = 0; step < this.sgdEpochs; step++) {
+      // Full pass over the memory, shuffled — much more stable than tiny random batches
+      // for a 12-info-set toy game.
+      let stepLoss = 0;
+      let n = 0;
+      // Shuffle indices (Fisher-Yates) cheaply via random pick
+      const order = [];
+      for (let i = 0; i < buf.length; i++) order.push(i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      for (const idx of order) {
+        const item = buf[idx];
+        const w = this.linearWeighting ? (item.t / T) : 1;
+        stepLoss += this.advNet[player].trainStep(item.x, item.r, this.learningRate, w);
+        n++;
+      }
+      totalLoss += stepLoss / Math.max(n, 1);
+      count++;
+    }
+    return totalLoss / count;
+  }
+
+  /** One full Deep CFR iteration: K traversals per player, then retrain both nets. */
   trainOne(captureTrace = false) {
     this.iter++;
     this.lastVisited.clear();
     let trace = captureTrace ? { visited: [], deals: [] } : null;
-
-    for (const [c1, c2] of DEALS) {
-      let dealTrace = null;
-      if (trace) {
-        dealTrace = { p1: c1, p2: c2, visited: [] };
-        trace.currentDeal = dealTrace;
-      }
-      this.cfr('', c1, c2, 1, 1, dealTrace ? trace : null);
-      if (dealTrace) {
-        // Move visited from trace to dealTrace
-        dealTrace.visited = trace.visited.slice(dealTrace.startIdx ?? 0);
-      }
-      this.handsPlayed++;
-    }
-    if (trace) trace.lastP1 = DEALS[5][0];
-    return trace;
-  }
-
-  /** Train one of the 6 deals only. Used for slow animation. */
-  trainOneDeal(dealIdx) {
-    const [c1, c2] = DEALS[dealIdx];
-    this.lastVisited.clear();
-    const trace = { visited: [], p1: c1, p2: c2, dealIdx };
-    this.cfr('', c1, c2, 1, 1, trace);
-    this.handsPlayed++;
-    return trace;
-  }
-
-  /** Bulk train without tracing — used for fast/turbo. */
-  trainMany(n) {
-    for (let i = 0; i < n; i++) {
-      this.iter++;
-      for (const [c1, c2] of DEALS) {
-        this.cfr('', c1, c2, 1, 1, null);
+    for (let p = 0; p < 2; p++) {
+      this.updatingPlayer = p;
+      for (let k = 0; k < this.numTraversals; k++) {
+        const dealIdx = Math.floor(Math.random() * DEALS.length);
+        const [c1, c2] = DEALS[dealIdx];
+        this.traverse('', c1, c2, p, trace);
         this.handsPlayed++;
       }
     }
+    this.lastTrainLoss[0] = this.trainAdvNet(0);
+    this.lastTrainLoss[1] = this.trainAdvNet(1);
+    this._refreshPredictions();
+    this.trainLossHistory.push({ iter: this.iter, l0: this.lastTrainLoss[0], l1: this.lastTrainLoss[1] });
+    if (this.trainLossHistory.length > 400) this.trainLossHistory.shift();
+    return trace;
+  }
+
+  /**
+   * One animation mini-step. We use 9 mini-steps per iteration:
+   *   0..3 → 4 traversals as P1
+   *   4..7 → 4 traversals as P2
+   *   8    → training step (no traversal; trains both nets, refreshes predictions)
+   */
+  trainOneDeal(stepIdx) {
+    const dealIdx = Math.floor(Math.random() * DEALS.length);
+    const [c1, c2] = DEALS[dealIdx];
+    this.lastVisited.clear();
+    const trace = { visited: [], p1: c1, p2: c2, dealIdx, stepIdx };
+
+    if (stepIdx < 4) {
+      this.updatingPlayer = 0;
+      trace.updatingPlayer = 0;
+      trace.phase = 'traverse';
+      this.traverse('', c1, c2, 0, trace);
+      this.handsPlayed++;
+    } else if (stepIdx < 8) {
+      this.updatingPlayer = 1;
+      trace.updatingPlayer = 1;
+      trace.phase = 'traverse';
+      this.traverse('', c1, c2, 1, trace);
+      this.handsPlayed++;
+    } else {
+      trace.phase = 'train';
+      trace.updatingPlayer = 0;
+      this.lastTrainLoss[0] = this.trainAdvNet(0);
+      this.lastTrainLoss[1] = this.trainAdvNet(1);
+      this._refreshPredictions();
+      this.trainLossHistory.push({ iter: this.iter, l0: this.lastTrainLoss[0], l1: this.lastTrainLoss[1] });
+      if (this.trainLossHistory.length > 400) this.trainLossHistory.shift();
+    }
+    return trace;
+  }
+
+  /** Bulk train without animation. */
+  trainMany(n) {
+    for (let i = 0; i < n; i++) this.trainOne(false);
   }
 
   snapshot() {
@@ -1602,7 +1850,7 @@ class InfoSetGrid {
         <span class="pct"><span class="now" data-pct="1">50%</span><span class="avg" data-avg="1">avg 50%</span></span>
       </div>
       <div class="iset-regret">
-        <span class="label">Regret</span>
+        <span class="label">Pred. advantage</span>
         <div class="regret-cell zero" data-r="0"><div class="rfill"></div><span class="rval">0.00</span></div>
         <div class="regret-cell zero" data-r="1"><div class="rfill"></div><span class="rval">0.00</span></div>
       </div>
@@ -2032,12 +2280,12 @@ class MathWalkthrough {
         r(${labels[1]}) = ${evs[1].ev.toFixed(3)} − ${nodeUtil.toFixed(3)} = <span class="num ${signClass(instantRegret[1])}">${fmt(instantRegret[1])}</span>
       </div>
 
-      <div class="subhead">Cumulative regret  R(I,a) = Σ over iterations</div>
+      <div class="subhead">Network prediction  V<sub>p</sub>(I, a | θ)</div>
       <div class="formula-line result ${signClass(cumRegret[0])}">
-        <span class="var">R(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
+        <span class="var">V(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
       </div>
       <div class="formula-line result ${signClass(cumRegret[1])}">
-        <span class="var">R(${labels[1]})</span> = <span class="num ${signClass(cumRegret[1])}">${fmt(cumRegret[1], 2)}</span>
+        <span class="var">V(${labels[1]})</span> = <span class="num ${signClass(cumRegret[1])}">${fmt(cumRegret[1], 2)}</span>
       </div>
     `;
     this.regretEl.innerHTML = html;
@@ -2046,19 +2294,19 @@ class MathWalkthrough {
   renderStrategy(posR, sumPos, newStrat, avgStrat, labels) {
     const html = `
       <div class="formula-line">
-        <span class="var">σ(I,a)</span> = max(0, R(I,a)) / Σ max(0, R(I,·))
+        <span class="var">σ(I,a)</span> = max(0, V(I,a)) / Σ max(0, V(I,·))
       </div>
       <div class="formula-line">
-        max(0, R(${labels[0]})) = <span class="num">${posR[0].toFixed(2)}</span>
+        max(0, V(${labels[0]})) = <span class="num">${posR[0].toFixed(2)}</span>
       </div>
       <div class="formula-line">
-        max(0, R(${labels[1]})) = <span class="num">${posR[1].toFixed(2)}</span>
+        max(0, V(${labels[1]})) = <span class="num">${posR[1].toFixed(2)}</span>
       </div>
       <div class="formula-line">
         total = <span class="num">${sumPos.toFixed(2)}</span> ${sumPos === 0 ? '<span class="op">→ uniform fallback</span>' : ''}
       </div>
 
-      <div class="subhead">Current strategy σ(I,·)</div>
+      <div class="subhead">Current strategy σ(I,·) from regret matching on V</div>
       <div class="strat-bar-row pass">
         <span class="name">${labels[0]}</span>
         <div class="track"><div class="fill" style="width:${newStrat[0]*100}%"></div></div>
@@ -2070,7 +2318,7 @@ class MathWalkthrough {
         <span class="pct">${(newStrat[1]*100).toFixed(1)}%</span>
       </div>
 
-      <div class="subhead">Average strategy σ̄(I,·) — converges to Nash</div>
+      <div class="subhead">Weighted-average strategy σ̄(I,·) — converges to Nash (linear weighting)</div>
       <div class="strat-bar-row pass">
         <span class="name">${labels[0]}</span>
         <div class="track"><div class="fill" style="width:${avgStrat[0]*100}%"></div></div>
@@ -2119,7 +2367,8 @@ class App {
     this.hand = new HandDisplay(document.getElementById('p1-card'), document.getElementById('p2-card'));
 
     this.elIter = document.getElementById('stat-iter');
-    this.elHands = document.getElementById('stat-hands');
+    this.elMem = document.getElementById('stat-mem');
+    this.elLoss = document.getElementById('stat-loss');
     this.elExpl = document.getElementById('stat-expl');
     this.elTrace = document.getElementById('trace');
 
@@ -2144,9 +2393,9 @@ class App {
     };
     this.btnReset.onclick = () => this.reset();
 
-    document.querySelectorAll('.speed-group button').forEach(btn => {
+    document.querySelectorAll('.speed-group button[data-speed]').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.speed-group button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.speed-group button[data-speed]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.speed = btn.dataset.speed;
         if (this.playing) {
@@ -2155,6 +2404,32 @@ class App {
         }
       };
     });
+
+    document.querySelectorAll('.speed-group button[data-mem]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.speed-group button[data-mem]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.trainer.setMemoryType(btn.dataset.mem);
+        // Don't reset training; just swap memory and let user watch the
+        // sliding-window pathology kick in once the buffer fills.
+        this.refreshStats();
+      };
+    });
+  }
+
+  refreshStats() {
+    this.elIter.textContent = this.trainer.iter.toLocaleString();
+    if (this.elMem) {
+      const m0 = this.trainer.advMemory[0].size();
+      const m1 = this.trainer.advMemory[1].size();
+      const cap = this.trainer.memoryCapacity;
+      this.elMem.textContent = `${m0} / ${m1} (cap ${cap})`;
+    }
+    if (this.elLoss) {
+      const l0 = this.trainer.lastTrainLoss[0];
+      const l1 = this.trainer.lastTrainLoss[1];
+      this.elLoss.textContent = (l0 || l1) ? `${l0.toFixed(3)} / ${l1.toFixed(3)}` : '— / —';
+    }
   }
 
   togglePlay() {
@@ -2189,9 +2464,10 @@ class App {
     this.grid.setInspecting(this.walkthrough.selectedKey);
     this.walkthrough.update();
     this.elIter.textContent = '0';
-    this.elHands.textContent = '0';
+    if (this.elMem) this.elMem.textContent = `0 / 0 (cap ${this.trainer.memoryCapacity})`;
+    if (this.elLoss) this.elLoss.textContent = '— / —';
     this.elExpl.textContent = '—';
-    this.elTrace.innerHTML = '<span class="step-tag">Reset</span>Bot reinitialized. Strategies back to 50/50.';
+    this.elTrace.innerHTML = '<span class="step-tag">Reset</span>Networks reinitialized to random weights, replay memories cleared.';
     this.tree.showDeal(2, 1, new Map());
   }
 
@@ -2219,14 +2495,14 @@ class App {
     }
   }
 
-  /** Animate one deal: one of the 6 card permutations of one CFR iteration. */
+  /** Animate one mini-step. CFR+ has 12 mini-steps per iteration: 2 update passes × 6 deals. */
   stepOneDeal() {
-    // If we're at the start of a new iteration, increment iter counter
+    // If we're at the start of a new iteration, increment iter counter.
     if (this.dealAnimIdx === 0) {
       this.trainer.iter++;
     }
-    const dealIdx = this.dealAnimIdx;
-    const trace = this.trainer.trainOneDeal(dealIdx);
+    const stepIdx = this.dealAnimIdx;
+    const trace = this.trainer.trainOneDeal(stepIdx);
 
     // Display
     this.hand.setCards(trace.p1, trace.p2);
@@ -2249,18 +2525,17 @@ class App {
     this.grid.setInspecting(this.walkthrough.selectedKey);
     this.walkthrough.update();
 
-    // Push to chart every full iteration
-    if (this.dealAnimIdx === 5) {
+    // Push to chart at the end of each full iteration (after training step).
+    if (this.dealAnimIdx === 8) {
       this.chart.push(this.trainer.iter, this.trainer.snapshot());
       this.chart.draw();
     }
 
-    this.dealAnimIdx = (this.dealAnimIdx + 1) % 6;
+    this.dealAnimIdx = (this.dealAnimIdx + 1) % 9;
 
     // Update stats
-    this.elIter.textContent = this.trainer.iter.toLocaleString();
-    this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
-    if (this.trainer.iter % 10 === 0 && this.dealAnimIdx === 0) {
+    this.refreshStats();
+    if (this.trainer.iter % 5 === 0 && this.dealAnimIdx === 0) {
       this.elExpl.textContent = (this.trainer.exploitability() * 1000).toFixed(1);
     }
   }
@@ -2336,11 +2611,29 @@ class App {
       lesson = `<br>Biggest update: <b>P${topNode.player + 1}</b> with <b>${CARDS[topNode.card]}</b> ${verb} <span class="${sign}">${action}</span> more (Δregret = <span class="${sign}">${topNode.lastDelta[topAction] > 0 ? '+' : ''}${topNode.lastDelta[topAction].toFixed(3)}</span>).`;
     }
 
-    this.elTrace.innerHTML =
-      `<span class="step-tag">Iter ${this.trainer.iter}.${trace.dealIdx + 1}</span>` +
-      `Dealing ${dealStr}. The bot walks every path, sees the actual payoff, then asks ` +
-      `<span class="yel">"what if I'd done X instead?"</span> and updates regrets.` +
-      lesson;
+    const phase = trace.phase;
+    const upTag = trace.updatingPlayer === 0 ? 'P1 traversal' : 'P2 traversal';
+    if (phase === 'train') {
+      const l0 = this.trainer.lastTrainLoss[0].toFixed(3);
+      const l1 = this.trainer.lastTrainLoss[1].toFixed(3);
+      const m0 = this.trainer.advMemory[0].size();
+      const m1 = this.trainer.advMemory[1].size();
+      const cap = this.trainer.memoryCapacity;
+      this.elTrace.innerHTML =
+        `<span class="step-tag">Iter ${this.trainer.iter} · Training</span>` +
+        `Both advantage networks retrain from scratch on their replay memories. ` +
+        `<span class="yel">P1 loss = ${l0}</span> (mem ${m0}/${cap}), ` +
+        `<span class="yel">P2 loss = ${l1}</span> (mem ${m1}/${cap}). ` +
+        `Predictions on all 12 info sets refreshed; the bars on the right just updated.`;
+    } else {
+      const sub = (trace.stepIdx % 4) + 1;
+      this.elTrace.innerHTML =
+        `<span class="step-tag">Iter ${this.trainer.iter} · ${upTag} ${sub}/4</span>` +
+        `Dealing ${dealStr}. External-sampling MCCFR walks the tree as <b>P${trace.updatingPlayer + 1}</b> — ` +
+        `expanding all of P${trace.updatingPlayer + 1}'s actions, sampling P${2 - trace.updatingPlayer}'s. ` +
+        `Sampled regret tuples land in P${trace.updatingPlayer + 1}'s replay memory.` +
+        lesson;
+    }
   }
 
   /** Quick refresh after bulk train. */
@@ -2348,8 +2641,7 @@ class App {
     this.grid.update();
     this.grid.setInspecting(this.walkthrough.selectedKey);
     this.walkthrough.update();
-    this.elIter.textContent = this.trainer.iter.toLocaleString();
-    this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
+    this.refreshStats();
     if (!skipChart) {
       this.chart.push(this.trainer.iter, this.trainer.snapshot());
     } else {
