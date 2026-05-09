@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watching a Poker Bot Learn — CFR on Kuhn Poker</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --shadow-glow: 0 0 24px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  transition: all 0.15s;
+}
+.nav-link:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.controls button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.controls button:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
+.controls button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.controls button.primary:hover { background: #4a8cee; color: white; }
+.speed-group {
+  display: flex;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.speed-group button {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 7px 11px;
+  border-right: 1px solid var(--border);
+}
+.speed-group button:last-child { border-right: none; }
+.speed-group button.active {
+  background: var(--accent);
+  color: white;
+}
+.stats {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat .val {
+  color: var(--text);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 16px;
+  padding: 16px 28px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+@media (max-width: 1100px) {
+  main { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.panel .desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+/* ===== Hand panel ===== */
+.hand-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 14px 0;
+  min-height: 110px;
+}
+.player-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.player-side .who { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.card {
+  width: 60px;
+  height: 86px;
+  background: linear-gradient(160deg, #f5f7fa 0%, #e1e7ef 100%);
+  border-radius: 8px;
+  border: 1px solid #c1c7d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  font-weight: 800;
+  color: #0a0e1a;
+  font-family: "SF Mono", Menlo, monospace;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 -2px 0 rgba(0,0,0,0.06);
+  transition: transform 0.4s, box-shadow 0.3s;
+  position: relative;
+}
+.card.facedown {
+  background: linear-gradient(135deg, #2a3245 25%, #131826 75%);
+  color: var(--accent);
+  font-size: 28px;
+}
+.card.facedown::after {
+  content: "?";
+  position: absolute;
+}
+.card.dealing {
+  animation: dealCard 0.5s ease-out;
+}
+.card.king { box-shadow: 0 0 24px rgba(255,213,74,0.5), 0 4px 12px rgba(0,0,0,0.4); }
+.card.queen { box-shadow: 0 0 24px rgba(191,140,255,0.4), 0 4px 12px rgba(0,0,0,0.4); }
+.card.jack { box-shadow: 0 0 18px rgba(91,158,255,0.4), 0 4px 12px rgba(0,0,0,0.4); }
+.card .suit { font-size: 12px; position: absolute; top: 6px; left: 8px; font-weight: 600; opacity: 0.7; }
+.card .suit-br { font-size: 12px; position: absolute; bottom: 6px; right: 8px; font-weight: 600; opacity: 0.7; transform: rotate(180deg); }
+
+@keyframes dealCard {
+  0% { transform: translateY(-24px) rotateY(180deg); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(0) rotateY(0deg); opacity: 1; }
+}
+
+.vs-text { font-size: 14px; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+
+/* ===== Game tree SVG ===== */
+.tree-wrap { margin-top: 10px; padding: 10px 0; }
+svg.tree { width: 100%; height: 360px; display: block; }
+
+.tree-node {
+  cursor: default;
+  transition: opacity 0.2s;
+}
+.tree-node circle.bg { fill: var(--panel-2); stroke: var(--border); stroke-width: 1.5; transition: all 0.3s; }
+.tree-node.player1 circle.bg { stroke: var(--accent); }
+.tree-node.player2 circle.bg { stroke: var(--purple); }
+.tree-node.terminal circle.bg { fill: var(--panel-3); }
+.tree-node.active circle.bg {
+  filter: drop-shadow(0 0 8px var(--gold));
+  stroke: var(--gold);
+  stroke-width: 2.5;
+}
+.tree-node.visited circle.bg {
+  fill: rgba(91,158,255,0.12);
+}
+.tree-node text {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  font-weight: 600;
+}
+.tree-node text.label {
+  font-size: 10px;
+  fill: var(--muted);
+  font-weight: 500;
+}
+.tree-node text.payoff {
+  font-size: 13px;
+  font-weight: 700;
+}
+.tree-node text.payoff.win { fill: var(--green); }
+.tree-node text.payoff.loss { fill: var(--red); }
+
+.tree-edge {
+  stroke: var(--border);
+  stroke-width: 2;
+  fill: none;
+  transition: stroke 0.3s, stroke-width 0.3s;
+}
+.tree-edge.active {
+  stroke: var(--gold);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px var(--gold));
+}
+.tree-edge.dimmed { stroke: var(--dim); opacity: 0.45; }
+
+.tree-edge-label {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  fill: var(--muted);
+  text-anchor: middle;
+  font-weight: 600;
+}
+.tree-edge-label.active { fill: var(--gold); }
+.tree-edge-label .prob { fill: var(--accent); }
+
+.legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ===== Trace ===== */
+.trace {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  font-size: 12.5px;
+  color: var(--text);
+  min-height: 64px;
+  font-family: "SF Mono", Menlo, monospace;
+  line-height: 1.55;
+}
+.trace .step-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.trace b { color: var(--accent); }
+.trace .pos { color: var(--green); font-weight: 600; }
+.trace .neg { color: var(--red); font-weight: 600; }
+.trace .yel { color: var(--yellow); }
+.trace .pur { color: var(--purple); }
+
+/* ===== Info Sets ===== */
+.infosets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.iset-section-title {
+  grid-column: 1 / -1;
+  margin: 6px 0 -2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iset-section-title::before, .iset-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.iset-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.iset-card.player1 { border-left: 3px solid var(--accent); }
+.iset-card.player2 { border-left: 3px solid var(--purple); }
+.iset-card.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(255,213,74,0.25);
+  transform: translateY(-1px);
+  background: var(--panel-3);
+}
+.iset-card.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  animation: scanline 1s ease;
+}
+@keyframes scanline {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.iset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.iset-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.iset-title .who-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.iset-card.player1 .who-tag { background: rgba(91,158,255,0.18); color: var(--accent); }
+.iset-card.player2 .who-tag { background: rgba(191,140,255,0.18); color: var(--purple); }
+.iset-card .holding {
+  display: inline-block;
+  width: 18px;
+  height: 22px;
+  background: linear-gradient(160deg, #f5f7fa, #e1e7ef);
+  color: #0a0e1a;
+  border-radius: 3px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 22px;
+  font-family: "SF Mono", Menlo, monospace;
+  vertical-align: middle;
+}
+.iset-card .holding.king { box-shadow: 0 0 6px rgba(255,213,74,0.5); }
+.iset-card .holding.queen { box-shadow: 0 0 6px rgba(191,140,255,0.5); }
+.iset-card .holding.jack { box-shadow: 0 0 6px rgba(91,158,255,0.5); }
+
+.iset-history {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+.iset-strat {
+  display: grid;
+  grid-template-columns: 56px 1fr 60px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.iset-strat .action {
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 10px;
+}
+.iset-strat .pct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  font-family: "SF Mono", Menlo, monospace;
+}
+.iset-strat .pct .now {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text);
+}
+.iset-strat .pct .avg {
+  font-weight: 500;
+  font-size: 9px;
+  color: var(--muted);
+}
+.bar-track {
+  height: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.bar-fill.pass { background: linear-gradient(90deg, var(--accent), #7eb6ff); }
+.bar-fill.bet { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+
+.bar-fill.nash-target {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 0;
+  transition: left 0.3s;
+  z-index: 2;
+}
+.bar-fill.nash-target::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+}
+
+.iset-regret {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr;
+  gap: 6px;
+  align-items: center;
+  font-size: 10.5px;
+}
+.iset-regret .label {
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.regret-cell {
+  height: 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 2px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  padding: 0 4px;
+  font-weight: 600;
+}
+.regret-cell .rfill {
+  position: absolute;
+  height: 100%;
+  border-radius: 2px;
+  left: 0;
+  top: 0;
+  transition: width 0.4s;
+}
+.regret-cell .rfill.pos { background: rgba(63,223,142,0.55); }
+.regret-cell .rfill.neg { background: rgba(255,94,122,0.4); }
+.regret-cell .rval { position: relative; z-index: 1; }
+.regret-cell.pos .rval { color: var(--green); }
+.regret-cell.neg .rval { color: var(--red); }
+.regret-cell.zero .rval { color: var(--muted); }
+
+.regret-flash {
+  animation: flashUpdate 0.6s ease-out;
+}
+@keyframes flashUpdate {
+  0% { background: rgba(255,213,74,0.35); }
+  100% { background: rgba(255,255,255,0.04); }
+}
+
+/* ===== Convergence chart ===== */
+.chart-wrap {
+  position: relative;
+  margin-top: 10px;
+}
+canvas#chart {
+  width: 100%;
+  height: 220px;
+  display: block;
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "SF Mono", Menlo, monospace;
+}
+.chart-legend i {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+}
+.chart-legend i.dashed { background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 7px); height: 1px; padding: 1px 0; }
+
+/* ===== Inspector / Math walkthrough ===== */
+.inspector-panel { grid-column: 1 / -1; }
+.inspector-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+.ctrl-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.inspector-select {
+  background: var(--panel-3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 240px;
+}
+.inspector-select:focus { outline: 1px solid var(--accent); }
+.inspector-tag {
+  margin-left: auto;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.inspector-hint {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.inspector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 1100px) {
+  .inspector-grid { grid-template-columns: 1fr; }
+}
+
+.inspector-col {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.inspector-col:nth-child(2) .step-num { background: var(--purple); }
+.inspector-col:nth-child(3) .step-num { background: var(--green); }
+.step-desc { font-size: 11.5px; color: var(--muted); margin: 0 0 12px; line-height: 1.55; }
+
+.ev-row {
+  padding: 10px 12px;
+  background: var(--panel-3);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  border-left: 3px solid var(--border);
+}
+.ev-row.pass { border-left-color: var(--accent); }
+.ev-row.bet  { border-left-color: var(--orange); }
+
+.ev-row .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.ev-row .head .name { font-weight: 700; font-size: 13px; }
+.ev-row.pass .head .name { color: var(--accent); }
+.ev-row.bet  .head .name { color: var(--orange); }
+
+.ev-row .total {
+  font-weight: 700;
+  font-size: 14px;
+}
+.ev-row.pass .total { color: var(--accent); }
+.ev-row.bet  .total { color: var(--orange); }
+
+.ev-row .breakdown {
+  font-size: 11px;
+  color: var(--muted);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.ev-row .branch {
+  background: rgba(255,255,255,0.03);
+  padding: 4px 6px;
+  border-radius: 3px;
+}
+.ev-row .branch .num { color: var(--text); font-weight: 600; }
+.ev-row .branch .num.pos { color: var(--green); }
+.ev-row .branch .num.neg { color: var(--red); }
+.ev-row .avg-line {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.ev-row .avg-line .num { color: var(--text); font-weight: 600; }
+
+.formula-line {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  background: var(--panel-3);
+  padding: 6px 10px;
+  border-radius: 5px;
+  margin-bottom: 6px;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.55;
+}
+.formula-line .var { color: var(--gold); font-weight: 600; }
+.formula-line .num { color: var(--text); font-weight: 600; }
+.formula-line .num.pos { color: var(--green); }
+.formula-line .num.neg { color: var(--red); }
+.formula-line .num.zero { color: var(--muted); }
+.formula-line .op { color: var(--muted); }
+.formula-line.result {
+  border-left: 3px solid var(--green);
+  font-weight: 600;
+  background: rgba(63,223,142,0.07);
+}
+.formula-line.result.neg { border-left-color: var(--red); background: rgba(255,94,122,0.07); }
+.formula-line.result.zero { border-left-color: var(--muted); background: var(--panel-3); }
+
+.subhead {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 12px 0 6px;
+  font-weight: 700;
+}
+
+.strat-bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 56px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+}
+.strat-bar-row .name {
+  font-family: "SF Mono", Menlo, monospace;
+  font-weight: 600;
+}
+.strat-bar-row.pass .name { color: var(--accent); }
+.strat-bar-row.bet  .name { color: var(--orange); }
+.strat-bar-row .pct {
+  text-align: right;
+  font-family: "SF Mono", Menlo, monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+.strat-bar-row .track {
+  height: 14px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.strat-bar-row .fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.strat-bar-row.pass .fill { background: linear-gradient(90deg, var(--accent), #7eb6ff); }
+.strat-bar-row.bet  .fill { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+
+.iset-card { cursor: pointer; }
+.iset-card.inspecting {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+.iset-card.inspecting::after {
+  content: 'INSPECTING';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+/* ===== Bottom row ===== */
+.bottom-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .bottom-row { grid-template-columns: 1fr; }
+}
+
+.expl-text { font-size: 12px; line-height: 1.6; color: var(--muted); }
+.expl-text p { margin: 0 0 8px; }
+.expl-text b { color: var(--text); }
+.expl-text code {
+  background: var(--panel-3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--yellow);
+}
+.expl-text .formula {
+  background: var(--panel-3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--gold);
+  margin: 8px 0;
+  display: block;
+}
+
+footer {
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Watching a Poker Bot Learn — CFR on Kuhn Poker</h1>
+    <span class="sub">Counterfactual Regret Minimization · Zinkevich et al., 2007</span>
+    <a href="cfr-plus.html" class="nav-link">CFR+ →</a>
+    <a href="dcfr.html" class="nav-link">DCFR →</a>
+    <a href="deep-cfr.html" class="nav-link">Deep CFR →</a>
+    <a href="mccfr.html" class="nav-link">External Sampling MCCFR →</a>
+    <a href="/cfr-simulation/glossary" class="nav-link">Glossary →</a>
+  </div>
+  <div class="controls">
+    <button id="btn-play" class="primary">Play</button>
+    <button id="btn-step">Step</button>
+    <button id="btn-reset">Reset</button>
+    <div class="speed-group">
+      <button data-speed="slow">Slow</button>
+      <button data-speed="med" class="active">Medium</button>
+      <button data-speed="fast">Fast</button>
+      <button data-speed="turbo">Turbo</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Iteration</span><span class="val" id="stat-iter">0</span></div>
+      <div class="stat"><span class="label">Info sets</span><span class="val" id="stat-isets">12</span></div>
+      <div class="stat"><span class="label">Hands seen</span><span class="val" id="stat-hands">0</span></div>
+      <div class="stat"><span class="label">Exploit. mbb/g</span><span class="val" id="stat-expl">—</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- LEFT: Current Iteration -->
+  <section class="panel">
+    <h2>Current Iteration</h2>
+    <h3>What the bot is doing right now</h3>
+    <p class="desc">Each iteration the bot deals random cards, plays out every action path, computes <em>"what if I'd done X instead?"</em>, and adjusts its regrets. Watch the gold path — that's what just happened.</p>
+
+    <div class="hand-display">
+      <div class="player-side">
+        <span class="who">Player 1</span>
+        <div class="card facedown" id="p1-card"></div>
+      </div>
+      <span class="vs-text">vs</span>
+      <div class="player-side">
+        <span class="who">Player 2</span>
+        <div class="card facedown" id="p2-card"></div>
+      </div>
+    </div>
+
+    <div class="tree-wrap">
+      <svg class="tree" id="tree" viewBox="0 0 700 360" preserveAspectRatio="xMidYMid meet">
+        <!-- populated by JS -->
+      </svg>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--accent)"></span>Player 1 decision</span>
+        <span><span class="dot" style="background:var(--purple)"></span>Player 2 decision</span>
+        <span><span class="dot" style="background:var(--panel-3); border:1px solid var(--border)"></span>Showdown / fold</span>
+        <span><span class="dot" style="background:var(--gold)"></span>Path traversed this iteration</span>
+      </div>
+    </div>
+
+    <div class="trace" id="trace">
+      <span class="step-tag">Idle</span>Press <b>Play</b> to start training. The bot begins with no knowledge — every action is a 50/50 coin flip.
+    </div>
+  </section>
+
+  <!-- RIGHT: Information Sets -->
+  <section class="panel">
+    <h2>The Bot's Brain — 12 Information Sets</h2>
+    <h3>What does the bot know in each situation?</h3>
+    <p class="desc">In Kuhn poker, the bot only sees its <em>own</em> card plus the action history. That's <b>12 distinct situations</b>. For each, it tracks <span class="mono" style="color:var(--green)">cumulative regrets</span>, then derives the <span class="mono" style="color:var(--accent)">current strategy σ</span> (the bar) by regret matching — directly proportional to positive regret. The smaller <span class="mono" style="color:var(--muted)">avg %</span> is the strategy averaged over <em>all</em> iterations — that's the quantity that converges to Nash (and what the chart below tracks).</p>
+
+    <div class="infosets-grid" id="infosets">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- LIVE MATH WALKTHROUGH -->
+  <section class="panel inspector-panel">
+    <h2>Live Math Walkthrough</h2>
+    <h3>How <span style="color:var(--accent)">EV</span> and <span style="color:var(--green)">frequency</span> are calculated for one decision</h3>
+    <p class="desc">Every iteration, the bot does the three-step calculation below for <em>each</em> of its 12 information sets. Pick one to inspect — the numbers update live as training proceeds.</p>
+
+    <div class="inspector-controls">
+      <span class="ctrl-label">Inspecting</span>
+      <select id="inspector-select" class="inspector-select"></select>
+      <span class="inspector-hint">tip: click any info-set card above to switch</span>
+      <span class="inspector-tag" id="inspector-tag"></span>
+    </div>
+
+    <div class="inspector-grid">
+      <div class="inspector-col">
+        <div class="step-header"><span class="step-num">1</span>Counterfactual EV per action</div>
+        <p class="step-desc">For each action, what payoff do I expect if I play it — averaging over the opponent's possible cards and their current strategies in the subtree?</p>
+        <div id="ev-block"></div>
+      </div>
+      <div class="inspector-col">
+        <div class="step-header"><span class="step-num">2</span>Regret update</div>
+        <p class="step-desc">Regret of an action = how much better it would have been than what I did. Cumulative regret <span class="mono" style="color:var(--gold)">R(I,a)</span> sums this over every iteration so far.</p>
+        <div id="regret-block"></div>
+      </div>
+      <div class="inspector-col">
+        <div class="step-header"><span class="step-num">3</span>Frequency = regret matching</div>
+        <p class="step-desc">Play each action proportional to its <em>positive</em> regret. Negative regret? Don't play it. The <em>average</em> strategy across iterations is what converges to Nash.</p>
+        <div id="strategy-block"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM: Convergence + Explainer -->
+  <div class="bottom-row">
+    <section class="panel">
+      <h2>Strategy Convergence</h2>
+      <h3>Watch strategies stabilize toward Nash equilibrium</h3>
+      <p class="desc">Each line tracks one decision (the bot's <em>average</em> betting probability for a given hand). Dashed lines mark the Nash-equilibrium target — convergence means the bot is unexploitable.</p>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span style="color:var(--accent)"><i style="background:var(--accent)"></i>P1 bets with K (root)</span>
+        <span style="color:var(--purple)"><i style="background:var(--purple)"></i>P1 bluffs with J (root)</span>
+        <span style="color:var(--green)"><i style="background:var(--green)"></i>P2 bets K after check</span>
+        <span style="color:var(--orange)"><i style="background:var(--orange)"></i>P2 bluffs J after check</span>
+        <span style="color:var(--yellow)"><i style="background:var(--yellow)"></i>P1 calls Q after check-bet</span>
+        <span style="color: var(--muted)"><i class="dashed" style="color:var(--muted)"></i>Nash target</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>How CFR Actually Works</h2>
+      <h3>Three loops, no opponent model needed</h3>
+      <div class="expl-text">
+        <p><b>1. Walk the game tree.</b> For every possible card deal and action sequence, recursively visit every decision point.</p>
+        <p><b>2. Compute counterfactuals.</b> At each information set, ask: <em>"If I'd reached here and played action A, what would I get?"</em> Subtract the EV of what I actually did. That's the <span class="mono" style="color:var(--green)">regret</span>.</p>
+        <code class="formula">regret(I, a) += π_{-i}(I) · ( v(I,a) - v(I) )</code>
+        <p><b>3. Match strategy to regret.</b> Next iteration, play actions <em>proportional to positive regret</em> — actions you wish you'd played more, you play more.</p>
+        <code class="formula">σ(I, a) = max(0, R(I,a)) / Σ max(0, R(I,·))</code>
+        <p>The magic: averaging strategies across iterations converges to a <b>Nash equilibrium</b>. The bot becomes unexploitable without ever modeling its opponent — it just plays itself and stops regretting.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW EXPLOITABILITY IS COMPUTED -->
+  <section class="panel" style="grid-column: 1 / -1;">
+    <h2>How Exploitability is Computed</h2>
+    <h3>The Nash-distance metric — and why it equals 0 at convergence</h3>
+    <div class="expl-text">
+      <p><b>Exploitability</b> measures how much chip equity an opponent could win against your strategy by playing a <em>best response</em> — the strategy that maximally exploits yours. At Nash equilibrium no deviation helps either side, so exploitability = 0. Higher = further from Nash. Reported here in <b>milli-big-blinds per game (mbb/g)</b> — the standard poker artificial-intelligence metric (1 mbb/g = 0.001 chips lost per hand against a perfect opponent).</p>
+      <code class="formula">ε(σ) = ½ · ( best_response_value(P1, σ̄_P2) + best_response_value(P2, σ̄_P1) )</code>
+      <p>Where <b>best_response_value(player, opp_strategy)</b> is what <em>player</em> achieves with their best response to a fixed <em>opp_strategy</em>. In a zero-sum game the Nash values cancel, so ε ≥ 0 always; ε = 0 only at Nash. Both best-response values are computed against the average strategy <span class="mono" style="color:var(--gold)">σ̄</span>, not the current σ.</p>
+
+      <p><b>Computation in Kuhn — brute-force enumeration:</b></p>
+      <p>Each player has only <b>6 information sets</b>, each with <b>2 actions</b>. So each player has at most <b>2⁶ = 64 pure best-response strategies</b>. Cheap enough to brute-force:</p>
+      <code class="formula">for each of 64 candidate best-response strategies σ_BR:
+  v = expected utility(σ_BR vs σ̄_opp) over all 6 deals
+best_response_value = max v</code>
+      <p>The <b>crucial constraint</b>: the responder must <em>commit to one action per information set</em> — it can't peek at the opponent's card and pick differently per deal. (An earlier bug in this site let the best-response strategy cheat that way, which floored exploitability around 277 mbb/g instead of converging to 0.)</p>
+
+      <p><b>Why this approach doesn't scale to bigger games:</b> Leduc Poker (the next step up) has 144 info sets per player with 2 or 3 actions each. Brute force would need ~3¹⁴⁴ ≈ 10⁶⁸ strategies — infeasible. Larger games use a topological dynamic-programming best-response computation instead, processing info sets deepest-first and reusing already-decided choices in deeper subtrees.</p>
+    </div>
+  </section>
+
+
+</main>
+
+<footer>
+  Vanilla CFR on Kuhn Poker — 12 information sets, 6 card permutations per iteration.
+  <br>Algorithm: Zinkevich, Bowling et al., NeurIPS 2007.
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--dim)">
+    Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+  </div>
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Kuhn Poker constants
+// =============================================================
+const CARDS = ['J', 'Q', 'K'];
+const PASS = 0, BET = 1;
+const ACTION_NAMES = ['Pass/Fold', 'Bet/Call'];
+const ACTION_SHORT = ['p', 'b'];
+
+// All 6 deal permutations (P1, P2) - both players get distinct cards
+const DEALS = [
+  [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1]
+];
+
+// =============================================================
+// Information Set
+// =============================================================
+class InfoSet {
+  constructor(player, card, history) {
+    this.player = player;       // 0 or 1
+    this.card = card;           // 0=J 1=Q 2=K
+    this.history = history;     // string of actions
+    this.key = `${player}|${CARDS[card]}|${history}`;
+    this.regretSum = [0, 0];
+    this.strategySum = [0, 0];
+    this.lastVisitIter = -1;
+    this.lastDelta = [0, 0];
+  }
+
+  getStrategy() {
+    let normSum = 0;
+    const s = [0, 0];
+    for (let a = 0; a < 2; a++) {
+      s[a] = Math.max(this.regretSum[a], 0);
+      normSum += s[a];
+    }
+    if (normSum > 0) {
+      s[0] /= normSum;
+      s[1] /= normSum;
+    } else {
+      s[0] = 0.5; s[1] = 0.5;
+    }
+    return s;
+  }
+
+  getAverageStrategy() {
+    const sum = this.strategySum[0] + this.strategySum[1];
+    if (sum > 0) return [this.strategySum[0] / sum, this.strategySum[1] / sum];
+    return [0.5, 0.5];
+  }
+}
+
+// =============================================================
+// CFR Trainer
+// =============================================================
+class CFRTrainer {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.infoSets = new Map();
+    this.iter = 0;
+    this.handsPlayed = 0;
+    this.history = [];   // {iter, strategies: Map(key -> [p1,p2 avg])}
+    this.lastVisited = new Set();
+    // Pre-build 12 info sets
+    this.buildAllInfoSets();
+  }
+
+  buildAllInfoSets() {
+    // P1 acts at history "" and "pb". P2 acts at history "p" and "b".
+    const p1Histories = ['', 'pb'];
+    const p2Histories = ['p', 'b'];
+    for (const h of p1Histories) {
+      for (let c = 0; c < 3; c++) {
+        const k = `0|${CARDS[c]}|${h}`;
+        this.infoSets.set(k, new InfoSet(0, c, h));
+      }
+    }
+    for (const h of p2Histories) {
+      for (let c = 0; c < 3; c++) {
+        const k = `1|${CARDS[c]}|${h}`;
+        this.infoSets.set(k, new InfoSet(1, c, h));
+      }
+    }
+  }
+
+  getInfoSet(player, card, history) {
+    const k = `${player}|${CARDS[card]}|${history}`;
+    return this.infoSets.get(k);
+  }
+
+  isTerminal(history) {
+    return history === 'pp' || history === 'pbp' || history === 'pbb' || history === 'bp' || history === 'bb';
+  }
+
+  /** Returns P1's signed payoff. */
+  payoffP1(history, p1Card, p2Card) {
+    const p1Wins = p1Card > p2Card;
+    if (history === 'pp') return p1Wins ? 1 : -1;
+    if (history === 'pbp') return -1;          // P1 folds
+    if (history === 'pbb') return p1Wins ? 2 : -2;
+    if (history === 'bp') return 1;            // P2 folds
+    if (history === 'bb') return p1Wins ? 2 : -2;
+    return 0;
+  }
+
+  /**
+   * Vanilla CFR. Returns the payoff at this node from P1's perspective.
+   * Updates regretSum and strategySum on the way up.
+   */
+  cfr(history, p1Card, p2Card, p1Reach, p2Reach, trace) {
+    if (this.isTerminal(history)) {
+      return this.payoffP1(history, p1Card, p2Card);
+    }
+    const player = history.length % 2;
+    const card = player === 0 ? p1Card : p2Card;
+    const node = this.getInfoSet(player, card, history);
+    const strategy = node.getStrategy();
+
+    if (trace) {
+      this.lastVisited.add(node.key);
+      trace.visited.push({ key: node.key, history, player, card, strategy: [...strategy] });
+    }
+
+    // util[a] = P1 payoff if action a is taken
+    const util = [0, 0];
+    let nodeUtilP1 = 0;
+    for (let a = 0; a < 2; a++) {
+      const next = history + ACTION_SHORT[a];
+      let childUtilP1;
+      if (player === 0) {
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach * strategy[a], p2Reach, trace);
+      } else {
+        childUtilP1 = this.cfr(next, p1Card, p2Card, p1Reach, p2Reach * strategy[a], trace);
+      }
+      util[a] = childUtilP1;
+      nodeUtilP1 += strategy[a] * childUtilP1;
+    }
+
+    // Update regrets and strategy sum
+    // Convert to current player's perspective
+    const sign = player === 0 ? 1 : -1;
+    const cfReach = player === 0 ? p2Reach : p1Reach;
+    const ownReach = player === 0 ? p1Reach : p2Reach;
+
+    const myNodeUtil = sign * nodeUtilP1;
+    const deltaRegret = [0, 0];
+    for (let a = 0; a < 2; a++) {
+      const myActUtil = sign * util[a];
+      const regret = myActUtil - myNodeUtil;
+      const dr = cfReach * regret;
+      node.regretSum[a] += dr;
+      node.strategySum[a] += ownReach * strategy[a];
+      deltaRegret[a] = dr;
+    }
+    node.lastDelta = deltaRegret;
+    node.lastVisitIter = this.iter;
+
+    return nodeUtilP1;
+  }
+
+  /** One full vanilla CFR iteration: traverse all 6 deals. */
+  trainOne(captureTrace = false) {
+    this.iter++;
+    this.lastVisited.clear();
+    let trace = captureTrace ? { visited: [], deals: [] } : null;
+
+    for (const [c1, c2] of DEALS) {
+      let dealTrace = null;
+      if (trace) {
+        dealTrace = { p1: c1, p2: c2, visited: [] };
+        trace.currentDeal = dealTrace;
+      }
+      this.cfr('', c1, c2, 1, 1, dealTrace ? trace : null);
+      if (dealTrace) {
+        // Move visited from trace to dealTrace
+        dealTrace.visited = trace.visited.slice(dealTrace.startIdx ?? 0);
+      }
+      this.handsPlayed++;
+    }
+    if (trace) trace.lastP1 = DEALS[5][0];
+    return trace;
+  }
+
+  /** Train one of the 6 deals only. Used for slow animation. */
+  trainOneDeal(dealIdx) {
+    const [c1, c2] = DEALS[dealIdx];
+    this.lastVisited.clear();
+    const trace = { visited: [], p1: c1, p2: c2, dealIdx };
+    this.cfr('', c1, c2, 1, 1, trace);
+    this.handsPlayed++;
+    return trace;
+  }
+
+  /** Bulk train without tracing — used for fast/turbo. */
+  trainMany(n) {
+    for (let i = 0; i < n; i++) {
+      this.iter++;
+      for (const [c1, c2] of DEALS) {
+        this.cfr('', c1, c2, 1, 1, null);
+        this.handsPlayed++;
+      }
+    }
+  }
+
+  snapshot() {
+    const out = {};
+    for (const [k, n] of this.infoSets) {
+      out[k] = n.getAverageStrategy();
+    }
+    return out;
+  }
+
+  /**
+   * Compute exploitability (best-response gap) of the current AVERAGE strategy.
+   * For Kuhn poker we just enumerate via best-response over the same tree.
+   */
+  exploitability() {
+    // Compute average strategy for each infoset
+    const avgStrat = new Map();
+    for (const [k, n] of this.infoSets) avgStrat.set(k, n.getAverageStrategy());
+
+    // For each player, compute best-response value vs the other's avg strategy.
+    // Total exploitability = (br0 + br1) / 2
+    const br0 = this.bestResponseValue(0, avgStrat);
+    const br1 = this.bestResponseValue(1, avgStrat);
+    return (br0 + br1) / 2;
+  }
+
+  bestResponseValue(brPlayer, strategies) {
+    // BR must commit to ONE action per information set (the responder doesn't
+    // know the opponent's card). Enumerate all 2^6 = 64 pure BR strategies and
+    // pick the one with highest expected value.
+    const brKeys = [];
+    for (const [k, n] of this.infoSets) {
+      if (n.player === brPlayer) brKeys.push(k);
+    }
+    const N = brKeys.length;
+    let best = -Infinity;
+    const brStrat = new Map();
+    for (let mask = 0; mask < (1 << N); mask++) {
+      for (let i = 0; i < N; i++) {
+        const a = (mask >> i) & 1;
+        brStrat.set(brKeys[i], a === 0 ? [1, 0] : [0, 1]);
+      }
+      let val = 0;
+      for (const [c1, c2] of DEALS) {
+        val += this.evalStrategies('', c1, c2, brPlayer, strategies, brStrat);
+      }
+      val /= DEALS.length;
+      if (val > best) best = val;
+    }
+    return best;
+  }
+
+  evalStrategies(history, p1Card, p2Card, brPlayer, oppStrat, brStrat) {
+    if (this.isTerminal(history)) {
+      const p = this.payoffP1(history, p1Card, p2Card);
+      return brPlayer === 0 ? p : -p;
+    }
+    const player = history.length % 2;
+    const card = player === 0 ? p1Card : p2Card;
+    const key = `${player}|${CARDS[card]}|${history}`;
+    const s = (player === brPlayer) ? brStrat.get(key) : oppStrat.get(key);
+    let v = 0;
+    for (let a = 0; a < 2; a++) {
+      const next = history + ACTION_SHORT[a];
+      v += s[a] * this.evalStrategies(next, p1Card, p2Card, brPlayer, oppStrat, brStrat);
+    }
+    return v;
+  }
+}
+
+// =============================================================
+// Game Tree View (SVG)
+// =============================================================
+class GameTreeView {
+  constructor(svg) {
+    this.svg = svg;
+    this.NS = "http://www.w3.org/2000/svg";
+    // Tree layout. Each node: {id, x, y, type: 'chance'|'p1'|'p2'|'term', label, history, payoff?}
+    this.layout = this.buildLayout();
+    this.render();
+  }
+
+  buildLayout() {
+    // 700 x 360 viewBox
+    const W = 700, H = 360;
+    const nodes = [
+      { id: 'chance',  x: 350, y: 30,  type: 'chance', label: 'Deal' },
+      { id: 'p1_root', x: 350, y: 90,  type: 'p1', history: '', label: 'P1' },
+      // After P1 = pass
+      { id: 'p2_p',    x: 200, y: 165, type: 'p2', history: 'p', label: 'P2' },
+      // After P1 = bet
+      { id: 'p2_b',    x: 500, y: 165, type: 'p2', history: 'b', label: 'P2' },
+      // After P1=p, P2=p (terminal, showdown)
+      { id: 'pp',      x: 80,  y: 240, type: 'term', label: 'show', history: 'pp' },
+      // After P1=p, P2=b → P1 acts again
+      { id: 'p1_pb',   x: 270, y: 240, type: 'p1', history: 'pb', label: 'P1' },
+      // After P1=b, P2=p (P2 folds)
+      { id: 'bp',      x: 430, y: 240, type: 'term', label: 'P2 folds', history: 'bp' },
+      // After P1=b, P2=b (call → showdown)
+      { id: 'bb',      x: 580, y: 240, type: 'term', label: 'show', history: 'bb' },
+      // After P1=p, P2=b, P1=p (P1 folds)
+      { id: 'pbp',     x: 200, y: 320, type: 'term', label: 'P1 folds', history: 'pbp' },
+      // After P1=p, P2=b, P1=b (call → showdown)
+      { id: 'pbb',     x: 340, y: 320, type: 'term', label: 'show', history: 'pbb' },
+    ];
+    const edges = [
+      { from: 'chance',  to: 'p1_root', label: '', action: null },
+      { from: 'p1_root', to: 'p2_p',    label: 'pass', action: 0 },
+      { from: 'p1_root', to: 'p2_b',    label: 'bet',  action: 1 },
+      { from: 'p2_p',    to: 'pp',      label: 'pass', action: 0 },
+      { from: 'p2_p',    to: 'p1_pb',   label: 'bet',  action: 1 },
+      { from: 'p2_b',    to: 'bp',      label: 'fold', action: 0 },
+      { from: 'p2_b',    to: 'bb',      label: 'call', action: 1 },
+      { from: 'p1_pb',   to: 'pbp',     label: 'fold', action: 0 },
+      { from: 'p1_pb',   to: 'pbb',     label: 'call', action: 1 },
+    ];
+    return { nodes, edges, W, H };
+  }
+
+  render() {
+    this.svg.innerHTML = '';
+    const { nodes, edges } = this.layout;
+
+    // edges first
+    for (const e of edges) {
+      const from = nodes.find(n => n.id === e.from);
+      const to = nodes.find(n => n.id === e.to);
+      const path = document.createElementNS(this.NS, 'path');
+      const d = `M ${from.x} ${from.y + 22} Q ${(from.x+to.x)/2} ${(from.y+to.y)/2} ${to.x} ${to.y - 22}`;
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'tree-edge');
+      path.dataset.from = e.from;
+      path.dataset.to = e.to;
+      path.dataset.action = e.action;
+      this.svg.appendChild(path);
+
+      if (e.label) {
+        const lbl = document.createElementNS(this.NS, 'text');
+        lbl.setAttribute('class', 'tree-edge-label');
+        lbl.setAttribute('x', (from.x + to.x) / 2 + (to.x > from.x ? 12 : -12));
+        lbl.setAttribute('y', (from.y + to.y) / 2 + 3);
+        lbl.textContent = e.label;
+        lbl.dataset.from = e.from;
+        lbl.dataset.to = e.to;
+        this.svg.appendChild(lbl);
+
+        // probability label (smaller, below)
+        const prob = document.createElementNS(this.NS, 'text');
+        prob.setAttribute('class', 'tree-edge-label prob');
+        prob.setAttribute('x', (from.x + to.x) / 2 + (to.x > from.x ? 12 : -12));
+        prob.setAttribute('y', (from.y + to.y) / 2 + 14);
+        prob.dataset.from = e.from;
+        prob.dataset.to = e.to;
+        prob.dataset.role = 'prob';
+        this.svg.appendChild(prob);
+      }
+    }
+
+    // nodes
+    for (const n of nodes) {
+      const g = document.createElementNS(this.NS, 'g');
+      g.setAttribute('class', `tree-node ${n.type === 'p1' ? 'player1' : n.type === 'p2' ? 'player2' : n.type === 'term' ? 'terminal' : 'chance'}`);
+      g.setAttribute('transform', `translate(${n.x},${n.y})`);
+      g.dataset.id = n.id;
+
+      const r = n.type === 'term' ? 18 : 22;
+      const circle = document.createElementNS(this.NS, 'circle');
+      circle.setAttribute('class', 'bg');
+      circle.setAttribute('r', r);
+      g.appendChild(circle);
+
+      const t = document.createElementNS(this.NS, 'text');
+      t.textContent = n.label;
+      g.appendChild(t);
+
+      // sub-label below for terminal nodes
+      if (n.type === 'term') {
+        const payText = document.createElementNS(this.NS, 'text');
+        payText.setAttribute('class', 'payoff');
+        payText.setAttribute('y', 36);
+        payText.dataset.role = 'payoff';
+        g.appendChild(payText);
+      }
+
+      this.svg.appendChild(g);
+    }
+  }
+
+  /** Highlight the path traversed for one specific deal. */
+  showDeal(p1Card, p2Card, strategies) {
+    // Reset all
+    this.svg.querySelectorAll('.tree-edge').forEach(e => {
+      e.classList.remove('active');
+      e.classList.remove('dimmed');
+    });
+    this.svg.querySelectorAll('.tree-node').forEach(n => {
+      n.classList.remove('active');
+      n.classList.remove('visited');
+    });
+
+    // Update payoffs based on cards
+    this.svg.querySelectorAll('text[data-role="payoff"]').forEach(t => {
+      const nodeG = t.parentElement;
+      const id = nodeG.dataset.id;
+      const histories = { pp: 'pp', bp: 'bp', bb: 'bb', pbp: 'pbp', pbb: 'pbb' };
+      const h = histories[id];
+      if (h) {
+        const trainer = window.__trainer__;
+        const p1Pay = trainer.payoffP1(h, p1Card, p2Card);
+        t.textContent = p1Pay > 0 ? `+${p1Pay}` : `${p1Pay}`;
+        t.classList.toggle('win', p1Pay > 0);
+        t.classList.toggle('loss', p1Pay < 0);
+      }
+    });
+
+    // Update probability labels using current strategy
+    this.svg.querySelectorAll('text[data-role="prob"]').forEach(t => {
+      const from = t.dataset.from;
+      const to = t.dataset.to;
+      const action = this.layout.edges.find(e => e.from === from && e.to === to)?.action;
+      if (action == null) { t.textContent = ''; return; }
+
+      // Find the player at "from" node
+      const fromNode = this.layout.nodes.find(n => n.id === from);
+      if (fromNode.type === 'p1' || fromNode.type === 'p2') {
+        const player = fromNode.type === 'p1' ? 0 : 1;
+        const card = player === 0 ? p1Card : p2Card;
+        const key = `${player}|${CARDS[card]}|${fromNode.history}`;
+        const s = strategies.get(key) || [0.5, 0.5];
+        const pct = Math.round(s[action] * 100);
+        t.textContent = `${pct}%`;
+      } else {
+        t.textContent = '';
+      }
+    });
+  }
+
+  /** Animate the path through the tree given a list of (nodeId, edgeAction) pairs. */
+  highlightPath(pathEdges, pathNodes) {
+    // pathEdges: list of {from, to}
+    pathEdges.forEach(({from, to}) => {
+      const e = this.svg.querySelector(`path.tree-edge[data-from="${from}"][data-to="${to}"]`);
+      if (e) e.classList.add('active');
+      const lbl = this.svg.querySelector(`text.tree-edge-label[data-from="${from}"][data-to="${to}"]`);
+      if (lbl) lbl.classList.add('active');
+    });
+    pathNodes.forEach(id => {
+      const g = this.svg.querySelector(`g.tree-node[data-id="${id}"]`);
+      if (g) g.classList.add('active');
+    });
+  }
+}
+
+// =============================================================
+// Info Sets Grid
+// =============================================================
+class InfoSetGrid {
+  constructor(container, trainer) {
+    this.container = container;
+    this.trainer = trainer;
+    this.cards = new Map();   // key -> dom card element
+    this.nashTargets = this.buildNashTargets();
+    this.build();
+  }
+
+  /**
+   * Nash equilibrium for Kuhn (parametric in α ∈ [0, 1/3]).
+   * We use α = 1/3 so values are clean.
+   */
+  buildNashTargets() {
+    const ALPHA = 1 / 3;
+    const map = new Map();
+    // P1 root: J bet=α, Q bet=0, K bet=3α
+    map.set(`0|J|`, [1 - ALPHA, ALPHA]);
+    map.set(`0|Q|`, [1, 0]);
+    map.set(`0|K|`, [1 - 3 * ALPHA, 3 * ALPHA]);
+    // P1 after pb: J fold (always), Q call=α+1/3, K call (always)
+    map.set(`0|J|pb`, [1, 0]);
+    map.set(`0|Q|pb`, [1 - (ALPHA + 1/3), ALPHA + 1/3]);
+    map.set(`0|K|pb`, [0, 1]);
+    // P2 after p: J bet=1/3, Q never bet, K always bet
+    map.set(`1|J|p`, [2/3, 1/3]);
+    map.set(`1|Q|p`, [1, 0]);
+    map.set(`1|K|p`, [0, 1]);
+    // P2 after b: J fold, Q call=1/3, K call always
+    map.set(`1|J|b`, [1, 0]);
+    map.set(`1|Q|b`, [2/3, 1/3]);
+    map.set(`1|K|b`, [0, 1]);
+    return map;
+  }
+
+  build() {
+    this.container.innerHTML = '';
+    // Section: Player 1 acting first
+    this.addSection('Player 1 — first action (bet to bluff or value, or check)');
+    for (const c of [2, 1, 0]) { // K, Q, J
+      this.addCard(this.trainer.getInfoSet(0, c, ''));
+    }
+    // Section: Player 1 facing a bet
+    this.addSection('Player 1 — checked, now facing a bet (call or fold?)');
+    for (const c of [2, 1, 0]) {
+      this.addCard(this.trainer.getInfoSet(0, c, 'pb'));
+    }
+    // Section: Player 2 after P1 checks
+    this.addSection('Player 2 — P1 checked (steal with bet, or check behind?)');
+    for (const c of [2, 1, 0]) {
+      this.addCard(this.trainer.getInfoSet(1, c, 'p'));
+    }
+    // Section: Player 2 after P1 bets
+    this.addSection('Player 2 — P1 bet (call or fold?)');
+    for (const c of [2, 1, 0]) {
+      this.addCard(this.trainer.getInfoSet(1, c, 'b'));
+    }
+  }
+
+  addSection(title) {
+    const div = document.createElement('div');
+    div.className = 'iset-section-title';
+    div.textContent = title;
+    this.container.appendChild(div);
+  }
+
+  addCard(node) {
+    const action0 = node.player === 0 && node.history === '' ? 'Check' :
+                    node.player === 0 && node.history === 'pb' ? 'Fold' :
+                    node.player === 1 && node.history === 'p' ? 'Check' :
+                    node.player === 1 && node.history === 'b' ? 'Fold' : 'Pass';
+    const action1 = node.player === 0 && node.history === '' ? 'Bet' :
+                    node.player === 0 && node.history === 'pb' ? 'Call' :
+                    node.player === 1 && node.history === 'p' ? 'Bet' :
+                    node.player === 1 && node.history === 'b' ? 'Call' : 'Bet';
+
+    const div = document.createElement('div');
+    div.className = `iset-card player${node.player + 1}`;
+    div.dataset.key = node.key;
+    const cardClass = ['jack', 'queen', 'king'][node.card];
+    const histDesc = node.history === '' ? '(opening)' :
+                     node.history === 'p' ? '(P1 checked)' :
+                     node.history === 'b' ? '(P1 bet)' :
+                     node.history === 'pb' ? '(check, raised)' : node.history;
+    div.innerHTML = `
+      <div class="iset-header">
+        <div class="iset-title">
+          <span class="who-tag">${node.player === 0 ? 'P1' : 'P2'}</span>
+          holds <span class="holding ${cardClass}">${CARDS[node.card]}</span>
+        </div>
+        <span class="iset-history">${histDesc}</span>
+      </div>
+      <div class="iset-strat">
+        <span class="action">${action0}</span>
+        <div class="bar-track"><div class="bar-fill pass" data-a="0" style="width:50%"></div></div>
+        <span class="pct"><span class="now" data-pct="0">50%</span><span class="avg" data-avg="0">avg 50%</span></span>
+      </div>
+      <div class="iset-strat">
+        <span class="action">${action1}</span>
+        <div class="bar-track"><div class="bar-fill bet" data-a="1" style="width:50%"></div></div>
+        <span class="pct"><span class="now" data-pct="1">50%</span><span class="avg" data-avg="1">avg 50%</span></span>
+      </div>
+      <div class="iset-regret">
+        <span class="label">Regret</span>
+        <div class="regret-cell zero" data-r="0"><div class="rfill"></div><span class="rval">0.00</span></div>
+        <div class="regret-cell zero" data-r="1"><div class="rfill"></div><span class="rval">0.00</span></div>
+      </div>
+    `;
+    this.container.appendChild(div);
+    this.cards.set(node.key, div);
+
+    div.addEventListener('click', () => {
+      if (typeof this.onCardClick === 'function') this.onCardClick(node.key);
+    });
+  }
+
+  setInspecting(key) {
+    for (const [k, card] of this.cards) {
+      card.classList.toggle('inspecting', k === key);
+    }
+  }
+
+  /** Re-render strategy bars and regret cells for all info sets. */
+  update(activeKeys = null) {
+    let maxAbsRegret = 0.001;
+    for (const node of this.trainer.infoSets.values()) {
+      maxAbsRegret = Math.max(maxAbsRegret, Math.abs(node.regretSum[0]), Math.abs(node.regretSum[1]));
+    }
+
+    for (const [key, node] of this.trainer.infoSets) {
+      const card = this.cards.get(key);
+      if (!card) continue;
+
+      // Bars show CURRENT strategy σ (directly derived from regret matching, so
+      // they match the regret values shown below). The smaller "avg" % shows the
+      // average strategy σ̄ across iterations — that's the quantity that
+      // converges to Nash (also visible in the convergence chart).
+      const cur = node.getStrategy();
+      const avg = node.getAverageStrategy();
+      for (let a = 0; a < 2; a++) {
+        const bar = card.querySelector(`.bar-fill[data-a="${a}"]`);
+        const pctNow = card.querySelector(`[data-pct="${a}"]`);
+        const pctAvg = card.querySelector(`[data-avg="${a}"]`);
+        if (bar) bar.style.width = `${cur[a] * 100}%`;
+        if (pctNow) pctNow.textContent = `${(cur[a] * 100).toFixed(0)}%`;
+        if (pctAvg) pctAvg.textContent = `avg ${(avg[a] * 100).toFixed(1)}%`;
+      }
+
+      // Regret cells
+      for (let a = 0; a < 2; a++) {
+        const cell = card.querySelector(`.regret-cell[data-r="${a}"]`);
+        const fill = cell.querySelector('.rfill');
+        const val = cell.querySelector('.rval');
+        const r = node.regretSum[a];
+        const pct = Math.min(100, (Math.abs(r) / maxAbsRegret) * 100);
+        fill.style.width = `${pct}%`;
+        fill.classList.toggle('pos', r > 0);
+        fill.classList.toggle('neg', r < 0);
+        cell.classList.remove('pos', 'neg', 'zero');
+        cell.classList.add(r > 0.001 ? 'pos' : r < -0.001 ? 'neg' : 'zero');
+        val.textContent = r.toFixed(2);
+      }
+
+      // active highlight
+      if (activeKeys && activeKeys.has(key)) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    }
+  }
+
+  flashRegret(keys) {
+    for (const key of keys) {
+      const card = this.cards.get(key);
+      if (!card) continue;
+      card.querySelectorAll('.regret-cell').forEach(c => {
+        c.classList.remove('regret-flash');
+        // force reflow to restart anim
+        void c.offsetWidth;
+        c.classList.add('regret-flash');
+      });
+    }
+  }
+}
+
+// =============================================================
+// Convergence Chart
+// =============================================================
+class ConvergenceChart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.history = [];   // [{iter, values: {key: avg[1]}}]
+    this.maxPoints = 800;
+    this.tracked = [
+      { key: '0|K|',   color: '#5b9eff', label: 'P1 bet K (root)' },
+      { key: '0|J|',   color: '#bf8cff', label: 'P1 bluff J (root)' },
+      { key: '1|K|p',  color: '#3fdf8e', label: 'P2 bet K (after check)' },
+      { key: '1|J|p',  color: '#ff8c42', label: 'P2 bluff J (after check)' },
+      { key: '0|Q|pb', color: '#ffc857', label: 'P1 call Q (after check-bet)' },
+    ];
+    this.nashTargets = {
+      '0|K|':   1.0,            // K always bet (3α at α=1/3 = 1)
+      '0|J|':   1/3,            // J bluff α
+      '1|K|p':  1.0,
+      '1|J|p':  1/3,
+      '0|Q|pb': 2/3,            // Q call after pb
+    };
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+    this.W = rect.width;
+    this.H = rect.height;
+    this.draw();
+  }
+
+  push(iter, snapshot) {
+    const values = {};
+    for (const t of this.tracked) {
+      values[t.key] = snapshot[t.key] ? snapshot[t.key][1] : 0.5;
+    }
+    this.history.push({ iter, values });
+    if (this.history.length > this.maxPoints) {
+      // Downsample: keep every other point past maxPoints
+      const newHist = [];
+      for (let i = 0; i < this.history.length; i += 2) {
+        newHist.push(this.history[i]);
+      }
+      this.history = newHist;
+    }
+  }
+
+  reset() {
+    this.history = [];
+    this.draw();
+  }
+
+  _fmtIter(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1) + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(n >= 10_000 ? 0 : 1) + 'K';
+    return n.toString();
+  }
+
+  draw() {
+    const { ctx, W, H } = this;
+    ctx.clearRect(0, 0, W, H);
+
+    const padL = 36, padR = 12, padT = 10, padB = 22;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    // grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.fillStyle = '#7a8499';
+
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + (plotH * i) / 4;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.stroke();
+      ctx.fillText(`${(1 - i / 4).toFixed(2)}`, 4, y + 3);
+    }
+
+    if (this.history.length === 0) {
+      ctx.fillStyle = '#4a5266';
+      ctx.font = '12px -apple-system';
+      ctx.fillText('No data yet — start training', W / 2 - 80, H / 2);
+      return;
+    }
+
+    const minIter = this.history[0].iter;
+    const maxIter = Math.max(this.history[this.history.length - 1].iter, minIter + 1);
+
+    // x axis ticks
+    ctx.fillStyle = '#7a8499';
+    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 4; i++) {
+      const x = padL + (plotW * i) / 4;
+      const it = Math.round(minIter + (maxIter - minIter) * (i / 4));
+      ctx.fillText(this._fmtIter(it), x, H - 6);
+    }
+    // small "iter" hint at far right (won't collide with ticks)
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#4a5266';
+    ctx.fillText('iter →', padL + plotW, H - 6);
+    ctx.textAlign = 'start';
+
+    // Nash target lines (dashed)
+    ctx.setLineDash([3, 5]);
+    for (const t of this.tracked) {
+      const target = this.nashTargets[t.key];
+      if (target == null) continue;
+      const y = padT + (1 - target) * plotH;
+      ctx.strokeStyle = t.color + '55';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Lines
+    for (const t of this.tracked) {
+      ctx.strokeStyle = t.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      for (const pt of this.history) {
+        const x = padL + ((pt.iter - minIter) / Math.max(maxIter - minIter, 1)) * plotW;
+        const y = padT + (1 - pt.values[t.key]) * plotH;
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+// =============================================================
+// Card / Hand Display
+// =============================================================
+class HandDisplay {
+  constructor(p1El, p2El) {
+    this.p1 = p1El;
+    this.p2 = p2El;
+  }
+  setCards(p1Card, p2Card) {
+    this._set(this.p1, p1Card);
+    this._set(this.p2, p2Card);
+  }
+  _set(el, c) {
+    const klass = ['jack', 'queen', 'king'][c];
+    el.className = `card ${klass} dealing`;
+    el.innerHTML = `<span class="suit">${CARDS[c]}</span><span style="font-size:42px">${CARDS[c]}</span><span class="suit-br">${CARDS[c]}</span>`;
+    // restart animation
+    void el.offsetWidth;
+  }
+  hide() {
+    this.p1.className = 'card facedown';
+    this.p2.className = 'card facedown';
+    this.p1.innerHTML = '';
+    this.p2.innerHTML = '';
+  }
+}
+
+// =============================================================
+// Helpers
+// =============================================================
+function actionLabelsFor(node) {
+  if (node.player === 0 && node.history === '')   return ['Check', 'Bet'];
+  if (node.player === 0 && node.history === 'pb') return ['Fold', 'Call'];
+  if (node.player === 1 && node.history === 'p')  return ['Check', 'Bet'];
+  if (node.player === 1 && node.history === 'b')  return ['Fold', 'Call'];
+  return ['Pass', 'Bet'];
+}
+function fmt(n, d = 3) {
+  const s = n.toFixed(d);
+  return n >= 0 && !s.startsWith('-') ? '+' + s : s;
+}
+function signClass(n) {
+  if (n > 1e-4) return 'pos';
+  if (n < -1e-4) return 'neg';
+  return 'zero';
+}
+
+// =============================================================
+// MathWalkthrough — live EV / regret / strategy explainer
+// =============================================================
+class MathWalkthrough {
+  constructor(trainer, selectEl, evEl, regretEl, strategyEl, tagEl) {
+    this.trainer = trainer;
+    this.selectEl = selectEl;
+    this.evEl = evEl;
+    this.regretEl = regretEl;
+    this.strategyEl = strategyEl;
+    this.tagEl = tagEl;
+    this.selectedKey = '0|K|';   // P1 holds K, opening — most action-rich
+    this.populateSelect();
+    this.selectEl.value = this.selectedKey;
+    this.selectEl.onchange = () => this.setSelected(this.selectEl.value);
+    this.update();
+  }
+
+  populateSelect() {
+    const groups = [
+      { label: 'P1 — opening',          filter: n => n.player === 0 && n.history === '' },
+      { label: 'P1 — facing a bet',     filter: n => n.player === 0 && n.history === 'pb' },
+      { label: 'P2 — after P1 checked', filter: n => n.player === 1 && n.history === 'p' },
+      { label: 'P2 — after P1 bet',     filter: n => n.player === 1 && n.history === 'b' },
+    ];
+    let html = '';
+    for (const g of groups) {
+      html += `<optgroup label="${g.label}">`;
+      for (const c of [2, 1, 0]) {
+        for (const [k, n] of this.trainer.infoSets) {
+          if (g.filter(n) && n.card === c) {
+            html += `<option value="${k}">P${n.player+1} holds ${CARDS[n.card]}</option>`;
+          }
+        }
+      }
+      html += `</optgroup>`;
+    }
+    this.selectEl.innerHTML = html;
+  }
+
+  setSelected(key) {
+    if (!this.trainer.infoSets.has(key)) return;
+    this.selectedKey = key;
+    this.selectEl.value = key;
+    this.update();
+  }
+
+  /** Recursively compute the value at a (history, p1Card, p2Card) state, given current strategies, from `perspective` player's view. */
+  valueAt(history, p1Card, p2Card, perspective) {
+    if (this.trainer.isTerminal(history)) {
+      const p = this.trainer.payoffP1(history, p1Card, p2Card);
+      return perspective === 0 ? p : -p;
+    }
+    const player = history.length % 2;
+    const card = player === 0 ? p1Card : p2Card;
+    const node = this.trainer.getInfoSet(player, card, history);
+    const s = node.getStrategy();
+    let v = 0;
+    for (let a = 0; a < 2; a++) {
+      v += s[a] * this.valueAt(history + ACTION_SHORT[a], p1Card, p2Card, perspective);
+    }
+    return v;
+  }
+
+  update() {
+    const node = this.trainer.infoSets.get(this.selectedKey);
+    if (!node) return;
+    const labels = actionLabelsFor(node);
+    const oppCards = [0, 1, 2].filter(c => c !== node.card);
+
+    // ---- Step 1: EV per action ----
+    const evs = [];
+    for (let a = 0; a < 2; a++) {
+      const breakdown = [];
+      let sum = 0;
+      for (const oppCard of oppCards) {
+        const p1Card = node.player === 0 ? node.card : oppCard;
+        const p2Card = node.player === 0 ? oppCard : node.card;
+        const next = node.history + ACTION_SHORT[a];
+        const v = this.valueAt(next, p1Card, p2Card, node.player);
+        breakdown.push({ oppCard, value: v });
+        sum += v;
+      }
+      const avg = sum / oppCards.length;
+      evs.push({ action: a, label: labels[a], breakdown, ev: avg });
+    }
+
+    // ---- Step 2: Regret update ----
+    const curStrat = node.getStrategy();
+    const nodeUtil = curStrat[0] * evs[0].ev + curStrat[1] * evs[1].ev;
+    const instantRegret = [evs[0].ev - nodeUtil, evs[1].ev - nodeUtil];
+    const cumRegret = [...node.regretSum];
+
+    // ---- Step 3: Frequency from regret matching ----
+    const posR = [Math.max(0, cumRegret[0]), Math.max(0, cumRegret[1])];
+    const sumPos = posR[0] + posR[1];
+    const newStrat = sumPos > 0 ? [posR[0] / sumPos, posR[1] / sumPos] : [0.5, 0.5];
+    const avgStrat = node.getAverageStrategy();
+
+    this.tagEl.textContent = `key: ${node.key}`;
+    this.renderEV(node, evs, oppCards, labels);
+    this.renderRegret(node, evs, curStrat, nodeUtil, instantRegret, cumRegret, labels);
+    this.renderStrategy(posR, sumPos, newStrat, avgStrat, labels);
+  }
+
+  renderEV(node, evs, oppCards, labels) {
+    const oppName = node.player === 0 ? 'P2' : 'P1';
+    let html = '';
+    for (const e of evs) {
+      const cls = e.action === 0 ? 'pass' : 'bet';
+      html += `
+        <div class="ev-row ${cls}">
+          <div class="head">
+            <span class="name">EV(${e.label})</span>
+            <span class="total">${fmt(e.ev)}</span>
+          </div>
+          <div class="breakdown">
+            ${e.breakdown.map(b => `
+              <div class="branch">
+                vs ${oppName}=${CARDS[b.oppCard]}<br>
+                <span class="num ${signClass(b.value)}">${fmt(b.value)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="avg-line">
+            avg = (${e.breakdown.map(b => b.value.toFixed(2)).join(' + ')}) / ${oppCards.length} = <span class="num">${e.ev.toFixed(3)}</span>
+          </div>
+        </div>
+      `;
+    }
+    this.evEl.innerHTML = html;
+  }
+
+  renderRegret(node, evs, curStrat, nodeUtil, instantRegret, cumRegret, labels) {
+    const nClass = signClass(nodeUtil);
+    const html = `
+      <div class="subhead">Average payoff at this state</div>
+      <div class="formula-line">
+        <span class="var">V(I)</span> = σ·EV(${labels[0]}) + σ·EV(${labels[1]})
+      </div>
+      <div class="formula-line">
+        = ${curStrat[0].toFixed(2)}·${evs[0].ev.toFixed(2)} + ${curStrat[1].toFixed(2)}·${evs[1].ev.toFixed(2)}
+      </div>
+      <div class="formula-line result ${nClass}">
+        <span class="var">V(I)</span> = <span class="num ${nClass}">${fmt(nodeUtil)}</span>
+      </div>
+
+      <div class="subhead">Instant regret  r(I,a) = EV(a) − V(I)</div>
+      <div class="formula-line">
+        r(${labels[0]}) = ${evs[0].ev.toFixed(3)} − ${nodeUtil.toFixed(3)} = <span class="num ${signClass(instantRegret[0])}">${fmt(instantRegret[0])}</span>
+      </div>
+      <div class="formula-line">
+        r(${labels[1]}) = ${evs[1].ev.toFixed(3)} − ${nodeUtil.toFixed(3)} = <span class="num ${signClass(instantRegret[1])}">${fmt(instantRegret[1])}</span>
+      </div>
+
+      <div class="subhead">Cumulative regret  R(I,a) = Σ over iterations</div>
+      <div class="formula-line result ${signClass(cumRegret[0])}">
+        <span class="var">R(${labels[0]})</span> = <span class="num ${signClass(cumRegret[0])}">${fmt(cumRegret[0], 2)}</span>
+      </div>
+      <div class="formula-line result ${signClass(cumRegret[1])}">
+        <span class="var">R(${labels[1]})</span> = <span class="num ${signClass(cumRegret[1])}">${fmt(cumRegret[1], 2)}</span>
+      </div>
+    `;
+    this.regretEl.innerHTML = html;
+  }
+
+  renderStrategy(posR, sumPos, newStrat, avgStrat, labels) {
+    const html = `
+      <div class="formula-line">
+        <span class="var">σ(I,a)</span> = max(0, R(I,a)) / Σ max(0, R(I,·))
+      </div>
+      <div class="formula-line">
+        max(0, R(${labels[0]})) = <span class="num">${posR[0].toFixed(2)}</span>
+      </div>
+      <div class="formula-line">
+        max(0, R(${labels[1]})) = <span class="num">${posR[1].toFixed(2)}</span>
+      </div>
+      <div class="formula-line">
+        total = <span class="num">${sumPos.toFixed(2)}</span> ${sumPos === 0 ? '<span class="op">→ uniform fallback</span>' : ''}
+      </div>
+
+      <div class="subhead">Current strategy σ(I,·)</div>
+      <div class="strat-bar-row pass">
+        <span class="name">${labels[0]}</span>
+        <div class="track"><div class="fill" style="width:${newStrat[0]*100}%"></div></div>
+        <span class="pct">${(newStrat[0]*100).toFixed(1)}%</span>
+      </div>
+      <div class="strat-bar-row bet">
+        <span class="name">${labels[1]}</span>
+        <div class="track"><div class="fill" style="width:${newStrat[1]*100}%"></div></div>
+        <span class="pct">${(newStrat[1]*100).toFixed(1)}%</span>
+      </div>
+
+      <div class="subhead">Average strategy σ̄(I,·) — converges to Nash</div>
+      <div class="strat-bar-row pass">
+        <span class="name">${labels[0]}</span>
+        <div class="track"><div class="fill" style="width:${avgStrat[0]*100}%"></div></div>
+        <span class="pct">${(avgStrat[0]*100).toFixed(1)}%</span>
+      </div>
+      <div class="strat-bar-row bet">
+        <span class="name">${labels[1]}</span>
+        <div class="track"><div class="fill" style="width:${avgStrat[1]*100}%"></div></div>
+        <span class="pct">${(avgStrat[1]*100).toFixed(1)}%</span>
+      </div>
+    `;
+    this.strategyEl.innerHTML = html;
+  }
+}
+
+// =============================================================
+// App
+// =============================================================
+class App {
+  constructor() {
+    this.trainer = new CFRTrainer();
+    window.__trainer__ = this.trainer;
+
+    this.tree = new GameTreeView(document.getElementById('tree'));
+    this.grid = new InfoSetGrid(document.getElementById('infosets'), this.trainer);
+    this.grid.onCardClick = (key) => {
+      this.walkthrough.setSelected(key);
+      this.grid.setInspecting(key);
+    };
+    this.chart = new ConvergenceChart(document.getElementById('chart'));
+    this.walkthrough = new MathWalkthrough(
+      this.trainer,
+      document.getElementById('inspector-select'),
+      document.getElementById('ev-block'),
+      document.getElementById('regret-block'),
+      document.getElementById('strategy-block'),
+      document.getElementById('inspector-tag'),
+    );
+    // Sync select changes back to grid highlight
+    const origSetSelected = this.walkthrough.setSelected.bind(this.walkthrough);
+    this.walkthrough.setSelected = (key) => {
+      origSetSelected(key);
+      this.grid.setInspecting(key);
+    };
+    this.grid.setInspecting(this.walkthrough.selectedKey);
+    this.hand = new HandDisplay(document.getElementById('p1-card'), document.getElementById('p2-card'));
+
+    this.elIter = document.getElementById('stat-iter');
+    this.elHands = document.getElementById('stat-hands');
+    this.elExpl = document.getElementById('stat-expl');
+    this.elTrace = document.getElementById('trace');
+
+    this.btnPlay = document.getElementById('btn-play');
+    this.btnStep = document.getElementById('btn-step');
+    this.btnReset = document.getElementById('btn-reset');
+
+    this.playing = false;
+    this.speed = 'med';
+    this.tickHandle = null;
+    this.dealAnimIdx = 0;
+
+    this.bindControls();
+    this.refresh();
+  }
+
+  bindControls() {
+    this.btnPlay.onclick = () => this.togglePlay();
+    this.btnStep.onclick = () => {
+      this.pause();
+      this.step();
+    };
+    this.btnReset.onclick = () => this.reset();
+
+    document.querySelectorAll('.speed-group button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.speed-group button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.speed = btn.dataset.speed;
+        if (this.playing) {
+          this.pause();
+          this.play();
+        }
+      };
+    });
+  }
+
+  togglePlay() {
+    if (this.playing) this.pause();
+    else this.play();
+  }
+
+  play() {
+    this.playing = true;
+    this.btnPlay.innerHTML = 'Pause';
+    this.btnPlay.classList.remove('primary');
+    this.scheduleTick();
+  }
+
+  pause() {
+    this.playing = false;
+    this.btnPlay.innerHTML = 'Play';
+    this.btnPlay.classList.add('primary');
+    if (this.tickHandle) {
+      clearTimeout(this.tickHandle);
+      this.tickHandle = null;
+    }
+  }
+
+  reset() {
+    this.pause();
+    this.trainer.reset();
+    this.chart.reset();
+    this.dealAnimIdx = 0;
+    this.hand.hide();
+    this.grid.update(null);
+    this.grid.setInspecting(this.walkthrough.selectedKey);
+    this.walkthrough.update();
+    this.elIter.textContent = '0';
+    this.elHands.textContent = '0';
+    this.elExpl.textContent = '—';
+    this.elTrace.innerHTML = '<span class="step-tag">Reset</span>Bot reinitialized. Strategies back to 50/50.';
+    this.tree.showDeal(2, 1, new Map());
+  }
+
+  scheduleTick() {
+    if (!this.playing) return;
+    const delays = { slow: 700, med: 160, fast: 30, turbo: 1 };
+    const burst = { slow: 1, med: 1, fast: 5, turbo: 50 };
+    const delay = delays[this.speed];
+    const n = burst[this.speed];
+
+    this.tickHandle = setTimeout(() => {
+      this.runTicks(n);
+      this.scheduleTick();
+    }, delay);
+  }
+
+  runTicks(n) {
+    if (this.speed === 'slow' || this.speed === 'med') {
+      // Animate one deal at a time (partial iterations)
+      this.stepOneDeal();
+    } else {
+      // Bulk train n iterations, then update display
+      this.trainer.trainMany(n);
+      this.refresh(n > 1);
+    }
+  }
+
+  /** Animate one deal: one of the 6 card permutations of one CFR iteration. */
+  stepOneDeal() {
+    // If we're at the start of a new iteration, increment iter counter
+    if (this.dealAnimIdx === 0) {
+      this.trainer.iter++;
+    }
+    const dealIdx = this.dealAnimIdx;
+    const trace = this.trainer.trainOneDeal(dealIdx);
+
+    // Display
+    this.hand.setCards(trace.p1, trace.p2);
+
+    // Strategies snapshot for the tree
+    const strats = new Map();
+    for (const [k, n] of this.trainer.infoSets) strats.set(k, n.getStrategy());
+    this.tree.showDeal(trace.p1, trace.p2, strats);
+
+    // Animate path traversal
+    this.animatePath(trace);
+
+    // Update trace text
+    this.updateTraceText(trace);
+
+    // Update grid (with active highlights)
+    const activeKeys = new Set(trace.visited.map(v => `${v.player}|${CARDS[v.card]}|${v.history}`));
+    this.grid.update(activeKeys);
+    this.grid.flashRegret(activeKeys);
+    this.grid.setInspecting(this.walkthrough.selectedKey);
+    this.walkthrough.update();
+
+    // Push to chart every full iteration
+    if (this.dealAnimIdx === 5) {
+      this.chart.push(this.trainer.iter, this.trainer.snapshot());
+      this.chart.draw();
+    }
+
+    this.dealAnimIdx = (this.dealAnimIdx + 1) % 6;
+
+    // Update stats
+    this.elIter.textContent = this.trainer.iter.toLocaleString();
+    this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
+    if (this.trainer.iter % 10 === 0 && this.dealAnimIdx === 0) {
+      this.elExpl.textContent = (this.trainer.exploitability() * 1000).toFixed(1);
+    }
+  }
+
+  animatePath(trace) {
+    // Highlight path through tree based on trace.visited
+    // Each visited entry is a decision node; we need to know which action was taken (but vanilla CFR explores all).
+    // For visualization, pick one path: either show the action with highest current strategy probability,
+    // or just light up all visited nodes. Let's light up visited + dim siblings.
+    const visited = trace.visited;
+    if (!visited || visited.length === 0) return;
+
+    // Build a sample path from root following the highest-probability action.
+    // Map history -> nodeId
+    const histToNode = {
+      '': 'p1_root',
+      'p': 'p2_p',
+      'b': 'p2_b',
+      'pb': 'p1_pb',
+    };
+
+    // We'll trace one specific path: start at chance, deal cards, pick path by strategy, terminate.
+    const pathNodes = ['chance', 'p1_root'];
+    const pathEdges = [{ from: 'chance', to: 'p1_root' }];
+
+    let history = '';
+    let p1Card = trace.p1, p2Card = trace.p2;
+    while (!this.trainer.isTerminal(history)) {
+      const player = history.length % 2;
+      const card = player === 0 ? p1Card : p2Card;
+      const node = this.trainer.getInfoSet(player, card, history);
+      const s = node.getStrategy();
+      // Pick the action with highest strategy (sample-mode would be cooler but we want determinism per call)
+      const action = s[1] > s[0] ? 1 : (s[0] === s[1] ? Math.random() < 0.5 ? 0 : 1 : 0);
+      const fromId = histToNode[history];
+      const nextHist = history + ACTION_SHORT[action];
+      const toId = this.trainer.isTerminal(nextHist) ? nextHist : histToNode[nextHist];
+      pathEdges.push({ from: fromId, to: toId });
+      pathNodes.push(toId);
+      history = nextHist;
+    }
+
+    this.tree.highlightPath(pathEdges, pathNodes);
+  }
+
+  updateTraceText(trace) {
+    const dealStr = `<span class="pur">P1=${CARDS[trace.p1]}, P2=${CARDS[trace.p2]}</span>`;
+
+    // Find the most-impactful info set this step (largest |delta|)
+    let topNode = null, topAbs = 0, topAction = 0;
+    for (const v of trace.visited) {
+      const node = this.trainer.getInfoSet(v.player, v.card, v.history);
+      for (let a = 0; a < 2; a++) {
+        if (Math.abs(node.lastDelta[a]) > topAbs) {
+          topAbs = Math.abs(node.lastDelta[a]);
+          topNode = node;
+          topAction = a;
+        }
+      }
+    }
+
+    let lesson = '';
+    if (topNode) {
+      const sign = topNode.lastDelta[topAction] > 0 ? 'pos' : 'neg';
+      const verb = topNode.lastDelta[topAction] > 0 ? 'wishes it had' : 'is glad it didn\'t';
+      const action = topNode.player === 0
+        ? (topNode.history === '' ? (topAction === 0 ? 'checked' : 'bet')
+          : (topAction === 0 ? 'folded' : 'called'))
+        : (topNode.history === 'p' ? (topAction === 0 ? 'checked' : 'bet')
+          : (topAction === 0 ? 'folded' : 'called'));
+      const heldCard = ['jack', 'queen', 'king'][topNode.card].toUpperCase().slice(0,1);
+      const cardCls = topNode.lastDelta[topAction] > 0 ? 'pos' : 'neg';
+      lesson = `<br>Biggest update: <b>P${topNode.player + 1}</b> with <b>${CARDS[topNode.card]}</b> ${verb} <span class="${sign}">${action}</span> more (Δregret = <span class="${sign}">${topNode.lastDelta[topAction] > 0 ? '+' : ''}${topNode.lastDelta[topAction].toFixed(3)}</span>).`;
+    }
+
+    this.elTrace.innerHTML =
+      `<span class="step-tag">Iter ${this.trainer.iter}.${trace.dealIdx + 1}</span>` +
+      `Dealing ${dealStr}. The bot walks every path, sees the actual payoff, then asks ` +
+      `<span class="yel">"what if I'd done X instead?"</span> and updates regrets.` +
+      lesson;
+  }
+
+  /** Quick refresh after bulk train. */
+  refresh(skipChart = false) {
+    this.grid.update();
+    this.grid.setInspecting(this.walkthrough.selectedKey);
+    this.walkthrough.update();
+    this.elIter.textContent = this.trainer.iter.toLocaleString();
+    this.elHands.textContent = this.trainer.handsPlayed.toLocaleString();
+    if (!skipChart) {
+      this.chart.push(this.trainer.iter, this.trainer.snapshot());
+    } else {
+      // Push only every iter-step
+      this.chart.push(this.trainer.iter, this.trainer.snapshot());
+    }
+    this.chart.draw();
+    if (this.trainer.iter > 0) {
+      this.elExpl.textContent = (this.trainer.exploitability() * 1000).toFixed(1);
+    }
+    // For fast/turbo mode, animate a representative deal
+    const sampleDeal = DEALS[Math.floor(Math.random() * 6)];
+    const strats = new Map();
+    for (const [k, n] of this.trainer.infoSets) strats.set(k, n.getStrategy());
+    this.tree.showDeal(sampleDeal[0], sampleDeal[1], strats);
+    this.hand.setCards(sampleDeal[0], sampleDeal[1]);
+
+    this.elTrace.innerHTML = `<span class="step-tag">Iter ${this.trainer.iter}</span>` +
+      `Bulk-trained. Sampled a representative hand: <span class="pur">P1=${CARDS[sampleDeal[0]]}, P2=${CARDS[sampleDeal[1]]}</span>. ` +
+      `Watch the strategy bars on the right inch toward Nash (white markers).`;
+  }
+
+  step() {
+    this.stepOneDeal();
+  }
+}
+
+// Bootstrap
+document.addEventListener('DOMContentLoaded', () => {
+  new App();
+});
+
+</script>
+</body>
+</html>

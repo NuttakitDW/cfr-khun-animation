@@ -1,4 +1,10 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/badugi",                "destination": "https://badugi-tutorial.vercel.app/badugi" },
+    { "source": "/badugi/:path*",         "destination": "https://badugi-tutorial.vercel.app/badugi/:path*" },
+    { "source": "/cfr-simulation",        "destination": "/cfr-simulation.html" },
+    { "source": "/cfr-simulation/:path*", "destination": "/:path*" }
+  ]
 }
