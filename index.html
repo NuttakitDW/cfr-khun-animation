@@ -127,6 +127,8 @@ section.panel h3 {
 .tile .label.poker  { background: rgba(255,140,66,0.15);  color: var(--orange); }
 .tile .label.cfr    { background: rgba(91,158,255,0.15);  color: var(--accent); }
 .tile .label.metric { background: rgba(63,223,142,0.15);  color: var(--green); }
+.tile .label.mccfr  { background: rgba(191,140,255,0.15); color: var(--purple); }
+.tile .label.deep   { background: rgba(255,213,74,0.15);  color: var(--gold); }
 .tile .name {
   font-size: 16px;
   font-weight: 700;
@@ -175,8 +177,50 @@ footer a:hover { color: var(--accent); }
       <a class="tile" href="/cfr-simulation">
         <span class="label cfr">CFR</span>
         <p class="name">CFR Simulation</p>
-        <p class="desc">Watch a poker bot learn Kuhn poker from scratch via Counterfactual Regret Minimization. Includes a glossary and live math walkthrough.</p>
+        <p class="desc">Watch a poker bot learn Kuhn poker from scratch via vanilla Counterfactual Regret Minimization. Includes a glossary and live math walkthrough.</p>
         <span class="arrow">/cfr-simulation →</span>
+      </a>
+
+      <a class="tile" href="/cfr-plus">
+        <span class="label cfr">CFR+</span>
+        <p class="name">CFR+ on Kuhn Poker</p>
+        <p class="desc">Floor cumulative regret at zero and use weighted strategy averaging — converges roughly an order of magnitude faster than vanilla CFR. Tammelin, 2014.</p>
+        <span class="arrow">/cfr-plus →</span>
+      </a>
+
+      <a class="tile" href="/dcfr">
+        <span class="label cfr">DCFR</span>
+        <p class="name">Discounted CFR</p>
+        <p class="desc">Discount past regret and strategy contributions with α/β/γ weights. The modern default for tabular CFR. Brown &amp; Sandholm, 2019.</p>
+        <span class="arrow">/dcfr →</span>
+      </a>
+
+      <a class="tile" href="/mccfr">
+        <span class="label mccfr">MCCFR</span>
+        <p class="name">External Sampling MCCFR</p>
+        <p class="desc">Sample a single chance outcome per iteration instead of walking all 6 deals. Trades variance for speed. Lanctot et al., 2009.</p>
+        <span class="arrow">/mccfr →</span>
+      </a>
+
+      <a class="tile" href="/mccfr-variants">
+        <span class="label mccfr">Sampling</span>
+        <p class="name">MCCFR Variants</p>
+        <p class="desc">Side-by-side comparison of Chance, External, and Outcome sampling — three ways to sample the tree, one clear winner in practice.</p>
+        <span class="arrow">/mccfr-variants →</span>
+      </a>
+
+      <a class="tile" href="/deep-cfr-explained">
+        <span class="label deep">Concept</span>
+        <p class="name">Deep CFR Explained</p>
+        <p class="desc">Conceptual walkthrough of how CFR drops its lookup table for a neural-network function approximator — and why that lets it scale beyond toy games.</p>
+        <span class="arrow">/deep-cfr-explained →</span>
+      </a>
+
+      <a class="tile" href="/deep-cfr">
+        <span class="label deep">Deep CFR</span>
+        <p class="name">Deep CFR on Kuhn Poker</p>
+        <p class="desc">Tabular regret tables replaced by a neural network. Same convergence guarantees, no per-info-set bookkeeping. Brown, Lerer, Gross, Sandholm — ICML 2019.</p>
+        <span class="arrow">/deep-cfr →</span>
       </a>
 
       <a class="tile" href="/convergence-metrics">
