@@ -148,6 +148,25 @@ section.panel h3 {
   margin-top: 10px;
   display: block;
 }
+.tile .host {
+  display: block;
+  margin-top: 10px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  word-break: break-all;
+}
+.tile.external::after {
+  content: "↗";
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.tile { position: relative; }
+
+.section-spacer { height: 18px; }
 
 footer {
   padding: 24px 32px 36px;
@@ -235,6 +254,22 @@ footer a:hover { color: var(--accent); }
         <p class="name">Badugi Tutorial</p>
         <p class="desc">Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
         <span class="arrow">/badugi →</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <section class="panel">
+    <h2>Further Reading</h2>
+    <h3>External resources worth your time</h3>
+
+    <div class="tile-grid">
+      <a class="tile external" href="https://brianberns.github.io/Hearts/" target="_blank" rel="noopener">
+        <span class="label deep">Deep CFR</span>
+        <p class="name">Hearts via Deep CFR</p>
+        <p class="desc">Brian Berns's interactive Hearts bot trained with Deep CFR — a much larger game than Kuhn poker. Useful concrete reference for how Deep CFR scales beyond toy domains.</p>
+        <span class="host">brianberns.github.io/Hearts</span>
       </a>
     </div>
   </section>
