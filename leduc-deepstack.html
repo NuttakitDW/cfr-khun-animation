@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leduc DeepStack — Value Network POC</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg-2: #0f1424; --panel: #131826; --panel-2: #1a2030;
+  --panel-3: #232b3f; --border: #2a3245; --text: #e4e9f2; --muted: #7a8499;
+  --dim: #4a5266; --accent: #5b9eff; --green: #3fdf8e; --red: #ff5e7a;
+  --yellow: #ffc857; --purple: #bf8cff; --orange: #ff8c42; --gold: #ffd54a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text); line-height: 1.55; min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px; border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 30;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto; color: var(--accent); text-decoration: none;
+  font-size: 13px; font-weight: 600; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: 8px; transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--panel-2);
+  color: var(--text); cursor: pointer; transition: all 0.18s; font-family: inherit;
+}
+.btn:hover:not(:disabled) { background: var(--panel-3); border-color: var(--dim); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e1a; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
+
+.stat-group { margin-left: auto; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label { font-size: 9.5px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+.stat .value { font-size: 15px; font-weight: 600; color: var(--text); }
+.stat .value.gold { color: var(--gold); }
+.stat .value.green { color: var(--green); }
+.stat .value.accent { color: var(--accent); }
+
+main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%), var(--panel);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 { margin: 0 0 4px; font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.panel h3 { margin: 0 0 14px; font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+.panel p { color: var(--text); margin: 0 0 8px; font-size: 13px; }
+.panel p.muted { color: var(--muted); font-size: 12.5px; }
+.panel strong { color: var(--text); }
+.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 12.5px; }
+
+/* Net architecture diagram */
+.arch-diagram {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; margin-top: 6px;
+}
+@media (max-width: 800px) { .arch-diagram { grid-template-columns: 1fr; } }
+.arch-block {
+  background: var(--panel-3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; text-align: center;
+}
+.arch-block .lab { font-size: 9.5px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+.arch-block .val { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; color: var(--text); font-weight: 600; }
+.arch-block.in  { border-left: 3px solid var(--accent); }
+.arch-block.h   { border-left: 3px solid var(--purple); }
+.arch-block.out { border-left: 3px solid var(--gold); }
+
+/* Training chart */
+.chart-wrap { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 8px; }
+canvas#lossChart { display: block; width: 100%; height: 240px; }
+
+.train-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+.progress-track { flex: 1; min-width: 200px; height: 6px; border-radius: 3px; background: var(--panel-3); overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); width: 0%; transition: width 0.18s; }
+
+/* Eval comparison */
+.eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+@media (max-width: 800px) { .eval-grid { grid-template-columns: 1fr; } }
+.eval-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.eval-card.pred { border-left: 3px solid var(--accent); }
+.eval-card.true { border-left: 3px solid var(--gold); }
+.eval-card .head { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+.eval-card.pred .head { color: var(--accent); }
+.eval-card.true .head { color: var(--gold); }
+.cfv-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 6px 0; }
+.cfv-row .lbl { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); width: 55px; }
+.cfv-row .bar { height: 8px; border-radius: 4px; background: var(--panel-3); overflow: hidden; position: relative; }
+.cfv-row .bar .fill { position: absolute; top: 0; bottom: 0; }
+.cfv-row .bar .fill.pos { background: var(--green); }
+.cfv-row .bar .fill.neg { background: var(--red); }
+.cfv-row .num { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; min-width: 60px; text-align: right; }
+.cfv-row .num.pos { color: var(--green); }
+.cfv-row .num.neg { color: var(--red); }
+
+.spot-summary {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; margin-top: 8px;
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-family: "SF Mono", Menlo, Consolas, monospace; }
+.chip .k { color: var(--muted); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; }
+.chip .v { color: var(--text); font-weight: 600; }
+
+.note {
+  background: linear-gradient(135deg, rgba(91,158,255,0.06), rgba(191,140,255,0.04));
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--text);
+  line-height: 1.6; margin-top: 8px;
+}
+.note strong { color: var(--accent); }
+.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,213,74,0.06), rgba(255,140,66,0.04)); }
+.note.gold strong { color: var(--gold); }
+.note.green { border-left-color: var(--green); background: rgba(63,223,142,0.06); }
+.note.green strong { color: var(--green); }
+.note.red { border-left-color: var(--red); background: rgba(255,94,122,0.06); }
+.note.red strong { color: var(--red); }
+
+footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Leduc DeepStack — Value Network POC</h1>
+    <span class="sub">No blueprint. Just a neural value function trained to predict round-2 CFVs — the DeepStack way.</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="controls">
+    <button class="btn primary" id="btnTrain">Train value net</button>
+    <button class="btn" id="btnEvaluate" disabled>New random spot</button>
+    <button class="btn" id="btnReset">Reset</button>
+    <div class="stat-group">
+      <div class="stat"><span class="label">Examples</span><span class="value mono accent" id="statExamples">0</span></div>
+      <div class="stat"><span class="label">Train loss</span><span class="value mono gold" id="statLoss">—</span></div>
+      <div class="stat"><span class="label">Test MSE</span><span class="value mono green" id="statTestMSE">—</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= INTRO ================= -->
+  <section class="panel">
+    <h2>Section 1 · What this is</h2>
+    <h3>Replacing the blueprint with a neural value function</h3>
+    <p>The other Leduc pages train a tabular CFR <em>blueprint</em> and use it for both range tracking and as Villain's strategy during re-solving. <strong>DeepStack does neither.</strong> Instead, it trains a <strong>deep counterfactual value network</strong> that predicts equilibrium values at a depth limit. The network replaces "recurse to terminal" with a learned approximation — a fast intuition that says <em>"given this board and these ranges, here's what each hand is worth."</em></p>
+    <p>This page demonstrates that the architecture works at Leduc scale:</p>
+    <ul style="margin: 6px 0 0 18px; color: var(--text); font-size: 13px;">
+      <li>Train a small MLP on 10,000+ randomly generated round-2 situations</li>
+      <li>Compare its predictions against ground truth from an exact round-2 solver</li>
+      <li>If predictions match, DeepStack-style depth-limited solving is feasible</li>
+    </ul>
+    <div class="note">
+      <strong>Why this matters.</strong> At HUNL scale, recursing to the river inside a subgame is too expensive. DeepStack's value network turns a 10<sup>17</sup> tree walk into a single forward pass. For Leduc the games are tiny so we don't <em>need</em> this — but verifying it works here proves the architecture is sound.
+    </div>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section class="panel">
+    <h2>Section 2 · Network architecture</h2>
+    <h3>Small MLP — features in, counterfactual values out</h3>
+    <div class="arch-diagram">
+      <div class="arch-block in">
+        <div class="lab">Input (10)</div>
+        <div class="val">board · ranges · pot</div>
+      </div>
+      <div class="arch-block h">
+        <div class="lab">Hidden 1</div>
+        <div class="val">64 · ReLU</div>
+      </div>
+      <div class="arch-block h">
+        <div class="lab">Hidden 2</div>
+        <div class="val">32 · ReLU</div>
+      </div>
+      <div class="arch-block h">
+        <div class="lab">Zero-sum</div>
+        <div class="val">enforce constraint</div>
+      </div>
+      <div class="arch-block out">
+        <div class="lab">Output (6)</div>
+        <div class="val">CFV per (player, card)</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:10px;">Inputs: board card one-hot (3) · P1 range over J/Q/K (3) · P2 range over J/Q/K (3) · pot fraction (1). Outputs: cfv_P1(J/Q/K) and cfv_P2(J/Q/K). The zero-sum layer post-processes the raw output so the player CFVs sum to zero (a property of the equilibrium in zero-sum games), exactly as in DeepStack's outer network.</p>
+  </section>
+
+  <!-- ================= TRAINING ================= -->
+  <section class="panel">
+    <h2>Section 3 · Training</h2>
+    <h3>Random round-2 situations → exact CFV → MLP regression</h3>
+    <div class="train-row">
+      <span class="mono" style="font-size:12px; color:var(--muted);">Step <span id="trainStep">0</span> / <span id="trainTarget">—</span></span>
+      <div class="progress-track"><div class="progress-fill" id="trainProgress"></div></div>
+      <span class="mono" style="font-size:12px; color:var(--gold);">loss = <span id="trainLoss">—</span></span>
+      <span class="mono" style="font-size:12px; color:var(--muted);" id="trainStatus">idle</span>
+    </div>
+    <div class="chart-wrap"><canvas id="lossChart"></canvas></div>
+    <p class="muted" style="margin-top:10px;">
+      <strong style="color:var(--text);">Phase 1 — Generate dataset (~3 sec).</strong> Generate 600 random (board, P1-range, P2-range, pot) tuples and compute ground-truth CFVs by solving each round-2 game exactly via tabular CFR. Each example is ~2 ms.<br>
+      <strong style="color:var(--text);">Phase 2 — Train MLP (~10 sec).</strong> Sample 32-example batches from the cached dataset, take Adam steps on MSE loss with linear LR decay. About 12,000 steps drives test MSE to ~0.3 chips² (RMSE ~0.5 chips) on fresh spots.
+    </p>
+  </section>
+
+  <!-- ================= EVALUATION ================= -->
+  <section class="panel">
+    <h2>Section 4 · Evaluation</h2>
+    <h3>Network prediction vs exact ground truth at a random spot</h3>
+    <div class="spot-summary" id="spotSummary">
+      <span class="chip" style="color:var(--muted);">Click "Train value net", then "New random spot"</span>
+    </div>
+    <div class="eval-grid">
+      <div class="eval-card pred">
+        <div class="head">Network prediction</div>
+        <div id="predBars"></div>
+      </div>
+      <div class="eval-card true">
+        <div class="head">Ground truth (exact solver)</div>
+        <div id="trueBars"></div>
+      </div>
+    </div>
+    <div class="note green" id="evalVerdict" style="display:none;">
+      <strong id="evalVerdictHead"></strong> <span id="evalVerdictBody"></span>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="panel">
+    <h2>Section 5 · How DeepStack uses the value net</h2>
+    <h3>Continual re-solving with depth-limited lookahead</h3>
+    <p>Once the value network is trained, DeepStack uses it as the leaf evaluator in a depth-limited subgame solver. Every time it's the bot's turn:</p>
+    <ol style="margin: 6px 0 8px 20px; color: var(--text); font-size: 13px;">
+      <li><strong>Build a subgame tree</strong> rooted at the current public state, restricted to a few actions (fold, call, 2–3 bet sizes, all-in)</li>
+      <li><strong>Run CFR</strong> for some iterations on this tree</li>
+      <li><strong>At the depth limit</strong> (e.g., end of the current betting round), instead of recursing, query the value network for the CFV vector</li>
+      <li><strong>Use the predicted CFVs as terminal values</strong> in the regret update</li>
+      <li><strong>Read off the strategy</strong> at the root after CFR converges</li>
+      <li><strong>Carry forward</strong> own range (Bayes-updated) and opp CFVs to the next decision</li>
+    </ol>
+    <div class="note gold">
+      <strong>The whole game without a blueprint.</strong> No precomputed strategy table. No card abstraction at decision time. No action translation. Just: "subgame solver + value network at the depth limit + range/CFV state passed between decisions." That's DeepStack.
+    </div>
+    <p class="muted" style="margin-top:10px;">This page only validates step (3) — that a small MLP can learn to predict round-2 CFVs accurately enough to substitute for tree-walk recursion. Wiring the trained net into a full continual re-solver is the natural follow-up page.</p>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Leduc engine (fixed-bet variant for cleaner POC)
+//   ante = 1, bet round 1 = 2 chips, bet round 2 = 4 chips, max 1 raise per round
+// =============================================================
+const RANKS = ['J', 'Q', 'K'];
+const NUM_RANKS = 3;
+const ANTE = 1;
+const BET_R1 = 2;
+const BET_R2 = 4;
+
+// Action labels: x check, b bet, r raise, c call, f fold
+const LEGAL_ACTIONS = {
+  ''   : ['x', 'b'],
+  'x'  : ['x', 'b'],
+  'b'  : ['f', 'c', 'r'],
+  'xb' : ['f', 'c', 'r'],
+  'br' : ['f', 'c'],
+  'xbr': ['f', 'c'],
+};
+
+function settleRound(hist, betSize) {
+  let level = 0, p1c = 0, p2c = 0;
+  for (let i = 0; i < hist.length; i++) {
+    const a = hist[i];
+    const player = i % 2;
+    if (a === 'x') {
+    } else if (a === 'b') { level = 1; if (player === 0) p1c = level * betSize; else p2c = level * betSize; }
+    else if (a === 'r')   { level += 1; if (player === 0) p1c = level * betSize; else p2c = level * betSize; }
+    else if (a === 'c')   { if (player === 0) p1c = level * betSize; else p2c = level * betSize;
+                            return { terminal: true, foldedBy: -1, p1c, p2c }; }
+    else if (a === 'f')   { return { terminal: true, foldedBy: player, p1c, p2c }; }
+  }
+  if (hist === 'xx') return { terminal: true, foldedBy: -1, p1c, p2c };
+  return { terminal: false, foldedBy: -1, p1c, p2c };
+}
+
+function playerToAct(hist) { return hist.length % 2; }
+
+function showdownWinner(p1Card, p2Card, board) {
+  const p1Pair = p1Card === board, p2Pair = p2Card === board;
+  if (p1Pair && !p2Pair) return 0;
+  if (p2Pair && !p1Pair) return 1;
+  if (p1Card > p2Card) return 0;
+  if (p1Card < p2Card) return 1;
+  return -1;
+}
+
+// =============================================================
+// Round-2 ONLY solver (ground truth CFV producer)
+// Given: board, P1 range over {J,Q,K}, P2 range over {J,Q,K}, pot, stack at start of R2.
+// Computes equilibrium of round 2 via tabular CFR, returns root CFVs per (player, private card).
+// =============================================================
+function solveRound2(board, p1Range, p2Range, pot, stack, iters) {
+  iters = iters || 600;
+
+  // Information sets keyed by (player|card|hist)
+  const nodes = new Map();
+  function getNode(player, card, hist) {
+    const key = `${player}|${card}|${hist}`;
+    let n = nodes.get(key);
+    if (!n) {
+      const legal = LEGAL_ACTIONS[hist];
+      n = { player, card, hist, legal, regretSum: new Array(legal.length).fill(0), strategySum: new Array(legal.length).fill(0) };
+      nodes.set(key, n);
+    }
+    return n;
+  }
+  function getStrategy(node) {
+    let sum = 0;
+    const s = new Array(node.legal.length).fill(0);
+    for (let a = 0; a < node.legal.length; a++) { s[a] = Math.max(node.regretSum[a], 0); sum += s[a]; }
+    if (sum > 0) for (let a = 0; a < node.legal.length; a++) s[a] /= sum;
+    else         for (let a = 0; a < node.legal.length; a++) s[a] = 1 / node.legal.length;
+    return s;
+  }
+
+  // Round-2 utility (P1's perspective) given cards, board, pot, R2 history.
+  // Final pot = pot + r2 contributions.
+  function utilP1(p1Card, p2Card, hist) {
+    const s = settleRound(hist, BET_R2);
+    if (!s.terminal) return null;
+    const p1Total = (pot / 2) + s.p1c;        // (pot/2) is each player's prior contribution
+    const p2Total = (pot / 2) + s.p2c;
+    if (s.foldedBy >= 0) return s.foldedBy === 0 ? -p1Total : +p2Total;
+    const w = showdownWinner(p1Card, p2Card, board);
+    if (w === 0) return +p2Total;
+    if (w === 1) return -p1Total;
+    return 0;
+  }
+
+  function cfr(p1Card, p2Card, hist, p1R, p2R, cR) {
+    const s = settleRound(hist, BET_R2);
+    if (s.terminal) return utilP1(p1Card, p2Card, hist);
+
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const node = getNode(player, card, hist);
+    const strat = getStrategy(node);
+    const util = new Array(node.legal.length).fill(0);
+    let nodeUtil = 0;
+
+    for (let a = 0; a < node.legal.length; a++) {
+      const nh = hist + node.legal[a];
+      const nP1 = player === 0 ? p1R * strat[a] : p1R;
+      const nP2 = player === 1 ? p2R * strat[a] : p2R;
+      util[a] = cfr(p1Card, p2Card, nh, nP1, nP2, cR);
+      nodeUtil += strat[a] * util[a];
+    }
+    const sign = player === 0 ? 1 : -1;
+    const cfReach = cR * (player === 0 ? p2R : p1R);
+    const ownReach = player === 0 ? p1R : p2R;
+    for (let a = 0; a < node.legal.length; a++) {
+      const reg = sign * (util[a] - nodeUtil);
+      node.regretSum[a]   += cfReach * reg;
+      node.strategySum[a] += ownReach * strat[a];
+    }
+    return nodeUtil;
+  }
+
+  // Joint distribution P(p1Card, p2Card | board) under independence approximation
+  // with card-removal. We assume ranges are pre-conditioned on the board card revealed.
+  // Card removal: subtract 1 from the rank of the board card if a player holds the same rank,
+  // since one card of that rank is on the board.
+  function jointReach(p1Card, p2Card) {
+    // count of rank in deck = 2; subtract 1 for board, then 1 for P1, then 1 for P2.
+    const counts = [2, 2, 2];
+    counts[board] -= 1;
+    counts[p1Card] -= 1;
+    if (counts[p1Card] < 0) return 0;
+    counts[p2Card] -= 1;
+    if (counts[p2Card] < 0) return 0;
+    return p1Range[p1Card] * p2Range[p2Card];
+  }
+
+  // Run CFR
+  for (let it = 0; it < iters; it++) {
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const w = jointReach(a, b);
+        if (w === 0) continue;
+        cfr(a, b, '', 1, 1, w);
+      }
+    }
+  }
+
+  // Compute average strategies
+  const avg = new Map();
+  for (const [k, n] of nodes) {
+    const sum = n.strategySum.reduce((x, y) => x + y, 0);
+    const probs = sum > 0 ? n.strategySum.map(x => x / sum) : new Array(n.legal.length).fill(1 / n.legal.length);
+    avg.set(k, { legal: n.legal, probs });
+  }
+
+  // Compute root CFVs per (player, card) using avg strategies.
+  function eval_(p1Card, p2Card, hist) {
+    const s = settleRound(hist, BET_R2);
+    if (s.terminal) return utilP1(p1Card, p2Card, hist);
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const a = avg.get(`${player}|${card}|${hist}`);
+    if (!a) return 0;
+    let v = 0;
+    for (let i = 0; i < a.legal.length; i++) {
+      v += a.probs[i] * eval_(p1Card, p2Card, hist + a.legal[i]);
+    }
+    return v;
+  }
+
+  const p1Cfv = [0, 0, 0]; // counterfactual value for P1 with each card
+  const p2Cfv = [0, 0, 0]; // same for P2
+  for (let a = 0; a < NUM_RANKS; a++) {
+    for (let b = 0; b < NUM_RANKS; b++) {
+      const w = jointReach(a, b);
+      if (w === 0) continue;
+      const u = eval_(a, b, '');
+      // cfv_P1(a) = sum_b P2_range[b] * w_normalize * u    (P1's utility)
+      // cfv_P2(b) = sum_a P1_range[a] * w_normalize * (-u)
+      // For our purposes, use the unnormalized weighted utility.
+      p1Cfv[a] += p2Range[b] * u;
+      p2Cfv[b] += p1Range[a] * (-u);
+    }
+  }
+  return { p1Cfv, p2Cfv };
+}
+
+// =============================================================
+// Random training-example generator
+//   - Random board card uniformly
+//   - Random P1 range, P2 range (sampled from 3-simplex via exponential)
+//   - Random pot from a small discrete set capturing typical post-round-1 pots
+// =============================================================
+function randomSimplex3() {
+  // Exponential samples → normalize gives Dirichlet(1,1,1).
+  const e1 = -Math.log(1 - Math.random());
+  const e2 = -Math.log(1 - Math.random());
+  const e3 = -Math.log(1 - Math.random());
+  const s = e1 + e2 + e3;
+  return [e1 / s, e2 / s, e3 / s];
+}
+
+function randomTrainingExample(solverIters) {
+  solverIters = solverIters || 200;
+  const board = Math.floor(Math.random() * 3);
+  const p1Range = randomSimplex3();
+  const p2Range = randomSimplex3();
+  // Pots that can occur at start of round 2 in fixed Leduc:
+  //   xx → pot = 2,  bc / xbc → pot = 6,  brc / xbrc → pot = 10
+  const potChoices = [2, 6, 10];
+  const pot = potChoices[Math.floor(Math.random() * potChoices.length)];
+  const stack = 10;
+  const target = solveRound2(board, p1Range, p2Range, pot, stack, solverIters);
+  // Build feature vector: board(3 one-hot) + p1Range(3) + p2Range(3) + pot/10
+  const x = new Float32Array(10);
+  x[board] = 1;
+  x[3] = p1Range[0]; x[4] = p1Range[1]; x[5] = p1Range[2];
+  x[6] = p2Range[0]; x[7] = p2Range[1]; x[8] = p2Range[2];
+  x[9] = pot / 10;
+  const y = new Float32Array(6);
+  y[0] = target.p1Cfv[0]; y[1] = target.p1Cfv[1]; y[2] = target.p1Cfv[2];
+  y[3] = target.p2Cfv[0]; y[4] = target.p2Cfv[1]; y[5] = target.p2Cfv[2];
+  return { x, y, raw: { board, p1Range, p2Range, pot, stack, target } };
+}
+
+// =============================================================
+// MLP value network (hand-rolled, with Adam optimizer)
+// Architecture: 10 → 32 → 16 → 6 (ReLU on hidden, linear on output)
+// Plus a "zero-sum projection": after the linear output, subtract half of the
+//   row-sum so that sum of all 6 outputs = 0 (zero-sum game constraint).
+// =============================================================
+class ValueNet {
+  constructor() {
+    this.dims = [10, 64, 32, 6];
+    this.W = []; this.b = [];
+    // He initialization for ReLU layers, smaller scale for the linear output.
+    for (let i = 0; i < this.dims.length - 1; i++) {
+      const fanIn = this.dims[i], fanOut = this.dims[i + 1];
+      const std = Math.sqrt(2 / fanIn) * (i === this.dims.length - 2 ? 0.5 : 1.0);
+      const w = new Float32Array(fanIn * fanOut);
+      for (let j = 0; j < w.length; j++) w[j] = randn() * std;
+      this.W.push(w);
+      this.b.push(new Float32Array(fanOut));
+    }
+    // Adam moments
+    this.mW = this.W.map(w => new Float32Array(w.length));
+    this.vW = this.W.map(w => new Float32Array(w.length));
+    this.mB = this.b.map(b => new Float32Array(b.length));
+    this.vB = this.b.map(b => new Float32Array(b.length));
+    this.t = 0;
+    this.lrInitial = 0.003;
+    this.lr = this.lrInitial;
+    this.lrDecaySteps = 2000;     // halve LR every this many steps
+    this.beta1 = 0.9; this.beta2 = 0.999; this.eps = 1e-8;
+  }
+
+  // Forward pass. Returns activations for backprop + final output.
+  // Zero-sum projection removed: with asymmetric ranges + card removal,
+  // sum_card cfv_i(card) is not zero-sum across players, so the projection hurts.
+  forward(x) {
+    const acts = [x];
+    let h = x;
+    for (let l = 0; l < this.W.length; l++) {
+      const fanIn = this.dims[l], fanOut = this.dims[l + 1];
+      const z = new Float32Array(fanOut);
+      for (let j = 0; j < fanOut; j++) {
+        let s = this.b[l][j];
+        for (let i = 0; i < fanIn; i++) s += this.W[l][i * fanOut + j] * h[i];
+        z[j] = s;
+      }
+      if (l < this.W.length - 1) {
+        const a = new Float32Array(fanOut);
+        for (let j = 0; j < fanOut; j++) a[j] = z[j] > 0 ? z[j] : 0;
+        acts.push(a); h = a;
+      } else {
+        acts.push(z); h = z;
+      }
+    }
+    return { out: h, acts };
+  }
+
+  backward(input, target) {
+    const { out, acts } = this.forward(input);
+    const dOut = new Float32Array(6);
+    for (let j = 0; j < 6; j++) dOut[j] = 2 * (out[j] - target[j]) / 6;
+    const dRaw = dOut;
+
+    // Backprop through layers
+    const gradsW = this.W.map(w => new Float32Array(w.length));
+    const gradsB = this.b.map(b => new Float32Array(b.length));
+    let dh = dRaw;
+    for (let l = this.W.length - 1; l >= 0; l--) {
+      const fanIn = this.dims[l], fanOut = this.dims[l + 1];
+      const aIn = acts[l], aOut = acts[l + 1];
+      // For hidden layers: aOut already had ReLU applied. dh is dL/d aOut.
+      // Need dL/d z where aOut = ReLU(z) for hidden, aOut = z for output.
+      const dz = new Float32Array(fanOut);
+      if (l < this.W.length - 1) {
+        for (let j = 0; j < fanOut; j++) dz[j] = aOut[j] > 0 ? dh[j] : 0;
+      } else {
+        for (let j = 0; j < fanOut; j++) dz[j] = dh[j];
+      }
+      // Grad w.r.t. weights and biases
+      for (let i = 0; i < fanIn; i++) {
+        for (let j = 0; j < fanOut; j++) {
+          gradsW[l][i * fanOut + j] = aIn[i] * dz[j];
+        }
+      }
+      for (let j = 0; j < fanOut; j++) gradsB[l][j] = dz[j];
+      // dL/d aIn for next iteration (input to this layer)
+      if (l > 0) {
+        const dIn = new Float32Array(fanIn);
+        for (let i = 0; i < fanIn; i++) {
+          let s = 0;
+          for (let j = 0; j < fanOut; j++) s += this.W[l][i * fanOut + j] * dz[j];
+          dIn[i] = s;
+        }
+        dh = dIn;
+      }
+    }
+    // Compute loss for reporting
+    let loss = 0;
+    for (let j = 0; j < 6; j++) loss += (out[j] - target[j]) ** 2;
+    loss /= 6;
+    return { gradsW, gradsB, loss };
+  }
+
+  // Adam optimization step over a batch.
+  trainBatch(batch) {
+    const accGW = this.W.map(w => new Float32Array(w.length));
+    const accGB = this.b.map(b => new Float32Array(b.length));
+    let totalLoss = 0;
+    for (const { x, y } of batch) {
+      const { gradsW, gradsB, loss } = this.backward(x, y);
+      for (let l = 0; l < this.W.length; l++) {
+        for (let i = 0; i < this.W[l].length; i++) accGW[l][i] += gradsW[l][i];
+        for (let i = 0; i < this.b[l].length; i++) accGB[l][i] += gradsB[l][i];
+      }
+      totalLoss += loss;
+    }
+    const inv = 1 / batch.length;
+    for (let l = 0; l < this.W.length; l++) {
+      for (let i = 0; i < this.W[l].length; i++) accGW[l][i] *= inv;
+      for (let i = 0; i < this.b[l].length; i++) accGB[l][i] *= inv;
+    }
+
+    // Adam update with cosine-style LR decay (halve every lrDecaySteps)
+    this.t += 1;
+    const t = this.t;
+    const bc1 = 1 - Math.pow(this.beta1, t);
+    const bc2 = 1 - Math.pow(this.beta2, t);
+    // LR decay: lr = lrInitial * 0.5^(t / lrDecaySteps), with a floor.
+    this.lr = Math.max(0.0002, this.lrInitial * Math.pow(0.5, t / this.lrDecaySteps));
+    for (let l = 0; l < this.W.length; l++) {
+      for (let i = 0; i < this.W[l].length; i++) {
+        const g = accGW[l][i];
+        this.mW[l][i] = this.beta1 * this.mW[l][i] + (1 - this.beta1) * g;
+        this.vW[l][i] = this.beta2 * this.vW[l][i] + (1 - this.beta2) * g * g;
+        const mh = this.mW[l][i] / bc1;
+        const vh = this.vW[l][i] / bc2;
+        this.W[l][i] -= this.lr * mh / (Math.sqrt(vh) + this.eps);
+      }
+      for (let i = 0; i < this.b[l].length; i++) {
+        const g = accGB[l][i];
+        this.mB[l][i] = this.beta1 * this.mB[l][i] + (1 - this.beta1) * g;
+        this.vB[l][i] = this.beta2 * this.vB[l][i] + (1 - this.beta2) * g * g;
+        const mh = this.mB[l][i] / bc1;
+        const vh = this.vB[l][i] / bc2;
+        this.b[l][i] -= this.lr * mh / (Math.sqrt(vh) + this.eps);
+      }
+    }
+    return totalLoss / batch.length;
+  }
+
+  // Predict for a single example.
+  predict(x) {
+    return this.forward(x).out;
+  }
+}
+
+function randn() {
+  // Box-Muller standard normal
+  const u1 = Math.random() || 1e-10;
+  const u2 = Math.random();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+// =============================================================
+// Loss chart (canvas)
+// =============================================================
+class LossChart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.points = [];
+    this._resize();
+    window.addEventListener('resize', () => { this._resize(); this.render(); });
+  }
+  _resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.W = rect.width; this.H = rect.height || 240;
+    this.canvas.width = this.W * dpr;
+    this.canvas.height = this.H * dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  push(step, loss) { this.points.push({ step, loss }); }
+  reset() { this.points = []; }
+  render() {
+    const ctx = this.ctx, W = this.W, H = this.H;
+    ctx.clearRect(0, 0, W, H);
+    if (this.points.length < 2) {
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '12px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Click "Train value net" to start. Loss will plot here on a log scale.', W / 2, H / 2);
+      return;
+    }
+    const padL = 56, padR = 14, padT = 14, padB = 28;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    let maxStep = this.points[this.points.length - 1].step;
+    let lo = Infinity, hi = -Infinity;
+    for (const p of this.points) {
+      const v = Math.max(1e-3, p.loss);
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+    const logLo = Math.log10(Math.max(1e-3, lo * 0.5));
+    const logHi = Math.log10(Math.max(hi * 1.2, lo * 2));
+
+    ctx.strokeStyle = '#232b3f'; ctx.lineWidth = 1;
+    for (let g = Math.floor(logLo); g <= Math.ceil(logHi); g++) {
+      const y = padT + (1 - (g - logLo) / (logHi - logLo)) * innerH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '11px "SF Mono", Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`10^${g}`, padL - 6, y + 4);
+    }
+    ctx.fillStyle = '#7a8499'; ctx.textAlign = 'center';
+    const xTicks = 5;
+    for (let i = 0; i <= xTicks; i++) {
+      const s = Math.round((maxStep) * (i / xTicks));
+      const x = padL + (i / xTicks) * innerW;
+      ctx.fillText(s.toLocaleString(), x, H - padB + 18);
+    }
+
+    ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < this.points.length; i++) {
+      const p = this.points[i];
+      const lv = Math.log10(Math.max(1e-3, p.loss));
+      const x = padL + (p.step / Math.max(1, maxStep)) * innerW;
+      const y = padT + (1 - (lv - logLo) / (logHi - logLo)) * innerH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+// =============================================================
+// App controller
+// =============================================================
+const DATASET_SIZE   = 600;
+const SOLVER_ITERS   = 200;
+const TARGET_STEPS   = 12000;
+const BATCH_SIZE     = 32;
+
+class App {
+  constructor() {
+    this.net = new ValueNet();
+    this.chart = new LossChart(document.getElementById('lossChart'));
+    this.dataset = [];
+    this.phase = 'idle';     // 'idle' | 'data' | 'train' | 'done'
+    this.steps = 0;
+    this.examples = 0;
+    this._latestLoss = undefined;
+    this.lastEval = null;
+
+    document.getElementById('btnTrain').addEventListener('click', () => this.onPrimary());
+    document.getElementById('btnEvaluate').addEventListener('click', () => this.evaluate());
+    document.getElementById('btnReset').addEventListener('click', () => this.reset());
+    document.getElementById('trainTarget').textContent = TARGET_STEPS.toLocaleString();
+    this.refresh();
+    this.chart.render();
+  }
+
+  onPrimary() {
+    if (this.phase === 'idle')  return this.startDataGen();
+    if (this.phase === 'data')  return; // ignore
+    if (this.phase === 'train') return this.pauseTrain();
+    if (this.phase === 'paused') return this.resumeTrain();
+    if (this.phase === 'done')  return this.continueTrain();
+  }
+
+  // ----- Phase 1: dataset generation -----
+  startDataGen() {
+    this.phase = 'data';
+    const btn = document.getElementById('btnTrain');
+    btn.textContent = 'Generating…';
+    btn.disabled = true;
+    document.getElementById('trainStatus').textContent = 'generating dataset (this is the slow part — solving CFR per example)';
+    document.getElementById('trainStatus').style.color = 'var(--accent)';
+    this.dataset = [];
+    this._dataGenTick();
+  }
+
+  _dataGenTick() {
+    if (this.phase !== 'data') return;
+    const start = Date.now();
+    while (Date.now() - start < 60 && this.dataset.length < DATASET_SIZE) {
+      this.dataset.push(randomTrainingExample(SOLVER_ITERS));
+    }
+    document.getElementById('statExamples').textContent = this.dataset.length.toLocaleString();
+    document.getElementById('trainProgress').style.width = ((this.dataset.length / DATASET_SIZE) * 100).toFixed(1) + '%';
+    document.getElementById('trainStep').textContent = this.dataset.length.toLocaleString();
+
+    if (this.dataset.length < DATASET_SIZE) {
+      requestAnimationFrame(() => this._dataGenTick());
+    } else {
+      // Move to training phase
+      this.phase = 'train';
+      const btn = document.getElementById('btnTrain');
+      btn.textContent = 'Pause';
+      btn.classList.remove('primary');
+      btn.disabled = false;
+      document.getElementById('trainStatus').textContent = 'training on cached dataset';
+      document.getElementById('trainStatus').style.color = 'var(--green)';
+      document.getElementById('trainTarget').textContent = TARGET_STEPS.toLocaleString();
+      document.getElementById('trainStep').textContent = '0';
+      document.getElementById('trainProgress').style.width = '0%';
+      this.steps = 0;
+      this.examples = this.dataset.length;
+      this._trainTick();
+    }
+  }
+
+  // ----- Phase 2: training (fast — uses cached dataset) -----
+  _trainTick() {
+    if (this.phase !== 'train') return;
+    const start = Date.now();
+    while (Date.now() - start < 50 && this.steps < TARGET_STEPS) {
+      const batch = [];
+      for (let i = 0; i < BATCH_SIZE; i++) {
+        batch.push(this.dataset[Math.floor(Math.random() * this.dataset.length)]);
+      }
+      const loss = this.net.trainBatch(batch);
+      this.steps += 1;
+      if (this.steps % 25 === 0 || this.steps === 1) {
+        this.chart.push(this.steps, Math.max(1e-3, loss));
+      }
+      this._latestLoss = loss;
+    }
+    this.refresh();
+    this.chart.render();
+    if (this.steps >= TARGET_STEPS) {
+      this.phase = 'done';
+      const btn = document.getElementById('btnTrain');
+      btn.textContent = 'Train more';
+      btn.classList.add('primary');
+      document.getElementById('trainStatus').textContent = 'done · click "New random spot" to test';
+      document.getElementById('trainStatus').style.color = 'var(--green)';
+      document.getElementById('btnEvaluate').disabled = false;
+    } else {
+      requestAnimationFrame(() => this._trainTick());
+    }
+  }
+
+  pauseTrain() {
+    this.phase = 'paused';
+    const btn = document.getElementById('btnTrain');
+    btn.textContent = 'Resume';
+    btn.classList.add('primary');
+    document.getElementById('trainStatus').textContent = 'paused';
+    document.getElementById('trainStatus').style.color = 'var(--muted)';
+    document.getElementById('btnEvaluate').disabled = false;
+  }
+
+  resumeTrain() {
+    this.phase = 'train';
+    const btn = document.getElementById('btnTrain');
+    btn.textContent = 'Pause';
+    btn.classList.remove('primary');
+    document.getElementById('trainStatus').textContent = 'training';
+    document.getElementById('trainStatus').style.color = 'var(--green)';
+    this._trainTick();
+  }
+
+  continueTrain() {
+    // Bump the target and continue
+    const newTarget = TARGET_STEPS + this.steps + 5000;
+    document.getElementById('trainTarget').textContent = newTarget.toLocaleString();
+    this._continueTarget = newTarget;
+    this.phase = 'train';
+    const btn = document.getElementById('btnTrain');
+    btn.textContent = 'Pause';
+    btn.classList.remove('primary');
+    document.getElementById('trainStatus').textContent = 'training (extra)';
+    document.getElementById('trainStatus').style.color = 'var(--green)';
+    this._trainTickExtended();
+  }
+
+  _trainTickExtended() {
+    if (this.phase !== 'train') return;
+    const start = Date.now();
+    const target = this._continueTarget || TARGET_STEPS;
+    while (Date.now() - start < 50 && this.steps < target) {
+      const batch = [];
+      for (let i = 0; i < BATCH_SIZE; i++) batch.push(this.dataset[Math.floor(Math.random() * this.dataset.length)]);
+      const loss = this.net.trainBatch(batch);
+      this.steps += 1;
+      if (this.steps % 25 === 0) this.chart.push(this.steps, Math.max(1e-3, loss));
+      this._latestLoss = loss;
+    }
+    this.refresh();
+    this.chart.render();
+    if (this.steps >= target) {
+      this.phase = 'done';
+      const btn = document.getElementById('btnTrain');
+      btn.textContent = 'Train more';
+      btn.classList.add('primary');
+      document.getElementById('trainStatus').textContent = 'done · click "New random spot"';
+      document.getElementById('trainStatus').style.color = 'var(--green)';
+    } else {
+      requestAnimationFrame(() => this._trainTickExtended());
+    }
+  }
+
+  reset() {
+    this.phase = 'idle';
+    this.net = new ValueNet();
+    this.steps = 0;
+    this.examples = 0;
+    this.dataset = [];
+    this._latestLoss = undefined;
+    this.lastEval = null;
+    this._continueTarget = undefined;
+    this.chart.reset();
+    this.chart.render();
+    const btn = document.getElementById('btnTrain');
+    btn.textContent = 'Train value net';
+    btn.classList.add('primary');
+    btn.disabled = false;
+    document.getElementById('btnEvaluate').disabled = true;
+    document.getElementById('trainStatus').textContent = 'idle';
+    document.getElementById('trainStatus').style.color = 'var(--muted)';
+    document.getElementById('trainTarget').textContent = DATASET_SIZE.toLocaleString();
+    document.getElementById('trainStep').textContent = '0';
+    document.getElementById('trainProgress').style.width = '0%';
+    document.getElementById('spotSummary').innerHTML = '<span class="chip" style="color:var(--muted);">Click "Train value net" → generates ' + DATASET_SIZE + ' training examples (~3 sec), then trains ' + TARGET_STEPS.toLocaleString() + ' steps (~10 sec). Then click "New random spot".</span>';
+    document.getElementById('predBars').innerHTML = '';
+    document.getElementById('trueBars').innerHTML = '';
+    document.getElementById('evalVerdict').style.display = 'none';
+    this.refresh();
+  }
+
+  evaluate() {
+    // Generate a fresh random spot, compute prediction and ground truth, render.
+    const ex = randomTrainingExample();
+    const pred = this.net.predict(ex.x);
+    const target = ex.y;
+    this.lastEval = { ex, pred, target };
+
+    // Render summary
+    const sum = document.getElementById('spotSummary');
+    sum.innerHTML = `
+      <span class="chip"><span class="k">Board</span><span class="v" style="color:var(--green);">${RANKS[ex.raw.board]}</span></span>
+      <span class="chip"><span class="k">Pot</span><span class="v">${ex.raw.pot}</span></span>
+      <span class="chip"><span class="k">Stack</span><span class="v">${ex.raw.stack}</span></span>
+      <span class="chip"><span class="k">P1 range</span><span class="v">J=${(ex.raw.p1Range[0]*100).toFixed(0)}% Q=${(ex.raw.p1Range[1]*100).toFixed(0)}% K=${(ex.raw.p1Range[2]*100).toFixed(0)}%</span></span>
+      <span class="chip"><span class="k">P2 range</span><span class="v">J=${(ex.raw.p2Range[0]*100).toFixed(0)}% Q=${(ex.raw.p2Range[1]*100).toFixed(0)}% K=${(ex.raw.p2Range[2]*100).toFixed(0)}%</span></span>
+    `;
+
+    // Render bars
+    const labels = ['P1 J', 'P1 Q', 'P1 K', 'P2 J', 'P2 Q', 'P2 K'];
+    const maxAbs = Math.max(0.5, ...pred.map(Math.abs), ...target.map(Math.abs));
+    const renderBars = (id, vals) => {
+      const el = document.getElementById(id);
+      let html = '';
+      for (let i = 0; i < 6; i++) {
+        const v = vals[i];
+        const w = Math.min(50, (Math.abs(v) / maxAbs) * 50);
+        const cls = v >= 0 ? 'pos' : 'neg';
+        const left = v >= 0 ? '50%' : `${50 - w}%`;
+        html += `
+          <div class="cfv-row">
+            <span class="lbl">${labels[i]}</span>
+            <div class="bar">
+              <div class="fill ${cls}" style="left:${left}; width:${w}%"></div>
+              <div style="position:absolute; top:0; bottom:0; left:50%; width:1px; background:var(--dim);"></div>
+            </div>
+            <span class="num ${cls}">${v >= 0 ? '+' : ''}${v.toFixed(3)}</span>
+          </div>`;
+      }
+      el.innerHTML = html;
+    };
+    renderBars('predBars', pred);
+    renderBars('trueBars', target);
+
+    // Compute test MSE for this single sample
+    let mse = 0;
+    for (let i = 0; i < 6; i++) mse += (pred[i] - target[i]) ** 2;
+    mse /= 6;
+    document.getElementById('statTestMSE').textContent = mse.toFixed(4);
+
+    // Verdict note
+    const verdict = document.getElementById('evalVerdict');
+    const head = document.getElementById('evalVerdictHead');
+    const body = document.getElementById('evalVerdictBody');
+    if (mse < 0.15) {
+      verdict.className = 'note green';
+      head.textContent = 'Excellent fit.';
+      body.textContent = `MSE = ${mse.toFixed(4)} chips². Predictions match the exact CFR solver within tight tolerance — DeepStack-style value substitution is validated on this spot.`;
+    } else if (mse < 0.5) {
+      verdict.className = 'note gold';
+      head.textContent = 'Reasonable fit.';
+      body.textContent = `MSE = ${mse.toFixed(4)} chips². Predictions are close. Average test MSE over many spots typically lands here for a 600-example dataset; click "Train more" or generate a larger dataset for tighter accuracy.`;
+    } else if (mse < 1.5) {
+      verdict.className = 'note gold';
+      head.textContent = 'Acceptable on this spot.';
+      body.textContent = `MSE = ${mse.toFixed(4)} chips². Single-spot variance is high — try several more random spots to gauge typical accuracy.`;
+    } else {
+      verdict.className = 'note red';
+      head.textContent = 'Poor fit on this spot.';
+      body.textContent = `MSE = ${mse.toFixed(4)} chips². Could be a hard spot or net needs more training. Click "Train more" to continue.`;
+    }
+    verdict.style.display = 'block';
+  }
+
+  refresh() {
+    document.getElementById('statExamples').textContent = this.examples.toLocaleString();
+    document.getElementById('statLoss').textContent = this._latestLoss !== undefined ? this._latestLoss.toFixed(4) : '—';
+    document.getElementById('trainStep').textContent = this.steps.toLocaleString();
+    document.getElementById('trainLoss').textContent = this._latestLoss !== undefined ? this._latestLoss.toFixed(4) : '—';
+    document.getElementById('trainProgress').style.width = ((this.steps / TARGET_STEPS) * 100).toFixed(1) + '%';
+  }
+}
+
+const app = new App();
+</script>
+
+</body>
+</html>

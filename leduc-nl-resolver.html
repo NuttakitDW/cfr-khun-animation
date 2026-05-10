@@ -268,6 +268,74 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
 .note.warn { border-left-color: var(--red); background: rgba(255,94,122,0.06); }
 .note.warn strong { color: var(--red); }
 
+/* Translation calculator (Section 7) */
+.translate-row {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center;
+  margin-top: 8px;
+}
+@media (max-width: 800px) {
+  .translate-row { grid-template-columns: 1fr; }
+}
+.translate-input {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px;
+}
+.translate-input .label {
+  font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; margin-bottom: 8px;
+}
+.translate-input input[type=number] {
+  width: 100%;
+  padding: 10px 12px; border-radius: 8px;
+  background: var(--panel-3); border: 1px solid var(--border);
+  color: var(--text); font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 16px; font-weight: 600;
+}
+.translate-input input[type=number]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+.translate-input .hint {
+  font-size: 11px; color: var(--muted); margin-top: 6px;
+}
+.translate-arrow {
+  text-align: center; font-size: 24px; color: var(--gold);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+.translate-output {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px;
+}
+.translate-output .row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.translate-output .row:last-child { border-bottom: none; }
+.translate-output .lab {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--muted); width: 70px;
+}
+.translate-output .name {
+  font-size: 13px; color: var(--text); font-weight: 600; flex: 1;
+}
+.translate-output .pct-bar {
+  flex: 1; height: 8px; background: var(--panel-3); border-radius: 4px; overflow: hidden;
+}
+.translate-output .pct-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold));
+}
+.translate-output .pct {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--gold); font-weight: 600; min-width: 50px; text-align: right;
+}
+
+.formula-block {
+  background: var(--panel-3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-top: 12px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--text); line-height: 1.7;
+}
+.formula-block .formula-line { color: var(--accent); }
+.formula-block .formula-comment { color: var(--muted); }
+.formula-block .formula-result { color: var(--gold); font-weight: 700; }
+
 /* Concept cards (used in "How it works" section) */
 .concept-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px;
@@ -564,6 +632,48 @@ footer a:hover { color: var(--accent); }
 
     <div class="note gold" style="margin-top:14px;">
       <strong>The mental model.</strong> <span style="color:var(--purple);">Subgame</span> is <em>where</em> we're solving. <span style="color:var(--accent);">Bayes</span> is <em>who</em> we're up against. <span style="color:var(--gold);">CFR</span> is <em>what to do</em> against them. Three different roles, one cohesive solver.
+    </div>
+  </section>
+
+  <!-- ================= ACTION TRANSLATION ================= -->
+  <section class="panel">
+    <h2>Section 7 · Off-tree opponent bets — action translation</h2>
+    <h3>What if Villain bets a size the blueprint doesn't know?</h3>
+
+    <p>The dropdown above only has <strong>blueprint sizes</strong> — <span class="kw">h, p, t, a</span>. If real-world Villain bets <span class="kw">0.7× pot</span>, the dropdown can't represent it. The blueprint's range tracker doesn't know what to do with a size it never trained on.</p>
+
+    <p><strong>The fix is action translation</strong> (Ganzfried &amp; Sandholm 2013): map the off-tree bet probabilistically onto the two nearest blueprint sizes via the <em>pseudo-harmonic formula</em>. Pluribus and DeepStack run this every time an opponent makes a non-standard bet.</p>
+
+    <div class="formula-block">
+      <span class="formula-line">P(map down to A) = (B − x)(1 + A) / ((B − A)(1 + x))</span>
+      <span class="formula-line">P(map up   to B) = 1 − P(down to A)</span>
+      <br>
+      <span class="formula-comment">where A &lt; x &lt; B are pot fractions of (smaller blueprint size, real bet, larger blueprint size).</span>
+    </div>
+
+    <h3 style="margin-top:22px;">Try it: enter any bet size →</h3>
+    <div class="translate-row">
+      <div class="translate-input">
+        <div class="label">Real Villain bet (× pot)</div>
+        <input type="number" id="translateInput" min="0.05" max="3" step="0.05" value="0.7">
+        <div class="hint">Examples: 0.37 · 0.7 · 1.5 · 2.5</div>
+      </div>
+      <div class="translate-arrow">→</div>
+      <div class="translate-output" id="translateOutput">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <div class="formula-block" id="translateMath">
+      <!-- populated by JS -->
+    </div>
+
+    <div class="note gold" style="margin-top:14px;">
+      <strong>How to use this manually.</strong> The current resolver doesn't auto-merge translated branches. To approximate: pick whichever blueprint size has the higher translation weight (e.g., 0.7× pot → 53% of <span class="kw">h</span>, 47% of <span class="kw">p</span> → use <span class="kw">h</span>). For exactness, run the resolver in <em>both</em> branches and weight the strategies you read out by the translation probabilities. That's what a production solver does internally.
+    </div>
+
+    <div class="note">
+      <strong>Why pseudo-harmonic, not arithmetic midpoint.</strong> Pot-fraction sizes scale multiplicatively — a bet of 2× pot is "twice as much pressure" as a bet of 1× pot in a meaningful sense. Naive linear rounding to the nearest size loses EV against opponents who exploit the rounding boundary. The pseudo-harmonic formula gives the harmonic-style midpoint that minimizes worst-case exploitability of the translation itself.
     </div>
   </section>
 
@@ -2201,6 +2311,112 @@ class MiniChart {
 }
 
 const app = new App();
+
+// =============================================================
+// Action-translation calculator (Section 7) — pseudo-harmonic formula
+// =============================================================
+(function () {
+  const BP_BET_FRACTIONS = [0, 0.5, 1.0, 2.0]; // 0 = "check"/no bet, plus h, p, t
+  // We treat 'a' (all-in) as a separate top bracket: any size > 2× falls into [2.0, all-in].
+  // For simplicity, the calculator clamps real bets to [0.05, 3.0] × pot.
+
+  const input = document.getElementById('translateInput');
+  const output = document.getElementById('translateOutput');
+  const math = document.getElementById('translateMath');
+  if (!input || !output || !math) return;
+
+  function nearestPair(x) {
+    // Find the two adjacent blueprint sizes A < x < B.
+    let A = BP_BET_FRACTIONS[0], B = BP_BET_FRACTIONS[1];
+    for (let i = 0; i < BP_BET_FRACTIONS.length - 1; i++) {
+      if (BP_BET_FRACTIONS[i] <= x && x <= BP_BET_FRACTIONS[i + 1]) {
+        A = BP_BET_FRACTIONS[i];
+        B = BP_BET_FRACTIONS[i + 1];
+        return { A, B };
+      }
+    }
+    // x > 2× pot — translate between 2× pot (t) and "all-in" (treated as +∞ bracket)
+    return { A: 2.0, B: Infinity };
+  }
+
+  function fracLabel(f) {
+    if (f === 0) return 'check (x)';
+    if (f === 0.5) return '½ pot (h)';
+    if (f === 1.0) return 'pot (p)';
+    if (f === 2.0) return '2× pot (t)';
+    if (f === Infinity) return 'all-in (a)';
+    return f.toFixed(2) + '× pot';
+  }
+
+  function compute() {
+    const raw = parseFloat(input.value);
+    if (!isFinite(raw) || raw <= 0) {
+      output.innerHTML = '<div style="color:var(--muted); font-size:12px;">Enter a positive number.</div>';
+      math.innerHTML = '';
+      return;
+    }
+    const x = Math.min(3.0, Math.max(0.05, raw));
+    const { A, B } = nearestPair(x);
+
+    let pA, pB;
+    if (B === Infinity) {
+      // All-in bracket — heuristic: if x is close to 2×, mostly t; if close to all-in
+      // (treating all-in as ~ stack/pot ratio), mostly a. Use linear blend on log-scale.
+      // Cap at x=3 above. Treat all-in pot fraction as "5×" for blending.
+      const Bcap = 5.0;
+      pA = (Bcap - x) / (Bcap - A);
+      pA = Math.max(0, Math.min(1, pA));
+      pB = 1 - pA;
+    } else {
+      // Pseudo-harmonic translation (Ganzfried & Sandholm 2013).
+      pA = ((B - x) * (1 + A)) / ((B - A) * (1 + x));
+      pA = Math.max(0, Math.min(1, pA));
+      pB = 1 - pA;
+    }
+
+    const labA = fracLabel(A);
+    const labB = fracLabel(B === Infinity ? Infinity : B);
+    const widthA = (pA * 100).toFixed(1);
+    const widthB = (pB * 100).toFixed(1);
+
+    output.innerHTML = `
+      <div class="row">
+        <span class="lab">A = ${A.toFixed(2)}</span>
+        <span class="name">${labA}</span>
+        <div class="pct-bar"><div class="pct-fill" style="width:${widthA}%"></div></div>
+        <span class="pct">${widthA}%</span>
+      </div>
+      <div class="row">
+        <span class="lab">B = ${B === Infinity ? '∞' : B.toFixed(2)}</span>
+        <span class="name">${labB}</span>
+        <div class="pct-bar"><div class="pct-fill" style="width:${widthB}%"></div></div>
+        <span class="pct">${widthB}%</span>
+      </div>
+    `;
+
+    if (B === Infinity) {
+      math.innerHTML = `
+        <span class="formula-comment">x = ${x.toFixed(2)} is above the largest blueprint size (2× pot).</span><br>
+        <span class="formula-comment">Linear blend used between 2× pot (A) and all-in (B≈5× pot heuristic).</span><br>
+        <span class="formula-line">P(map to A=2×pot) = (5 − ${x.toFixed(2)}) / (5 − 2) = <span class="formula-result">${pA.toFixed(3)}</span></span><br>
+        <span class="formula-line">P(map to B=all-in) = 1 − ${pA.toFixed(3)} = <span class="formula-result">${pB.toFixed(3)}</span></span>
+      `;
+    } else {
+      const num = ((B - x) * (1 + A));
+      const den = ((B - A) * (1 + x));
+      math.innerHTML = `
+        <span class="formula-comment">A = ${A}, B = ${B}, x = ${x.toFixed(2)}</span><br>
+        <span class="formula-line">numerator   = (B − x)(1 + A) = (${B} − ${x.toFixed(2)})(1 + ${A}) = ${num.toFixed(4)}</span><br>
+        <span class="formula-line">denominator = (B − A)(1 + x) = (${B} − ${A})(1 + ${x.toFixed(2)}) = ${den.toFixed(4)}</span><br>
+        <span class="formula-line">P(map to A) = ${num.toFixed(4)} / ${den.toFixed(4)} = <span class="formula-result">${pA.toFixed(3)}</span></span><br>
+        <span class="formula-line">P(map to B) = 1 − ${pA.toFixed(3)} = <span class="formula-result">${pB.toFixed(3)}</span></span>
+      `;
+    }
+  }
+
+  input.addEventListener('input', compute);
+  compute();
+})();
 </script>
 
 </body>
