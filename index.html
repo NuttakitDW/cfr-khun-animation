@@ -129,6 +129,7 @@ section.panel h3 {
 .tile .label.metric { background: rgba(63,223,142,0.15);  color: var(--green); }
 .tile .label.mccfr  { background: rgba(191,140,255,0.15); color: var(--purple); }
 .tile .label.deep   { background: rgba(255,213,74,0.15);  color: var(--gold); }
+.tile .label.note   { background: rgba(255,94,122,0.15);  color: #ff5e7a; }
 .tile .name {
   font-size: 16px;
   font-weight: 700;
@@ -167,6 +168,36 @@ section.panel h3 {
 .tile { position: relative; }
 
 .section-spacer { height: 18px; }
+
+.notes-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255,94,122,0.06);
+  border: 1px solid rgba(255,94,122,0.30);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+.notes-warning .badge {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255,94,122,0.18);
+  color: #ff7a91;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.notes-warning .text {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.notes-warning .text strong { color: var(--text); font-weight: 600; }
 
 footer {
   padding: 24px 32px 36px;
@@ -254,6 +285,27 @@ footer a:hover { color: var(--accent); }
         <p class="name">Badugi Tutorial</p>
         <p class="desc">Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
         <span class="arrow">/badugi →</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <section class="panel">
+    <h2>Personal Notes</h2>
+    <h3>Study notes — not authoritative</h3>
+
+    <div class="notes-warning">
+      <span class="badge">Unverified</span>
+      <p class="text">These are <strong>personal study notes</strong> written while learning. They have not been peer-reviewed, cite no primary measurements, and may contain mistakes or oversimplifications. <strong>Do not cite these as a source.</strong> For anything load-bearing, follow the linked papers and original references inside each note.</p>
+    </div>
+
+    <div class="tile-grid">
+      <a class="tile" href="/custom-bet-solver">
+        <span class="label note">Note</span>
+        <p class="name">Building a Custom Bet-Size Solver</p>
+        <p class="desc">Why a Deep CFR blueprint alone can't handle arbitrary bet sizes — and how Pluribus/DeepStack add action translation and depth-limited re-solving to get there. Personal summary, unverified.</p>
+        <span class="arrow">/custom-bet-solver →</span>
       </a>
     </div>
   </section>

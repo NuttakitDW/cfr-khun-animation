@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building a Custom Bet-Size Solver with Deep CFR</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.stat-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat .label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.stat .value {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat .value.accent { color: var(--accent); }
+.stat .value.gold { color: var(--gold); }
+.stat .value.green { color: var(--green); }
+
+main {
+  padding: 28px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.panel h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.panel p { color: var(--text); margin: 0 0 12px; font-size: 14px; }
+.panel p.muted { color: var(--muted); font-size: 13px; }
+.panel ul { color: var(--text); font-size: 14px; margin: 0 0 12px; padding-left: 20px; }
+.panel ul li { margin-bottom: 6px; }
+.panel ul li::marker { color: var(--dim); }
+.panel strong { color: var(--text); }
+.panel em { color: var(--muted); font-style: normal; }
+.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 13px; }
+
+/* Unverified-note disclaimer banner */
+.unverified {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,94,122,0.04) 0px, rgba(255,94,122,0.04) 8px,
+      transparent 8px, transparent 16px),
+    rgba(255,94,122,0.05);
+  border: 1px solid rgba(255,94,122,0.35);
+  border-left: 3px solid var(--red);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+.unverified .badge {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(255,94,122,0.18);
+  color: #ff7a91;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.unverified .copy {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+}
+.unverified .copy strong { color: #ff9aac; font-weight: 600; }
+.unverified .copy .muted-line {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 4px;
+}
+@media (max-width: 700px) {
+  .unverified { grid-template-columns: 1fr; }
+}
+
+/* The big "aha" callout */
+.aha {
+  background:
+    linear-gradient(135deg, rgba(91,158,255,0.10), rgba(191,140,255,0.06) 60%, rgba(255,213,74,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.aha::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--gold));
+}
+.aha .tag {
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.aha .headline {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+}
+.aha .body {
+  color: var(--text);
+  font-size: 14.5px;
+  margin: 0;
+}
+.aha .body em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* Pipeline diagram */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 8px 0 4px;
+}
+.pipe-step {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+}
+.pipe-step .num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+}
+.pipe-step.s1 .num { color: var(--accent); }
+.pipe-step.s2 .num { color: var(--purple); }
+.pipe-step.s3 .num { color: var(--gold); }
+.pipe-step .name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.pipe-step .desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.pipe-step.s3 {
+  border-color: rgba(255,213,74,0.4);
+  box-shadow: 0 0 24px rgba(255,213,74,0.10);
+}
+.pipe-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--dim);
+  border-right: 2px solid var(--dim);
+  transform: translateY(-50%) rotate(45deg);
+  z-index: 5;
+}
+@media (max-width: 900px) {
+  .pipeline { grid-template-columns: 1fr; }
+  .pipe-step:not(:last-child)::after {
+    right: 50%;
+    top: auto;
+    bottom: -10px;
+    transform: translateX(50%) rotate(135deg);
+  }
+}
+
+/* Piece sections */
+.piece {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.piece-num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--dim);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.piece.p1 .piece-num { color: rgba(91,158,255,0.45); }
+.piece.p2 .piece-num { color: rgba(191,140,255,0.45); }
+.piece.p3 .piece-num { color: rgba(255,213,74,0.55); }
+.piece-body { min-width: 0; }
+.piece-body h3 { margin-bottom: 10px; }
+.piece-tag {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.piece.p1 .piece-tag { background: rgba(91,158,255,0.15); color: var(--accent); }
+.piece.p2 .piece-tag { background: rgba(191,140,255,0.15); color: var(--purple); }
+.piece.p3 .piece-tag { background: rgba(255,213,74,0.15); color: var(--gold); }
+
+.example-quote {
+  background: var(--bg-2);
+  border-left: 3px solid var(--dim);
+  padding: 10px 14px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+.example-quote.acc { border-left-color: var(--accent); }
+.example-quote.pur { border-left-color: var(--purple); }
+.example-quote.gld { border-left-color: var(--gold); }
+
+.formula-row {
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  color: var(--accent);
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+/* Components table */
+table.components {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+table.components th, table.components td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.components th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  font-weight: 600;
+  background: rgba(255,255,255,0.02);
+}
+table.components td.name { font-weight: 700; color: var(--text); width: 22%; }
+table.components td.purpose { color: var(--text); width: 50%; }
+table.components td.diff { width: 28%; }
+.diff-badge {
+  display: inline-block;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.diff-badge.medium  { background: rgba(63,223,142,0.12); color: var(--green); }
+.diff-badge.hard    { background: rgba(255,140,66,0.15); color: var(--orange); }
+.diff-badge.hardest { background: rgba(255,94,122,0.15); color: var(--red); }
+
+/* Reading list */
+.reading-list { display: grid; gap: 10px; }
+.read-item {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.read-item .order {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+.read-item .title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 3px;
+}
+.read-item .blurb {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Timeline */
+.timeline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.timeline-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.timeline-card.realistic { border-left: 3px solid var(--orange); }
+.timeline-card.start     { border-left: 3px solid var(--green); }
+.timeline-card .label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.timeline-card .head {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.timeline-card.realistic .head { color: var(--orange); }
+.timeline-card.start .head     { color: var(--green); }
+.timeline-card .text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+@media (max-width: 900px) {
+  .timeline { grid-template-columns: 1fr; }
+}
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Building a Custom Bet-Size Solver</h1>
+    <span class="sub">From Deep CFR blueprint to depth-limited subgame re-solving — the architecture behind Pluribus &amp; DeepStack</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat">
+      <span class="label">Domain</span>
+      <span class="value gold">No-Limit Hold'em</span>
+    </div>
+    <div class="stat">
+      <span class="label">Goal</span>
+      <span class="value accent">Custom bet sizes / any board</span>
+    </div>
+    <div class="stat">
+      <span class="label">Core algorithm</span>
+      <span class="value">Deep CFR + Re-solve</span>
+    </div>
+    <div class="stat">
+      <span class="label">Realistic timeline</span>
+      <span class="value green">2 – 6 months</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= UNVERIFIED DISCLAIMER ================= -->
+  <div class="unverified">
+    <span class="badge">Unverified</span>
+    <div class="copy">
+      <strong>Personal study note — not an authoritative source.</strong> Written while learning Deep CFR and modern poker AI architecture. Not peer-reviewed, may contain mistakes, oversimplifications, or outdated claims. Do <strong>not</strong> cite this page as a reference.
+      <span class="muted-line">For anything load-bearing, follow the original papers in Section 7 (Brown &amp; Sandholm, Moravčík et al., Ganzfried &amp; Sandholm) — those are the actual sources.</span>
+    </div>
+  </div>
+
+  <!-- ================= THE BIG AHA ================= -->
+  <div class="aha">
+    <div class="tag">The single insight</div>
+    <p class="headline">Training only produces a playbook for a <em>simplified</em> game. Real, custom bet sizes need fresh thinking <em>at decision time</em>.</p>
+    <p class="body">Most beginners think: <span class="mono" style="color:var(--muted);">train Deep CFR → get a poker AI</span>. That's wrong. Deep CFR alone gives you a <strong>blueprint</strong> for an abstracted version of poker with a fixed menu of bet sizes (~6 buttons). To handle <em>any</em> bet size in real play, the bot has to <strong>re-solve</strong> the current decision on the fly. Every elite NLH bot — Pluribus, DeepStack, Libratus — is built around this.</p>
+  </div>
+
+  <!-- ================= WHY ABSTRACTION ================= -->
+  <section class="panel">
+    <h2>Section 1 · The forced compression</h2>
+    <h3>Why every poker AI shrinks the action menu</h3>
+    <p>Poker has infinite bet sizes — you can bet $1.00, $1.50, $1.51, $1.5104… Computers can't track regret over infinite actions. CFR's regret vector has length <span class="kw">num_actions</span>, full stop. So every poker AI compresses the action space.</p>
+    <div class="example-quote">
+      <strong style="color:var(--text);">Real poker:</strong> "How much do you want to bet? Any number is fine."<br>
+      <strong style="color:var(--accent);">AI poker:</strong> "Pick one — fold, call, ½ pot, pot, 2× pot, all-in."
+    </div>
+    <p>This is <strong>action abstraction</strong>. It's the price of admission, and it's <em>not</em> the abstraction Deep CFR removes. Deep CFR removes <span class="kw">card</span> abstraction (no more hand-crafted hand buckets) but the bet-size menu is still hard-coded. That's why a blueprint alone can never tell you "0.37× pot here, please."</p>
+  </section>
+
+  <!-- ================= ARCHITECTURE PIPELINE ================= -->
+  <section class="panel">
+    <h2>Section 2 · The architecture</h2>
+    <h3>Three pieces, played in sequence at every decision</h3>
+    <div class="pipeline">
+      <div class="pipe-step s1">
+        <div class="num">PIECE 01 · OFFLINE</div>
+        <div class="name">Blueprint</div>
+        <div class="desc">Train Deep CFR on the abstracted game (~6 bet sizes). Produces a memorized playbook. Done once, takes days.</div>
+      </div>
+      <div class="pipe-step s2">
+        <div class="num">PIECE 02 · ONLINE-FAST</div>
+        <div class="name">Translator</div>
+        <div class="desc">Map the opponent's real bet (e.g. 73% pot) to the nearest abstract bets via pseudo-harmonic translation. Fast, lossy.</div>
+      </div>
+      <div class="pipe-step s3">
+        <div class="num">PIECE 03 · ONLINE-DEEP</div>
+        <div class="name">Real-time solver</div>
+        <div class="desc">At your turn, run a fresh CFR on a depth-limited subgame with whatever bet sizes you want. This is where custom sizing lives.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PIECE 1 ================= -->
+  <section class="panel">
+    <h2>Section 3 · The blueprint</h2>
+    <div class="piece p1">
+      <div class="piece-num">01</div>
+      <div class="piece-body">
+        <span class="piece-tag">Offline · Deep CFR</span>
+        <h3>A giant memorized playbook</h3>
+        <p>Run Deep CFR for days or weeks on a coarsely abstracted version of NLH. Typical action menu: <span class="kw">{fold, call, 0.5×pot, 1×pot, 2×pot, all-in}</span> — what OpenSpiel calls FCHPA. Card abstraction (k-means clustering of postflop hands into ~1k–5k buckets per street) is sometimes added on top to keep the infoset count tractable.</p>
+        <div class="example-quote acc">
+          <strong style="color:var(--text);">Output looks like:</strong> "Hand: A♠ K♠. Board: 7♥ 8♥ 2♣. Opponent bet pot. → Raise 3× pot 60% of the time, call 40%."
+        </div>
+        <p>The blueprint converges to an approximate equilibrium of the abstracted game — <em>not</em> equilibrium of real NLH. It's a strong starting point, never the final answer.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PIECE 2 ================= -->
+  <section class="panel">
+    <h2>Section 4 · The translator</h2>
+    <div class="piece p2">
+      <div class="piece-num">02</div>
+      <div class="piece-body">
+        <span class="piece-tag">Online · Action Translation</span>
+        <h3>Mapping reality onto the playbook's menu</h3>
+        <p>Opponent bets 73% of pot. Your blueprint only knows 50% and 100%. You translate. The standard recipe is <strong>pseudo-harmonic translation</strong> (Ganzfried &amp; Sandholm, 2013) — it returns a probability of mapping the real bet to each of the two nearest abstract bets:</p>
+        <div class="formula-row">P(round down to A) = (B − x)(1 + A) / ((B − A)(1 + x))</div>
+        <p class="muted" style="margin-top:6px;">where <span class="mono">A &lt; x &lt; B</span> in pot fractions. Sample, look up the blueprint at the translated infoset, act.</p>
+        <div class="example-quote pur">
+          <strong style="color:var(--text);">Intuition:</strong> "Pretend the opponent bet 50% with probability 0.4 and 100% with probability 0.6. Look up the blueprint's response in both worlds and blend."
+        </div>
+        <p>Cheap, fast, lossy. Good enough for fast-path play; fails on edge cases.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PIECE 3 ================= -->
+  <section class="panel">
+    <h2>Section 5 · The real-time solver</h2>
+    <div class="piece p3">
+      <div class="piece-num">03</div>
+      <div class="piece-body">
+        <span class="piece-tag">Online · Continual Re-solving</span>
+        <h3>Fresh CFR on a tiny subgame, every decision</h3>
+        <p>This is the actual answer to "custom bet sizes on any flop, turn, river." When it's the AI's turn, it ignores the blueprint and runs CFR <em>from scratch</em> on a depth-limited subgame, parameterized by:</p>
+        <ul>
+          <li>Current public state (board, pot, stacks, betting history)</li>
+          <li>Both players' <strong>ranges</strong> — Bayesian posterior over hands given the action so far</li>
+          <li>The bet sizes you want available <em>right now</em> — this is where 0.37× pot lives</li>
+          <li>Leaf utilities estimated by either the blueprint or a learned <strong>value network</strong></li>
+        </ul>
+        <p>It runs for a few seconds, gets an approximate equilibrium for <em>this</em> spot with <em>your</em> bet menu, plays the action, throws the subgame away. Next decision: do it again.</p>
+        <div class="example-quote gld">
+          <strong style="color:var(--text);">DeepStack's leap:</strong> replace the blueprint entirely with a <span class="mono">neural value function</span> that estimates leaf utilities for any (board, ranges) input. That's what makes truly arbitrary bet sizing work without the blueprint as a crutch.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COMPONENTS TABLE ================= -->
+  <section class="panel">
+    <h2>Section 6 · What you actually need to build</h2>
+    <h3>Decomposition of the project</h3>
+    <table class="components">
+      <thead>
+        <tr><th>Component</th><th>Purpose</th><th>Difficulty</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="name">Game engine</td>
+          <td class="purpose">Apply actions, deal cards, compute showdown. Use OpenSpiel's <span class="mono">universal_poker</span> or PokerKit — don't write this yourself.</td>
+          <td class="diff"><span class="diff-badge medium">Medium</span></td>
+        </tr>
+        <tr>
+          <td class="name">Blueprint trainer</td>
+          <td class="purpose">Deep CFR on the FCHPA-abstracted game. Already in this repo's Deep CFR work, but slow.</td>
+          <td class="diff"><span class="diff-badge hard">Hard</span></td>
+        </tr>
+        <tr>
+          <td class="name">Range tracker</td>
+          <td class="purpose">Bayesian update of both players' hand-range distributions, conditioned on the betting history. Fiddly and conceptually subtle.</td>
+          <td class="diff"><span class="diff-badge hard">Hard</span></td>
+        </tr>
+        <tr>
+          <td class="name">Real-time solver</td>
+          <td class="purpose">CFR over a depth-limited subgame with whatever custom bet sizes you choose for this spot. The component that actually delivers your goal.</td>
+          <td class="diff"><span class="diff-badge hardest">Hardest</span></td>
+        </tr>
+        <tr>
+          <td class="name">Value network <span style="color:var(--muted); font-weight:400;">(optional)</span></td>
+          <td class="purpose">Estimates counterfactual values at the depth limit so the re-solver doesn't have to roll out to the river. The DeepStack innovation.</td>
+          <td class="diff"><span class="diff-badge hardest">Hardest</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin-top:14px;">Without the real-time solver, you cannot achieve "any custom bet size on any street." A trained blueprint can never produce <span class="kw">0.37 × pot</span> if it only ever trained on <span class="kw">{0.5, 1.0, 2.0}</span>. This is non-negotiable.</p>
+  </section>
+
+  <!-- ================= READING PATH ================= -->
+  <section class="panel">
+    <h2>Section 7 · Reading path</h2>
+    <h3>Read these in order — each builds on the last</h3>
+    <div class="reading-list">
+      <div class="read-item">
+        <span class="order">01</span>
+        <div>
+          <p class="title">Brown &amp; Sandholm 2019 — Deep CFR</p>
+          <p class="blurb">Re-read this knowing it produces only the abstracted blueprint, not the final solver.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">02</span>
+        <div>
+          <p class="title">Moravčík et al. 2017 — DeepStack</p>
+          <p class="blurb">Introduced continual re-solving + value networks for HUNL. The conceptual blueprint for everything modern.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">03</span>
+        <div>
+          <p class="title">Brown &amp; Sandholm 2018 / 2019 — Libratus &amp; Pluribus</p>
+          <p class="blurb">Blueprint plus nested subgame solving for HUNL and 6-max. The production-grade architecture.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">04</span>
+        <div>
+          <p class="title">Ganzfried &amp; Sandholm 2013 — Action Translation</p>
+          <p class="blurb">The pseudo-harmonic mapping. Short paper, immediately practical for Piece 2.</p>
+        </div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">Open-source references: <span class="mono">slumbot</span> and <span class="mono">cfrm</span> for blueprint + abstraction; <span class="mono">OpenHoldem</span>/<span class="mono">PokerSolver</span> for solver structure; OpenSpiel <span class="mono">universal_poker.cc</span> for the engine.</p>
+  </section>
+
+  <!-- ================= TIMELINE / FIRST STEP ================= -->
+  <section class="panel">
+    <h2>Section 8 · Expectation &amp; first move</h2>
+    <h3>Be honest about scope, then start small</h3>
+    <div class="timeline">
+      <div class="timeline-card realistic">
+        <div class="label">Realistic timeline</div>
+        <div class="head">2 – 6 months focused work</div>
+        <div class="text">For one person who already understands CFR. The neural net isn't the hard part — range tracking and the depth-limited solver are. Open-source references for the latter two are scarce.</div>
+      </div>
+      <div class="timeline-card start">
+        <div class="label">First move</div>
+        <div class="head">Build a Leduc re-solver in a weekend</div>
+        <div class="text">Don't start with NLH. Leduc poker (6 cards) is small enough to write a tabular CFR + a depth-limited re-solver from scratch. Every concept above shows up at miniature scale, including range tracking. Once that works, scale the same architecture up to NLH — the math doesn't change, only the size.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+</body>
+</html>
