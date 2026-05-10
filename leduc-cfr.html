@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leduc Poker — Tabular CFR</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+}
+.btn:hover { background: var(--panel-3); border-color: var(--dim); }
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0e1a;
+}
+.btn.primary:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.stat-group {
+  margin-left: auto;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat .label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.stat .value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat .value.accent { color: var(--accent); }
+.stat .value.gold { color: var(--gold); }
+.stat .value.green { color: var(--green); }
+
+main {
+  padding: 24px 28px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.panel h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.panel p { color: var(--text); margin: 0 0 10px; font-size: 13.5px; }
+.panel p.muted { color: var(--muted); font-size: 13px; }
+.panel ul { color: var(--text); font-size: 13.5px; margin: 0 0 12px; padding-left: 20px; }
+.panel ul li { margin-bottom: 6px; }
+.panel ul li::marker { color: var(--dim); }
+.panel strong { color: var(--text); }
+.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 12.5px; }
+
+/* Game-rules grid */
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.rule-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.rule-card .label {
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.rule-card .value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.rule-card .sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Convergence chart */
+.chart-wrap {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
+}
+canvas#chart { display: block; width: 100%; height: 320px; }
+.chart-legend {
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.chart-legend .key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-legend .swatch {
+  width: 12px; height: 3px; border-radius: 2px;
+}
+
+/* Strategy table */
+.tabs {
+  display: inline-flex;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+.tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  transition: all 0.18s;
+  font-family: inherit;
+}
+.tab.active {
+  background: var(--panel-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.tab:hover:not(.active) { color: var(--text); }
+
+table.strat {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+table.strat th, table.strat td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+table.strat th {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 700;
+  background: rgba(255,255,255,0.02);
+  position: sticky;
+  top: 0;
+}
+table.strat td.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+table.strat td.cardJ { color: var(--orange); font-weight: 700; }
+table.strat td.cardQ { color: var(--accent); font-weight: 700; }
+table.strat td.cardK { color: var(--green); font-weight: 700; }
+
+.bar-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.bar-cell .bar {
+  flex: 1;
+  height: 8px;
+  background: var(--panel-3);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 60px;
+}
+.bar-cell .bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.18s;
+}
+.bar-cell .bar-fill.f { background: var(--red); }
+.bar-cell .bar-fill.x { background: var(--muted); }
+.bar-cell .bar-fill.b { background: var(--green); }
+.bar-cell .bar-fill.r { background: var(--gold); }
+.bar-cell .bar-fill.c { background: var(--purple); }
+.bar-cell .num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+  min-width: 36px;
+  text-align: right;
+}
+.action-tag {
+  display: inline-block;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.action-tag.x { background: rgba(122,132,153,0.15); color: var(--muted); }
+.action-tag.b { background: rgba(63,223,142,0.15); color: var(--green); }
+.action-tag.r { background: rgba(255,213,74,0.15); color: var(--gold); }
+.action-tag.c { background: rgba(191,140,255,0.15); color: var(--purple); }
+.action-tag.f { background: rgba(255,94,122,0.15); color: var(--red); }
+
+.scroll {
+  max-height: 460px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.scroll::-webkit-scrollbar { width: 8px; }
+.scroll::-webkit-scrollbar-track { background: var(--panel-2); }
+.scroll::-webkit-scrollbar-thumb { background: var(--panel-3); border-radius: 4px; }
+
+/* Notes */
+.note {
+  background:
+    linear-gradient(135deg, rgba(91,158,255,0.06), rgba(191,140,255,0.04));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+  margin-top: 6px;
+}
+.note strong { color: var(--accent); }
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 800px) {
+  .stat-group { width: 100%; margin-left: 0; gap: 18px; }
+  table.strat th, table.strat td { padding: 6px 6px; font-size: 11.5px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Leduc Poker — Tabular CFR</h1>
+    <span class="sub">First step on the path to a custom bet-size NLH solver. Leduc is the canonical research toy game between Kuhn and full Hold'em.</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="controls">
+    <button class="btn primary" id="btnTrain">Train</button>
+    <button class="btn" id="btnStep">+1 iter</button>
+    <button class="btn" id="btnTurbo">Turbo (+1k)</button>
+    <button class="btn" id="btnReset">Reset</button>
+    <div class="stat-group">
+      <div class="stat">
+        <span class="label">Iter</span>
+        <span class="value mono" id="statIter">0</span>
+      </div>
+      <div class="stat">
+        <span class="label">Hands</span>
+        <span class="value mono" id="statHands">0</span>
+      </div>
+      <div class="stat">
+        <span class="label">Exploitability (mbb/g)</span>
+        <span class="value mono gold" id="statExpl">—</span>
+      </div>
+      <div class="stat">
+        <span class="label">Infosets</span>
+        <span class="value mono accent" id="statInfo">0</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== RULES PANEL ===================== -->
+  <section class="panel">
+    <h2>Section 1 · The game</h2>
+    <h3>Leduc Hold'em — 6 cards, 2 streets, fixed bets</h3>
+    <p>Leduc is the standard research toy poker game one rung above Kuhn. It has the structural pieces Kuhn lacks — a public board card, two betting rounds, real range evolution — while staying small enough to solve tabularly in a browser tab.</p>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="label">Deck</div>
+        <div class="value">6 cards · J Q K (×2 each)</div>
+        <div class="sub">Suit doesn't matter</div>
+      </div>
+      <div class="rule-card">
+        <div class="label">Private cards</div>
+        <div class="value">1 each</div>
+        <div class="sub">Drawn without replacement</div>
+      </div>
+      <div class="rule-card">
+        <div class="label">Public board</div>
+        <div class="value">1 card · revealed after round 1</div>
+        <div class="sub">From the remaining deck</div>
+      </div>
+      <div class="rule-card">
+        <div class="label">Betting</div>
+        <div class="value">$2 round 1 · $4 round 2</div>
+        <div class="sub">Max 1 raise per round (cap)</div>
+      </div>
+      <div class="rule-card">
+        <div class="label">Ante</div>
+        <div class="value">1 chip per player</div>
+        <div class="sub">Pot starts at 2</div>
+      </div>
+      <div class="rule-card">
+        <div class="label">Showdown</div>
+        <div class="value">Pair beats high card</div>
+        <div class="sub">Pair = private card matches board</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:14px;">
+      <strong>Why Leduc.</strong> ~936 information sets total. Tabular CFR converges to ε &lt; 0.01 in roughly 5,000–10,000 iterations — a few seconds in JavaScript. Every CFR-related paper (DeepStack, Deep CFR, Pluribus) uses Leduc as a benchmark.
+    </div>
+  </section>
+
+  <!-- ===================== CONVERGENCE PANEL ===================== -->
+  <section class="panel">
+    <h2>Section 2 · Convergence</h2>
+    <h3>Exploitability over training iterations</h3>
+    <p class="muted">Exploitability = average of best-response values for each player against the opponent's current average strategy. At a Nash equilibrium it equals zero; CFR drives it toward zero at rate O(1/√T).</p>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="chart-legend">
+      <span class="key"><span class="swatch" style="background:var(--gold)"></span>Exploitability (mbb/g)</span>
+      <span class="key"><span class="swatch" style="background:var(--accent)"></span>1/√T reference (theory)</span>
+      <span class="key" style="color:var(--dim)">log scale on Y · linear on X</span>
+    </div>
+  </section>
+
+  <!-- ===================== STRATEGY PANEL ===================== -->
+  <section class="panel">
+    <h2>Section 3 · Average strategy</h2>
+    <h3>What the bot believes after training</h3>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-filter="round1">Round 1</button>
+      <button class="tab" data-filter="round2">Round 2</button>
+      <button class="tab" data-filter="all">All infosets</button>
+    </div>
+    <div class="scroll">
+      <table class="strat">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Card</th>
+            <th>R1 Hist</th>
+            <th>Board</th>
+            <th>R2 Hist</th>
+            <th>Strategy</th>
+            <th>Visits</th>
+          </tr>
+        </thead>
+        <tbody id="stratTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== EXPLAINER PANEL ===================== -->
+  <section class="panel">
+    <h2>Section 4 · What you should see</h2>
+    <h3>Sanity checks for "is this converging?"</h3>
+    <ul>
+      <li><strong>Exploitability falls on a log-linear path.</strong> A few thousand iterations should drop it from ~1000 mbb/g down toward single digits. If it plateaus or rises, something is wrong.</li>
+      <li><strong>K with K-on-board is a near-deterministic raise.</strong> Once a king is on the board and you also hold the king, you have the only possible pair — strategy should converge to almost-always raise.</li>
+      <li><strong>J without a pair is a near-deterministic fold to bets.</strong> Lowest card, no pair — there's nothing to call with except as a bluff-catch.</li>
+      <li><strong>Q is the bluff/value boundary.</strong> Q opens with mixed strategies that don't go to 0 or 1 — this is where the interesting GTO frequencies live.</li>
+    </ul>
+    <div class="note">
+      <strong>Next step.</strong> Once exploitability sits below ~10 mbb/g, this blueprint is solid. The next page in the progression — <span class="kw">leduc-nl-cfr.html</span> — will replace the fixed bets with custom sizes (½ pot, pot, 2× pot, all-in), reusing the same engine and the same CFR loop.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Leduc Hold'em — game definition
+// =============================================================
+const RANKS = ['J', 'Q', 'K'];        // 0=J, 1=Q, 2=K. Each rank has 2 copies.
+const NUM_RANKS = 3;
+const COPIES_PER_RANK = 2;
+const ANTE = 1;
+const BET_R1 = 2;
+const BET_R2 = 4;
+
+// Action labels:
+//   x = check          b = bet         r = raise
+//   c = call           f = fold
+// Legal actions per round-history:
+//   ""   or "x"   → ['x', 'b']
+//   "b"  or "xb"  → ['f', 'c', 'r']      (cap reached after a raise)
+//   "br" or "xbr" → ['f', 'c']
+const LEGAL_ACTIONS = {
+  ''   : ['x', 'b'],
+  'x'  : ['x', 'b'],
+  'b'  : ['f', 'c', 'r'],
+  'xb' : ['f', 'c', 'r'],
+  'br' : ['f', 'c'],
+  'xbr': ['f', 'c'],
+};
+
+// Round-ending histories (terminal within a round)
+function isRoundTerminal(hist) {
+  if (hist.endsWith('f')) return true;
+  if (hist.endsWith('c')) return true;
+  if (hist === 'xx') return true;
+  return false;
+}
+
+// Compute round-level contributions and fold info from a round history.
+// Returns { terminal, foldedBy, p1c, p2c }
+function settleRound(hist, betSize) {
+  let level = 0;       // 0 = no bet, 1 = bet pending, 2 = bet+raise
+  let p1c = 0, p2c = 0;
+  for (let i = 0; i < hist.length; i++) {
+    const a = hist[i];
+    const player = i % 2;        // P1 acts first in every round
+    if (a === 'x') {
+      // check, no contribution change
+    } else if (a === 'b') {
+      level = 1;
+      if (player === 0) p1c = level * betSize;
+      else              p2c = level * betSize;
+    } else if (a === 'r') {
+      level += 1;
+      if (player === 0) p1c = level * betSize;
+      else              p2c = level * betSize;
+    } else if (a === 'c') {
+      // call brings caller's contrib up to current level
+      if (player === 0) p1c = level * betSize;
+      else              p2c = level * betSize;
+      return { terminal: true, foldedBy: -1, p1c, p2c };
+    } else if (a === 'f') {
+      return { terminal: true, foldedBy: player, p1c, p2c };
+    }
+  }
+  if (hist === 'xx') return { terminal: true, foldedBy: -1, p1c, p2c };
+  return { terminal: false, foldedBy: -1, p1c, p2c };
+}
+
+// Player whose turn it is, given round history (P1 acts first each round)
+function playerToAct(hist) {
+  return hist.length % 2;     // 0 = P1, 1 = P2
+}
+
+// Showdown winner: returns 0 (P1), 1 (P2), or -1 (tie).
+// Pair (private == board) beats no pair.
+// If neither pairs, higher private rank wins; tie if equal ranks.
+function showdownWinner(p1Card, p2Card, board) {
+  const p1Pair = (p1Card === board);
+  const p2Pair = (p2Card === board);
+  if (p1Pair && !p2Pair) return 0;
+  if (p2Pair && !p1Pair) return 1;
+  // Both can't pair the board (only 2 of each rank in deck).
+  if (p1Card > p2Card) return 0;
+  if (p1Card < p2Card) return 1;
+  return -1;
+}
+
+// Probability of dealing (p1Card, p2Card) in that order.
+// 30 ordered draws total: same rank → 2/30, distinct ranks → 4/30.
+function dealProb(p1, p2) {
+  return (p1 === p2) ? 2 / 30 : 4 / 30;
+}
+
+// Distribution of board cards given private cards used.
+// Returns array of {rank, prob}. Sum of probs = 1.
+function boardDist(p1, p2) {
+  // Remaining deck: 6 - 2 = 4 cards.
+  // Count of rank r remaining = 2 - (1 if r==p1) - (1 if r==p2).
+  const counts = [2, 2, 2];
+  counts[p1] -= 1;
+  counts[p2] -= 1;
+  const total = counts.reduce((a, b) => a + b, 0); // always 4
+  const out = [];
+  for (let r = 0; r < NUM_RANKS; r++) {
+    if (counts[r] > 0) out.push({ rank: r, prob: counts[r] / total });
+  }
+  return out;
+}
+
+// =============================================================
+// Information-set node
+// =============================================================
+class Node {
+  constructor(key, player, card, r1, board, r2, numActions, legal) {
+    this.key = key;
+    this.player = player;
+    this.card = card;
+    this.r1 = r1;
+    this.board = board;     // null if still in round 1
+    this.r2 = r2;
+    this.numActions = numActions;
+    this.legal = legal;     // array of action labels for this node
+    this.regretSum = new Array(numActions).fill(0);
+    this.strategySum = new Array(numActions).fill(0);
+    this.visits = 0;
+  }
+  getStrategy() {
+    let sum = 0;
+    const s = new Array(this.numActions).fill(0);
+    for (let a = 0; a < this.numActions; a++) {
+      s[a] = Math.max(this.regretSum[a], 0);
+      sum += s[a];
+    }
+    if (sum > 0) for (let a = 0; a < this.numActions; a++) s[a] /= sum;
+    else         for (let a = 0; a < this.numActions; a++) s[a] = 1 / this.numActions;
+    return s;
+  }
+  getAverageStrategy() {
+    const sum = this.strategySum.reduce((a, b) => a + b, 0);
+    if (sum > 0) return this.strategySum.map(x => x / sum);
+    return new Array(this.numActions).fill(1 / this.numActions);
+  }
+}
+
+// =============================================================
+// Trainer
+// =============================================================
+class LeducCFR {
+  constructor() { this.reset(); }
+
+  reset() {
+    this.nodes = new Map();
+    this.iter = 0;
+    this.handsPlayed = 0;
+  }
+
+  infosetKey(player, card, r1, board, r2) {
+    const b = (board === null || board === undefined) ? '?' : RANKS[board];
+    return `${player}|${RANKS[card]}|${r1 || '·'}|${b}|${r2 || '·'}`;
+  }
+
+  getNode(player, card, r1, board, r2) {
+    const key = this.infosetKey(player, card, r1, board, r2);
+    let n = this.nodes.get(key);
+    if (!n) {
+      const inRound2 = board !== null && board !== undefined;
+      const hist = inRound2 ? r2 : r1;
+      const legal = LEGAL_ACTIONS[hist];
+      if (!legal) throw new Error(`No legal actions for hist "${hist}"`);
+      n = new Node(key, player, card, r1, board ?? null, r2, legal.length, legal);
+      this.nodes.set(key, n);
+    }
+    return n;
+  }
+
+  // CFR recursion. Returns expected utility from P1's perspective at this state.
+  // p1Reach, p2Reach: per-player reach probabilities (excluding chance).
+  // chanceReach: chance reach probability.
+  cfr(p1Card, p2Card, board, r1, r2, p1Reach, p2Reach, chanceReach) {
+    // ------- Round 1 settle -------
+    const s1 = settleRound(r1, BET_R1);
+
+    // R1 fold → terminal
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c;
+      const p2Total = ANTE + s1.p2c;
+      // Folder loses their total contribution. Other player wins folder's total.
+      return s1.foldedBy === 0 ? -p1Total : +p2Total;
+    }
+
+    // R1 ended (call or xx) but board not yet revealed → chance node
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this.cfr(p1Card, p2Card, rank, r1, '', p1Reach, p2Reach, chanceReach * prob);
+      }
+      return v;
+    }
+
+    // R1 still in progress → R1 decision node
+    if (!s1.terminal) {
+      return this.decisionNode(p1Card, p2Card, null, r1, '', p1Reach, p2Reach, chanceReach, /*round=*/1);
+    }
+
+    // ------- Round 2 -------
+    const s2 = settleRound(r2, BET_R2);
+
+    // R2 fold
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c + s2.p1c;
+      const p2Total = ANTE + s1.p2c + s2.p2c;
+      return s2.foldedBy === 0 ? -p1Total : +p2Total;
+    }
+
+    // R2 showdown
+    if (s2.terminal) {
+      const p1Total = ANTE + s1.p1c + s2.p1c;
+      const p2Total = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      if (w === 0) return +p2Total;
+      if (w === 1) return -p1Total;
+      return 0;
+    }
+
+    // R2 decision node
+    return this.decisionNode(p1Card, p2Card, board, r1, r2, p1Reach, p2Reach, chanceReach, /*round=*/2);
+  }
+
+  decisionNode(p1Card, p2Card, board, r1, r2, p1Reach, p2Reach, chanceReach, round) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const node = this.getNode(player, card, r1, board, r2);
+    const legal = node.legal;
+    const strategy = node.getStrategy();
+
+    const util = new Array(legal.length).fill(0);
+    let nodeUtil = 0;
+
+    for (let a = 0; a < legal.length; a++) {
+      const nextHist = hist + legal[a];
+      const nextR1 = round === 1 ? nextHist : r1;
+      const nextR2 = round === 2 ? nextHist : r2;
+      const nextP1 = player === 0 ? p1Reach * strategy[a] : p1Reach;
+      const nextP2 = player === 1 ? p2Reach * strategy[a] : p2Reach;
+      util[a] = this.cfr(p1Card, p2Card, board, nextR1, nextR2, nextP1, nextP2, chanceReach);
+      nodeUtil += strategy[a] * util[a];
+    }
+
+    // Regret + strategy-sum updates (both signed for the acting player)
+    const sign = player === 0 ? 1 : -1;
+    const cfReach = chanceReach * (player === 0 ? p2Reach : p1Reach);
+    const ownReach = player === 0 ? p1Reach : p2Reach;
+    for (let a = 0; a < legal.length; a++) {
+      const regret = sign * (util[a] - nodeUtil);
+      node.regretSum[a]   += cfReach * regret;
+      node.strategySum[a] += ownReach * strategy[a];
+    }
+    node.visits++;
+    return nodeUtil;
+  }
+
+  trainOne() {
+    this.iter++;
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const prob = dealProb(a, b);
+        if (prob === 0) continue;
+        this.cfr(a, b, null, '', '', 1, 1, prob);
+        this.handsPlayed++;
+      }
+    }
+  }
+
+  trainMany(n) { for (let i = 0; i < n; i++) this.trainOne(); }
+
+  // ------------------------------------------------------------
+  // Best-response computation for exploitability
+  // ------------------------------------------------------------
+  // Snapshot average strategy across all nodes.
+  snapshotAvg() {
+    const m = new Map();
+    for (const [k, n] of this.nodes) m.set(k, n.getAverageStrategy());
+    return m;
+  }
+
+  // Exploitability = (BR0 + BR1) / 2  for the current average strategy.
+  exploitability() {
+    const avg = this.snapshotAvg();
+    const br0 = this.bestResponseValue(0, avg);
+    const br1 = this.bestResponseValue(1, avg);
+    return (br0 + br1) / 2;
+  }
+
+  // Compute BR-player's expected utility against opp's avg strategy.
+  // Strategy: fixed-point iteration. Walk tree, accumulate cf-values per
+  // (BR-player infoset, action), then BR(I) = argmax. Repeat until stable.
+  bestResponseValue(brPlayer, oppAvg) {
+    let brStrat = new Map();   // infosetKey -> action index (deterministic BR)
+
+    for (let it = 0; it < 8; it++) {
+      const cfvSums = new Map();   // infosetKey -> array of accumulated cf-action-values
+      for (let a = 0; a < NUM_RANKS; a++) {
+        for (let b = 0; b < NUM_RANKS; b++) {
+          const prob = dealProb(a, b);
+          if (prob === 0) continue;
+          this._brWalk(a, b, null, '', '', prob, brPlayer, oppAvg, brStrat, cfvSums);
+        }
+      }
+      // Update brStrat from argmax of accumulated cfv.
+      let changed = false;
+      for (const [k, vs] of cfvSums) {
+        let bestA = 0, bestV = -Infinity;
+        for (let i = 0; i < vs.length; i++) {
+          if (vs[i] > bestV) { bestV = vs[i]; bestA = i; }
+        }
+        if (brStrat.get(k) !== bestA) { changed = true; brStrat.set(k, bestA); }
+      }
+      if (!changed && it > 0) break;
+    }
+
+    // Final pass: total expected utility for BR player using brStrat.
+    let total = 0;
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const prob = dealProb(a, b);
+        if (prob === 0) continue;
+        total += prob * this._brEval(a, b, null, '', '', brPlayer, oppAvg, brStrat);
+      }
+    }
+    return total;
+  }
+
+  // Walk that returns BR-player's expected utility AND accumulates cfv per BR infoset action.
+  _brWalk(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums) {
+    // Round 1
+    const s1 = settleRound(r1, BET_R1);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c, p2Total = ANTE + s1.p2c;
+      const u_p1 = s1.foldedBy === 0 ? -p1Total : +p2Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brWalk(p1Card, p2Card, rank, r1, '', cfReach * prob, brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brDecision(p1Card, p2Card, null, r1, '', cfReach, brPlayer, oppAvg, brStrat, cfvSums, 1);
+    }
+
+    const s2 = settleRound(r2, BET_R2);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c + s2.p1c, p2Total = ANTE + s1.p2c + s2.p2c;
+      const u_p1 = s2.foldedBy === 0 ? -p1Total : +p2Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    if (s2.terminal) {
+      const p1Total = ANTE + s1.p1c + s2.p1c, p2Total = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2Total;
+      else if (w === 1) u_p1 = -p1Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    return this._brDecision(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums, 2);
+  }
+
+  _brDecision(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums, round) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const key = this.infosetKey(player, card, r1, board, r2);
+    const legal = LEGAL_ACTIONS[hist];
+
+    if (player === brPlayer) {
+      // BR-player decision node: accumulate cfv per action, return chosen action's util.
+      const childUtils = new Array(legal.length).fill(0);
+      for (let a = 0; a < legal.length; a++) {
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        // BR-player reach doesn't enter cfReach (cfReach is opponent + chance reach).
+        childUtils[a] = this._brWalk(p1Card, p2Card, board, nr1, nr2, cfReach, brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      let cum = cfvSums.get(key);
+      if (!cum) { cum = new Array(legal.length).fill(0); cfvSums.set(key, cum); }
+      for (let a = 0; a < legal.length; a++) cum[a] += cfReach * childUtils[a];
+      const chosen = brStrat.has(key) ? brStrat.get(key) : 0;
+      return childUtils[chosen];
+    } else {
+      // Opponent: weighted sum by their average strategy.
+      let strat = oppAvg.get(key);
+      if (!strat) strat = new Array(legal.length).fill(1 / legal.length);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brWalk(p1Card, p2Card, board, nr1, nr2, cfReach * strat[a], brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      return v;
+    }
+  }
+
+  // Final evaluation pass: BR fully fixed, opp fixed; compute expected utility.
+  _brEval(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat) {
+    const s1 = settleRound(r1, BET_R1);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c, p2Total = ANTE + s1.p2c;
+      const u_p1 = s1.foldedBy === 0 ? -p1Total : +p2Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brEval(p1Card, p2Card, rank, r1, '', brPlayer, oppAvg, brStrat);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brEvalDec(p1Card, p2Card, null, r1, '', brPlayer, oppAvg, brStrat, 1);
+    }
+    const s2 = settleRound(r2, BET_R2);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1Total = ANTE + s1.p1c + s2.p1c, p2Total = ANTE + s1.p2c + s2.p2c;
+      const u_p1 = s2.foldedBy === 0 ? -p1Total : +p2Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    if (s2.terminal) {
+      const p1Total = ANTE + s1.p1c + s2.p1c, p2Total = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2Total;
+      else if (w === 1) u_p1 = -p1Total;
+      return brPlayer === 0 ? u_p1 : -u_p1;
+    }
+    return this._brEvalDec(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat, 2);
+  }
+
+  _brEvalDec(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat, round) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const key = this.infosetKey(player, card, r1, board, r2);
+    const legal = LEGAL_ACTIONS[hist];
+
+    if (player === brPlayer) {
+      const a = brStrat.has(key) ? brStrat.get(key) : 0;
+      const nh = hist + legal[a];
+      const nr1 = round === 1 ? nh : r1;
+      const nr2 = round === 2 ? nh : r2;
+      return this._brEval(p1Card, p2Card, board, nr1, nr2, brPlayer, oppAvg, brStrat);
+    } else {
+      let strat = oppAvg.get(key);
+      if (!strat) strat = new Array(legal.length).fill(1 / legal.length);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brEval(p1Card, p2Card, board, nr1, nr2, brPlayer, oppAvg, brStrat);
+      }
+      return v;
+    }
+  }
+}
+
+// =============================================================
+// Convergence chart (canvas)
+// =============================================================
+class Chart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.points = [];          // { iter, expl }
+    this._resize();
+    window.addEventListener('resize', () => { this._resize(); this.render(); });
+  }
+  _resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.W = rect.width;
+    this.H = rect.height || 320;
+    this.canvas.width = this.W * dpr;
+    this.canvas.height = this.H * dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  push(iter, expl) {
+    this.points.push({ iter, expl });
+    if (this.points.length > 1000) {
+      // Decimate when too many points
+      this.points = this.points.filter((_, i) => i % 2 === 0);
+    }
+  }
+  reset() { this.points = []; }
+  render() {
+    const ctx = this.ctx;
+    const W = this.W, H = this.H;
+    ctx.clearRect(0, 0, W, H);
+
+    if (this.points.length < 2) {
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '12px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Press Train to start. Exploitability will be plotted on a log scale.', W / 2, H / 2);
+      return;
+    }
+
+    const padL = 56, padR = 14, padT = 16, padB = 28;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+
+    // Iter range
+    const itMin = 0;
+    const itMax = this.points[this.points.length - 1].iter;
+
+    // Expl range (log)
+    let lo = Infinity, hi = -Infinity;
+    for (const p of this.points) {
+      const v = Math.max(1e-3, p.expl);
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+    const logLo = Math.log10(Math.max(1e-3, lo * 0.5));
+    const logHi = Math.log10(Math.max(hi * 1.2, lo * 2));
+
+    // Background grid
+    ctx.strokeStyle = '#232b3f';
+    ctx.lineWidth = 1;
+    for (let g = Math.floor(logLo); g <= Math.ceil(logHi); g++) {
+      const y = padT + (1 - (g - logLo) / (logHi - logLo)) * innerH;
+      ctx.beginPath();
+      ctx.moveTo(padL, y); ctx.lineTo(W - padR, y);
+      ctx.stroke();
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '11px "SF Mono", Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`10^${g}`, padL - 6, y + 4);
+    }
+
+    // X-axis labels
+    ctx.fillStyle = '#7a8499';
+    ctx.textAlign = 'center';
+    const xTicks = 5;
+    for (let i = 0; i <= xTicks; i++) {
+      const it = Math.round(itMin + (itMax - itMin) * (i / xTicks));
+      const x = padL + (i / xTicks) * innerW;
+      ctx.fillText(it.toLocaleString(), x, H - padB + 18);
+    }
+
+    // Theory line: 1/sqrt(t) reference, scaled to first point
+    if (this.points.length > 5) {
+      const first = this.points[0];
+      const refScale = first.expl * Math.sqrt(Math.max(1, first.iter));
+      ctx.strokeStyle = '#5b9eff';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      let started = false;
+      for (let it = Math.max(1, first.iter); it <= itMax; it += Math.max(1, Math.floor((itMax - first.iter) / 80))) {
+        const ref = refScale / Math.sqrt(it);
+        const lv = Math.log10(Math.max(1e-3, ref));
+        const x = padL + ((it - itMin) / Math.max(1, itMax - itMin)) * innerW;
+        const y = padT + (1 - (lv - logLo) / (logHi - logLo)) * innerH;
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Main line: exploitability
+    ctx.strokeStyle = '#ffd54a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < this.points.length; i++) {
+      const p = this.points[i];
+      const lv = Math.log10(Math.max(1e-3, p.expl));
+      const x = padL + ((p.iter - itMin) / Math.max(1, itMax - itMin)) * innerW;
+      const y = padT + (1 - (lv - logLo) / (logHi - logLo)) * innerH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+// =============================================================
+// Strategy table renderer
+// =============================================================
+function renderTable(trainer, filter) {
+  const tbody = document.getElementById('stratTbody');
+  tbody.innerHTML = '';
+  const rows = [];
+  for (const [k, n] of trainer.nodes) {
+    if (filter === 'round1' && n.board !== null) continue;
+    if (filter === 'round2' && n.board === null) continue;
+    rows.push(n);
+  }
+  // Sort: round 1 first, then by player, card, hist
+  rows.sort((a, b) => {
+    if ((a.board === null) !== (b.board === null)) return a.board === null ? -1 : 1;
+    if (a.player !== b.player) return a.player - b.player;
+    if (a.card !== b.card) return a.card - b.card;
+    if ((a.r1 || '').length !== (b.r1 || '').length) return (a.r1 || '').length - (b.r1 || '').length;
+    if (a.r1 !== b.r1) return a.r1 < b.r1 ? -1 : 1;
+    if ((a.board ?? -1) !== (b.board ?? -1)) return (a.board ?? -1) - (b.board ?? -1);
+    if ((a.r2 || '').length !== (b.r2 || '').length) return (a.r2 || '').length - (b.r2 || '').length;
+    return (a.r2 || '') < (b.r2 || '') ? -1 : 1;
+  });
+
+  for (const n of rows) {
+    const avg = n.getAverageStrategy();
+    const tr = document.createElement('tr');
+    const cardCls = `card${RANKS[n.card]}`;
+    tr.innerHTML = `
+      <td class="mono">P${n.player + 1}</td>
+      <td class="${cardCls}">${RANKS[n.card]}</td>
+      <td class="mono">${n.r1 || '·'}</td>
+      <td class="mono">${n.board === null ? '—' : RANKS[n.board]}</td>
+      <td class="mono">${n.r2 || '·'}</td>
+      <td>${strategyBars(n.legal, avg)}</td>
+      <td class="mono" style="color:var(--muted);">${n.visits.toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function strategyBars(legal, probs) {
+  let html = '<div style="display:flex; gap:8px; flex-wrap:wrap; min-width:320px;">';
+  for (let i = 0; i < legal.length; i++) {
+    const a = legal[i];
+    const p = probs[i];
+    const pct = (p * 100).toFixed(1);
+    const w = (p * 100).toFixed(1);
+    html += `
+      <div class="bar-cell" style="min-width:140px;">
+        <span class="action-tag ${a}">${a}</span>
+        <div class="bar"><div class="bar-fill ${a}" style="width:${w}%"></div></div>
+        <span class="num">${pct}%</span>
+      </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// =============================================================
+// App controller
+// =============================================================
+class App {
+  constructor() {
+    this.trainer = new LeducCFR();
+    this.chart = new Chart(document.getElementById('chart'));
+    this.filter = 'round1';
+    this.training = false;
+    this.bindControls();
+    this.refresh();
+    this.chart.render();
+  }
+  bindControls() {
+    document.getElementById('btnTrain').addEventListener('click', () => this.toggleTrain());
+    document.getElementById('btnStep').addEventListener('click', () => this.step(1));
+    document.getElementById('btnTurbo').addEventListener('click', () => this.step(1000));
+    document.getElementById('btnReset').addEventListener('click', () => this.reset());
+    for (const tab of document.querySelectorAll('.tab')) {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.filter = tab.dataset.filter;
+        renderTable(this.trainer, this.filter);
+      });
+    }
+  }
+  toggleTrain() {
+    if (this.training) this.stopTrain(); else this.startTrain();
+  }
+  startTrain() {
+    this.training = true;
+    document.getElementById('btnTrain').textContent = 'Pause';
+    document.getElementById('btnTrain').classList.remove('primary');
+    const loop = () => {
+      if (!this.training) return;
+      this.trainer.trainMany(50);
+      this.recordSnapshot();
+      this.refresh();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+  stopTrain() {
+    this.training = false;
+    document.getElementById('btnTrain').textContent = 'Train';
+    document.getElementById('btnTrain').classList.add('primary');
+  }
+  step(n) {
+    this.stopTrain();
+    this.trainer.trainMany(n);
+    this.recordSnapshot();
+    this.refresh();
+  }
+  reset() {
+    this.stopTrain();
+    this.trainer.reset();
+    this.chart.reset();
+    this.refresh();
+    this.chart.render();
+  }
+  recordSnapshot() {
+    // Sample exploitability roughly logarithmically for performance.
+    const it = this.trainer.iter;
+    if (it === 0) return;
+    const last = this.chart.points[this.chart.points.length - 1];
+    const sampleEvery = it < 200 ? 25 : it < 2000 ? 100 : it < 20000 ? 500 : 2000;
+    if (last && (it - last.iter) < sampleEvery) return;
+    const e = this.trainer.exploitability();
+    // Convert to mbb/g (milli big-blinds per game). Big blind in Leduc ≈ 2 (the round-1 bet).
+    const mbb = (e / 2) * 1000;
+    this.chart.push(it, Math.max(0.001, mbb));
+    this.chart.render();
+  }
+  refresh() {
+    document.getElementById('statIter').textContent = this.trainer.iter.toLocaleString();
+    document.getElementById('statHands').textContent = this.trainer.handsPlayed.toLocaleString();
+    document.getElementById('statInfo').textContent = this.trainer.nodes.size.toLocaleString();
+    const last = this.chart.points[this.chart.points.length - 1];
+    document.getElementById('statExpl').textContent = last ? last.expl.toFixed(1) : '—';
+    renderTable(this.trainer, this.filter);
+  }
+}
+
+const app = new App();
+</script>
+
+</body>
+</html>
