@@ -1238,8 +1238,9 @@ class InfoSet {
     const pos1 = Math.max(this.regretSum[1], 0);
     const sum = pos0 + pos1;
     if (sum > 0) return [pos0 / sum, pos1 / sum];
-    // Deep CFR ablation: pick highest-advantage action with prob 1 when all <= 0
-    return this.regretSum[0] >= this.regretSum[1] ? [1, 0] : [0, 1];
+    // All advantages <= 0: fall back to uniform (argmax on noisy advantages
+    // collapses to a pure strategy and biases sampled regrets badly on Kuhn).
+    return [0.5, 0.5];
   }
 
   getAverageStrategy() {
@@ -1259,15 +1260,18 @@ class CFRTrainer {
     // Hyperparameters tuned for in-browser real-time training on Kuhn.
     // (Variance is high — Kuhn is too small to play to Deep CFR's strengths.
     // Real Deep CFR uses 10k-batch SGD with 4000 steps per iteration.)
-    this.numTraversals = 8;       // K traversals per player per CFR iteration
-    this.sgdEpochs = 8;           // full passes over the memory per network retrain
+    this.numTraversals = 50;      // K traversals per player per CFR iteration
+    this.sgdEpochs = 50;          // full passes over the memory per network retrain
     this.batchSize = 32;          // (unused with full-batch training; kept for display)
-    this.learningRate = 0.003;
-    this.memoryCapacity = 1024;
+    this.learningRate = 0.001;
+    this.memoryCapacity = 8192;
     this.memoryType = 'reservoir'; // 'reservoir' | 'sliding'
-    this.trainFromScratch = true;
+    // Warm-start training (don't reset network each iter). The Deep CFR paper
+    // resets to fight overfitting on huge games — Kuhn is the opposite regime,
+    // and warm-starting preserves learning across iterations.
+    this.trainFromScratch = false;
     this.linearWeighting = true;
-    this.netSpec = [7, 16, 16, 2]; // ~400 params per net, ~800 total
+    this.netSpec = [7, 32, 32, 2]; // ~1.4k params per net
     this.reset();
   }
 
@@ -1377,7 +1381,11 @@ class CFRTrainer {
         v[a] = this.traverse(history + ACTION_SHORT[a], p1Card, p2Card, traverser, trace);
         nodeUtil += strategy[a] * v[a];
       }
-      const r = [v[0] - nodeUtil, v[1] - nodeUtil];
+      // Clip sampled regrets to [-3, 3] so a single noisy traversal can't blow
+      // up the network — Kuhn payoffs are in [-2, 2] so this only trims outliers.
+      const r0 = Math.max(-3, Math.min(3, v[0] - nodeUtil));
+      const r1 = Math.max(-3, Math.min(3, v[1] - nodeUtil));
+      const r = [r0, r1];
       const x = encodeInfoSet(player, card, history);
       this.advMemory[player].add({ x, r, t: this.iter });
       node.lastSampledRegret = r;
@@ -1386,8 +1394,12 @@ class CFRTrainer {
       return nodeUtil;
     } else {
       // Opponent: collect strategy sample (linear-weighted) and sample one action.
-      node.strategySum[0] += this.iter * strategy[0];
-      node.strategySum[1] += this.iter * strategy[1];
+      // Skip the first 10 iterations — the network is essentially random there,
+      // and those samples would otherwise pollute the average strategy.
+      if (this.iter > 10) {
+        node.strategySum[0] += this.iter * strategy[0];
+        node.strategySum[1] += this.iter * strategy[1];
+      }
       const u = Math.random();
       const a = u < strategy[0] ? 0 : 1;
       if (trace) trace.visited[trace.visited.length - 1].sampledAction = a;
