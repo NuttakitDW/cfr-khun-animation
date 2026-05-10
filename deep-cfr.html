@@ -1260,11 +1260,11 @@ class CFRTrainer {
     // Hyperparameters tuned for in-browser real-time training on Kuhn.
     // (Variance is high — Kuhn is too small to play to Deep CFR's strengths.
     // Real Deep CFR uses 10k-batch SGD with 4000 steps per iteration.)
-    this.numTraversals = 50;      // K traversals per player per CFR iteration
-    this.sgdEpochs = 50;          // full passes over the memory per network retrain
+    this.numTraversals = 20;      // K traversals per player per CFR iteration
+    this.sgdEpochs = 20;          // full passes over the memory per network retrain
     this.batchSize = 32;          // (unused with full-batch training; kept for display)
     this.learningRate = 0.001;
-    this.memoryCapacity = 8192;
+    this.memoryCapacity = 4096;
     this.memoryType = 'reservoir'; // 'reservoir' | 'sliding'
     // Warm-start training (don't reset network each iter). The Deep CFR paper
     // resets to fight overfitting on huge games — Kuhn is the opposite regime,
@@ -2486,7 +2486,7 @@ class App {
   scheduleTick() {
     if (!this.playing) return;
     const delays = { slow: 700, med: 160, fast: 30, turbo: 1 };
-    const burst = { slow: 1, med: 1, fast: 5, turbo: 50 };
+    const burst = { slow: 1, med: 1, fast: 1, turbo: 5 };
     const delay = delays[this.speed];
     const n = burst[this.speed];
 
