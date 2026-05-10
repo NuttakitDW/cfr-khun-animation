@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leduc-NL Re-solver — Custom Bet Sizes On Demand</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text); line-height: 1.55; min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px; border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 30;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto; color: var(--accent); text-decoration: none;
+  font-size: 13px; font-weight: 600; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: 8px; transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--panel-2);
+  color: var(--text); cursor: pointer; transition: all 0.18s; font-family: inherit;
+}
+.btn:hover:not(:disabled) { background: var(--panel-3); border-color: var(--dim); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e1a; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
+.btn.ghost { background: transparent; }
+
+.stat-group { margin-left: auto; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label { font-size: 9.5px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+.stat .value { font-size: 15px; font-weight: 600; color: var(--text); }
+.stat .value.gold { color: var(--gold); }
+.stat .value.green { color: var(--green); }
+.stat .value.accent { color: var(--accent); }
+
+main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%), var(--panel);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 {
+  margin: 0 0 4px; font-size: 10px; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--muted); font-weight: 600;
+}
+.panel h3 {
+  margin: 0 0 14px; font-size: 17px; font-weight: 600;
+  color: var(--text); letter-spacing: -0.2px;
+}
+.panel p { color: var(--text); margin: 0 0 8px; font-size: 13px; }
+.panel p.muted { color: var(--muted); font-size: 12.5px; }
+.panel strong { color: var(--text); }
+.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 12.5px; }
+
+/* Two-column layout for spot config */
+.spot-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+@media (max-width: 900px) { .spot-grid { grid-template-columns: 1fr; } }
+
+.config-row { display: flex; flex-direction: column; gap: 6px; }
+.config-row .lbl { font-size: 9.5px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+.config-row select, .config-row input {
+  padding: 9px 12px; border-radius: 8px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); font-family: inherit; font-size: 13px;
+}
+.config-row select:focus, .config-row input:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+/* Spot summary chips */
+.spot-summary {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+.chip .k { color: var(--muted); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; }
+.chip .v { color: var(--text); font-weight: 600; }
+.chip .v.acting { color: var(--gold); }
+
+/* Bet menu builder */
+.menu-row { margin-top: 10px; }
+.menu-section-label {
+  font-size: 9.5px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; font-weight: 700;
+  margin: 14px 0 8px;
+}
+.menu-section-label:first-child { margin-top: 0; }
+.size-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.size-toggle {
+  padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--panel-2);
+  color: var(--muted); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.size-toggle:hover { background: var(--panel-3); color: var(--text); }
+.size-toggle.active { background: var(--panel-3); color: var(--text); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.size-toggle .frac { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); }
+.size-toggle.active .frac { color: var(--accent); }
+.size-toggle.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.size-toggle.required { background: var(--panel-3); color: var(--text); border-color: var(--gold); cursor: default; }
+.size-toggle.required .frac { color: var(--gold); }
+
+.menu-info {
+  margin-top: 12px; padding: 8px 12px; border-radius: 8px;
+  background: rgba(255,213,74,0.06); border: 1px solid rgba(255,213,74,0.25);
+  font-size: 12px; color: var(--muted);
+}
+.menu-info strong { color: var(--gold); }
+
+/* Solve status */
+.solve-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.progress-track {
+  flex: 1; min-width: 200px; height: 6px; border-radius: 3px;
+  background: var(--panel-3); overflow: hidden;
+}
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); width: 0%; transition: width 0.18s; }
+
+/* Strategy matrix */
+.matrix-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  margin-top: 6px;
+}
+@media (max-width: 800px) { .matrix-row { grid-template-columns: 1fr; } }
+.card-cell {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  position: relative; transition: border-color 0.18s, box-shadow 0.18s;
+}
+.card-cell:hover { border-color: var(--dim); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+.card-cell .card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-cell .card-rank {
+  font-size: 28px; font-weight: 700; line-height: 1;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+.card-cell .card-rank.J { color: var(--orange); }
+.card-cell .card-rank.Q { color: var(--accent); }
+.card-cell .card-rank.K { color: var(--green); }
+.card-cell .ev {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px; padding: 3px 8px; border-radius: 4px;
+  background: var(--panel-3); color: var(--muted);
+}
+.card-cell .ev.pos { color: var(--green); }
+.card-cell .ev.neg { color: var(--red); }
+.card-cell .stacked-bar {
+  display: flex; height: 18px; border-radius: 6px; overflow: hidden;
+  border: 1px solid var(--border); background: var(--panel-3);
+  margin-bottom: 12px;
+}
+.stacked-bar .seg {
+  height: 100%; transition: width 0.25s;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px; color: rgba(0,0,0,0.55); font-weight: 700;
+  overflow: hidden; white-space: nowrap;
+}
+.action-list { display: flex; flex-direction: column; gap: 5px; }
+.action-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px; border-radius: 5px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+}
+.action-row .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.action-row .lbl { color: var(--text); flex: 1; }
+.action-row .pct { color: var(--muted); }
+.action-row.dim { opacity: 0.5; }
+
+/* Action color tokens */
+.col-x { background: #7a8499; }
+.col-h { background: #3fdf8e; }
+.col-p { background: #5b9eff; }
+.col-t { background: #ff8c42; }
+.col-a { background: #ffd54a; }
+.col-c { background: #bf8cff; }
+.col-f { background: #ff5e7a; }
+.col-custom { background: #bf8cff; }
+
+/* Range bar for opponent */
+.range-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-top: 4px;
+}
+@media (max-width: 800px) { .range-row { grid-template-columns: 1fr; } }
+.range-card {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px;
+}
+.range-card .head { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.range-card .sub { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.range-bar {
+  display: flex; height: 14px; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--border); background: var(--panel-3);
+}
+.range-seg { height: 100%; }
+.range-seg.J { background: var(--orange); }
+.range-seg.Q { background: var(--accent); }
+.range-seg.K { background: var(--green); }
+.range-legend { display: flex; gap: 12px; font-size: 11px; margin-top: 8px; flex-wrap: wrap; }
+.range-legend .item { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+.range-legend .item .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Comparison chart canvas */
+.chart-wrap { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 8px; }
+canvas#convChart { display: block; width: 100%; height: 200px; }
+
+.note {
+  background: linear-gradient(135deg, rgba(91,158,255,0.06), rgba(191,140,255,0.04));
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--text);
+  line-height: 1.6; margin-top: 8px;
+}
+.note strong { color: var(--accent); }
+.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,213,74,0.06), rgba(255,140,66,0.04)); }
+.note.gold strong { color: var(--gold); }
+.note.warn { border-left-color: var(--red); background: rgba(255,94,122,0.06); }
+.note.warn strong { color: var(--red); }
+
+/* Concept cards (used in "How it works" section) */
+.concept-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px;
+}
+@media (max-width: 800px) { .concept-grid { grid-template-columns: 1fr; } }
+.concept-card {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; position: relative;
+}
+.concept-card.bayes  { border-left: 3px solid var(--accent); }
+.concept-card.sub    { border-left: 3px solid var(--purple); }
+.concept-card.cfr    { border-left: 3px solid var(--gold); }
+.concept-card .tag {
+  font-size: 9.5px; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 700;
+  margin-bottom: 6px;
+}
+.concept-card.bayes .tag { color: var(--accent); }
+.concept-card.sub .tag   { color: var(--purple); }
+.concept-card.cfr .tag   { color: var(--gold); }
+.concept-card .head {
+  font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+}
+.concept-card .body {
+  font-size: 12.5px; color: var(--muted); line-height: 1.55;
+}
+.concept-card .body strong { color: var(--text); }
+
+/* Flow pipeline */
+.flow {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;
+}
+@media (max-width: 800px) { .flow { grid-template-columns: 1fr; } }
+.flow-step {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; position: relative;
+}
+.flow-step.s1 { border-color: rgba(91,158,255,0.4); }
+.flow-step.s2 { border-color: rgba(191,140,255,0.4); }
+.flow-step.s3 { border-color: rgba(255,213,74,0.4); }
+.flow-step .num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 6px;
+}
+.flow-step.s1 .num { color: var(--accent); }
+.flow-step.s2 .num { color: var(--purple); }
+.flow-step.s3 .num { color: var(--gold); }
+.flow-step .name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.flow-step .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.flow-step:not(:last-child)::after {
+  content: ''; position: absolute; right: -10px; top: 50%;
+  width: 8px; height: 8px;
+  border-top: 2px solid var(--dim); border-right: 2px solid var(--dim);
+  transform: translateY(-50%) rotate(45deg); z-index: 5;
+}
+@media (max-width: 800px) {
+  .flow-step:not(:last-child)::after {
+    right: 50%; top: auto; bottom: -10px;
+    transform: translateX(50%) rotate(135deg);
+  }
+}
+
+/* Walkthrough table */
+table.walk {
+  width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px;
+}
+table.walk th, table.walk td {
+  text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.walk th {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--muted); font-weight: 700; background: rgba(255,255,255,0.02);
+}
+table.walk td.step {
+  width: 18%; font-weight: 700;
+  font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--gold);
+  letter-spacing: 0.4px;
+}
+table.walk td.compute { width: 50%; color: var(--text); }
+table.walk td.result  { width: 32%; color: var(--muted); font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+
+footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 800px) {
+  .stat-group { width: 100%; margin-left: 0; gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Leduc-NL Re-solver — Custom Bet Sizes On Demand</h1>
+    <span class="sub">Step 3. Pick a spot, pick a custom bet menu, click solve. The strategy updates in seconds.</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="controls">
+    <button class="btn primary" id="btnSolve" disabled>Re-solve</button>
+    <button class="btn" id="btnReset">Reset spot</button>
+    <span id="solveStatus" style="font-size:12px; color:var(--muted);">Training blueprint…</span>
+    <div class="stat-group">
+      <div class="stat"><span class="label">Blueprint iter</span><span class="value mono accent" id="statBpIter">0</span></div>
+      <div class="stat"><span class="label">Blueprint ε (mbb/g)</span><span class="value mono green" id="statBpExpl">—</span></div>
+      <div class="stat"><span class="label">Subgame iter</span><span class="value mono" id="statSgIter">—</span></div>
+      <div class="stat"><span class="label">Subgame ε (mbb/g)</span><span class="value mono gold" id="statSgExpl">—</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= SPOT CONFIG ================= -->
+  <section class="panel">
+    <h2>Section 1 · The spot</h2>
+    <h3>Where in the hand are you re-solving from?</h3>
+    <div class="spot-grid">
+      <div class="config-row">
+        <span class="lbl">Round 1 history (so far)</span>
+        <select id="selR1"></select>
+      </div>
+      <div class="config-row">
+        <span class="lbl">Board card</span>
+        <select id="selBoard"></select>
+      </div>
+      <div class="config-row">
+        <span class="lbl">Round 2 history (so far)</span>
+        <select id="selR2"></select>
+      </div>
+      <div class="config-row">
+        <span class="lbl">Hero (you)</span>
+        <select id="selHero">
+          <option value="0">P1 (acts first each round)</option>
+          <option value="1">P2 (acts second each round)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="spot-summary" id="spotSummary"></div>
+  </section>
+
+  <!-- ================= CUSTOM MENU ================= -->
+  <section class="panel">
+    <h2>Section 2 · Your custom action menu</h2>
+    <h3>Pick the bet sizes you want available <em style="color:var(--muted);">at this decision</em></h3>
+
+    <div class="menu-row">
+      <div class="menu-section-label">When no bet is pending — pick check + sizes</div>
+      <div class="size-toggles" id="openMenu"></div>
+
+      <div class="menu-section-label">When facing a bet — fold / call / raise sizes</div>
+      <div class="size-toggles" id="respMenu"></div>
+    </div>
+
+    <div class="menu-info">
+      <strong>Hero menu:</strong> <span id="menuActiveCount">—</span> · <strong>Villain menu:</strong> blueprint defaults <span class="mono" style="color:var(--muted);">{x · h · p · t · a / f · c}</span>
+    </div>
+
+    <div class="note gold">
+      <strong>What this is.</strong> The blueprint already has a strategy for the standard menu <span class="kw">{x, h, p, t, a}</span>. Re-solve with a different menu and the bot's <em>mix</em> shifts to make best use of whatever sizes you offered. This is the architecture Pluribus and DeepStack run every decision, just at toy scale.
+    </div>
+  </section>
+
+  <!-- ================= SOLVE STATUS ================= -->
+  <section class="panel">
+    <h2>Section 3 · Re-solve</h2>
+    <h3>CFR on the subgame from this spot</h3>
+    <div class="solve-row">
+      <span class="mono" style="font-size:12px; color:var(--muted);">Iter: <span id="sgIterLive">0</span></span>
+      <span class="mono" style="font-size:12px; color:var(--gold);">ε = <span id="sgExplLive">—</span> mbb/g</span>
+      <span class="mono" style="font-size:12px; color:var(--muted);" id="sgRunStatus">idle</span>
+    </div>
+    <div class="chart-wrap"><canvas id="convChart"></canvas></div>
+    <p class="muted" style="margin-top:10px;">Runs continuously. Click <strong>Stop</strong> at any time once the strategy looks stable — there's no fixed iteration target. Subgame ε measures how exploitable Hero's strategy is within the re-solve, given Villain plays the blueprint. <em>For small spots (single decision, few actions) ε often converges to 0 in a couple hundred iterations — once it's flat at 0, Hero has found the best response and you can stop.</em></p>
+  </section>
+
+  <!-- ================= STRATEGY MATRIX ================= -->
+  <section class="panel">
+    <h2>Section 4 · Hero strategy</h2>
+    <h3>Optimal mix per private card, with your custom menu</h3>
+    <div class="matrix-row" id="strategyMatrix"></div>
+    <div class="note">
+      <strong>Reading the matrix.</strong> Each card cell shows the strategy mix as a stacked bar plus the per-action breakdown below. The EV badge is what Hero expects to win/lose <em>from this spot</em> with that card, in chips. Compare across J / Q / K to see how the chosen sizes get used differently by hand strength.
+    </div>
+  </section>
+
+  <!-- ================= RANGE & COMPARE ================= -->
+  <section class="panel">
+    <h2>Section 5 · Ranges &amp; baseline comparison</h2>
+    <h3>What we believe Villain holds — and what the blueprint would have done</h3>
+    <div class="range-row">
+      <div class="range-card">
+        <div class="head">Villain inferred range</div>
+        <div class="sub">From the blueprint strategies + observed actions</div>
+        <div class="range-bar" id="villainRangeBar"></div>
+        <div class="range-legend">
+          <span class="item"><span class="dot" style="background:var(--orange);"></span>J <span class="mono" id="rngJ">—</span></span>
+          <span class="item"><span class="dot" style="background:var(--accent);"></span>Q <span class="mono" id="rngQ">—</span></span>
+          <span class="item"><span class="dot" style="background:var(--green);"></span>K <span class="mono" id="rngK">—</span></span>
+        </div>
+      </div>
+      <div class="range-card">
+        <div class="head">Blueprint EV (same spot, blueprint menu)</div>
+        <div class="sub">What you'd get without re-solving — for comparison</div>
+        <div id="blueprintEv" class="mono" style="font-size:12px; color:var(--muted); line-height:1.7;">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="panel">
+    <h2>Section 6 · How it works under the hood</h2>
+    <h3>Subgame, Bayes, CFR — in plain English</h3>
+    <p>Three concepts power the resolver. Each does one thing.</p>
+
+    <div class="concept-grid">
+      <div class="concept-card sub">
+        <div class="tag">Subgame</div>
+        <div class="head">The room you're solving</div>
+        <div class="body">
+          <strong>A subgame is the rest of a hand from a specific moment.</strong> Instead of solving the whole game from the very beginning, the engine "rewinds to here" and only solves what happens from this point on. Way smaller tree → way faster to solve. <em>Pluribus and DeepStack do exactly this every decision they make.</em>
+        </div>
+      </div>
+      <div class="concept-card bayes">
+        <div class="tag">Bayes</div>
+        <div class="head">The eyes that read the past</div>
+        <div class="body">
+          <strong>Bayes' theorem updates a belief from evidence.</strong> You can't see Villain's card, but you can see their actions. Each action is evidence. Bayes converts the action history into a probability distribution over their hidden card — that's the <em>range</em>. Without it, the engine would assume Villain's card is uniformly random, ignoring everything they did.
+        </div>
+      </div>
+      <div class="concept-card cfr">
+        <div class="tag">CFR</div>
+        <div class="head">The brain that picks the move</div>
+        <div class="body">
+          <strong>CFR is a no-regret learning algorithm.</strong> It runs thousands of iterations on the subgame tree, accumulating <em>regret</em> for each action ("I'd have done better if I'd taken this size"). The strategy then leans toward actions with positive regret. Over time it converges to the optimal mix — including frequencies for sizes that aren't in the blueprint.
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:22px;">The pipeline at every re-solve</h3>
+    <div class="flow">
+      <div class="flow-step s1">
+        <div class="num">STEP 01 · BAYES</div>
+        <div class="name">Compute Villain's range</div>
+        <div class="desc">Walk the public history through the blueprint. Multiply <span class="mono" style="color:var(--text);">P(action | each card)</span> at each step. Normalize → range.</div>
+      </div>
+      <div class="flow-step s2">
+        <div class="num">STEP 02 · SUBGAME</div>
+        <div class="name">Build a small tree</div>
+        <div class="desc">Root chance node uses the Bayes range. Hero gets your custom menu; Villain plays the blueprint. Tree extends to terminals (showdown / fold).</div>
+      </div>
+      <div class="flow-step s3">
+        <div class="num">STEP 03 · CFR</div>
+        <div class="name">Solve the subgame</div>
+        <div class="desc">Iterate regret matching on the tree until Hero's strategy converges. Read off the frequencies + EV per card. ε measures how exploitable Hero is at convergence.</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:22px;">A concrete walkthrough you can run</h3>
+    <p class="muted">Try this exact spot on the page above:</p>
+    <p class="mono" style="background:var(--panel-2); border:1px solid var(--border); padding:10px 14px; border-radius:8px; color:var(--text); font-size:12.5px;">
+      R1 = <span style="color:var(--gold);">xx</span> &nbsp;·&nbsp; Board = <span style="color:var(--green);">K</span> &nbsp;·&nbsp; R2 = <span style="color:var(--accent);">p</span> &nbsp;·&nbsp; Hero = <span style="color:var(--purple);">P2</span>
+    </p>
+    <p>Both players checked round 1. The board comes K. P1 then bet pot. You're sitting as P2 with one of three possible cards (J, Q, or K), facing a pot bet. Click Re-solve and observe:</p>
+
+    <table class="walk">
+      <thead>
+        <tr><th>Step</th><th>What the engine does</th><th>What you see</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="step">1. Bayes</td>
+          <td class="compute">For each possible (P1 card, P2 card), walk the line <span class="mono" style="color:var(--text);">xx → board reveal → p</span> through the blueprint and multiply the probability of each action. Normalize. Both checking R1 → weak hands. Then betting pot on K board → strong K signal.</td>
+          <td class="result">Range bar in Section 5:<br>P1 ≈ {J: 10%, Q: 15%, K: 75%}</td>
+        </tr>
+        <tr>
+          <td class="step">2. Subgame</td>
+          <td class="compute">Engine builds a tree rooted here. Root chance samples (P1 card, P2 card) using the Bayes range. P2 (Hero) acts with the menu you toggled. If P2 raises, P1 reacts via blueprint. Then showdown or fold.</td>
+          <td class="result">~21 Hero infosets<br>(3 cards × ~7 actions)</td>
+        </tr>
+        <tr>
+          <td class="step">3. CFR</td>
+          <td class="compute">Run regret matching on the tree. Each iteration, Hero plays the current mix, sees how each action would have performed, updates regret. Strategy gradually leans toward high-regret actions.</td>
+          <td class="result">ε on chart drops to 0<br>(usually within hundreds of iters)</td>
+        </tr>
+        <tr>
+          <td class="step">4. Read</td>
+          <td class="compute">After ε ≈ 0, the matrix in Section 4 shows Hero's optimal mix. K hands raise huge for value (range tells us P1 has K too — set-over-set means we lose, but board pairing wins). J hands fold. Q is the bluff-catch.</td>
+          <td class="result">Strategy + EV per card<br>in the J / Q / K cells</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note gold" style="margin-top:14px;">
+      <strong>The mental model.</strong> <span style="color:var(--purple);">Subgame</span> is <em>where</em> we're solving. <span style="color:var(--accent);">Bayes</span> is <em>who</em> we're up against. <span style="color:var(--gold);">CFR</span> is <em>what to do</em> against them. Three different roles, one cohesive solver.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+"use strict";
+
+// =============================================================
+// Engine constants & helpers (same as leduc-nl-cfr)
+// =============================================================
+const RANKS = ['J', 'Q', 'K'];
+const NUM_RANKS = 3;
+const ANTE = 1;
+const STACK_SIZE = 10;
+
+// Bet menu the BLUEPRINT trains on. Fixed.
+const BLUEPRINT_FRACTIONS = { h: 0.5, p: 1.0, t: 2.0 };
+const BLUEPRINT_OPEN_MENU = ['x', 'h', 'p', 't', 'a'];
+const BLUEPRINT_RESP_MENU = ['f', 'c'];
+
+// All preset bet fractions Hero can toggle on. Each maps to (label, frac).
+// Labels MUST be single characters (history is a string of action chars).
+// h, p, t overlap with the blueprint menu (¼, ½, 2×). Reserved chars: x c f a.
+const PRESET_BET_SIZES = [
+  { label: 'q', frac: 0.25, name: '¼ pot' },
+  { label: 'e', frac: 1/3,  name: '⅓ pot' },
+  { label: 'h', frac: 0.5,  name: '½ pot' },
+  { label: 'g', frac: 2/3,  name: '⅔ pot' },
+  { label: 'w', frac: 0.75, name: '¾ pot' },
+  { label: 'p', frac: 1.0,  name: 'pot' },
+  { label: 'o', frac: 1.5,  name: '1.5× pot' },
+  { label: 't', frac: 2.0,  name: '2× pot' },
+  { label: 'T', frac: 3.0,  name: '3× pot' },
+];
+const PRESET_RAISE_SIZES = PRESET_BET_SIZES; // raise sizes use same pot fractions
+
+// ===== Round simulation (NL) — same as leduc-nl-cfr =====
+function isRoundTerminal(hist) {
+  if (hist === '') return false;
+  const last = hist[hist.length - 1];
+  if (last === 'c' || last === 'f') return true;
+  if (hist === 'xx') return true;
+  return false;
+}
+
+// Returns chip amount for a bet/raise action label, given pot + actor stack + a fraction lookup.
+function betSizeChips(actionLabel, pot, actorStack, fractions) {
+  if (actionLabel === 'a') return actorStack;
+  const frac = fractions[actionLabel];
+  if (frac === undefined) throw new Error('Unknown action: ' + actionLabel);
+  const ideal = Math.max(1, Math.round(pot * frac));
+  return Math.min(ideal, actorStack);
+}
+
+// Walk a round history given a fraction lookup for bet sizes.
+// Returns full state at the end of the walk.
+function settleRoundDyn(hist, startPot, startStack, fractions) {
+  let pot = startPot;
+  let p1c = 0, p2c = 0;
+  let curBet = 0;
+  let p1Stack = startStack, p2Stack = startStack;
+
+  for (let i = 0; i < hist.length; i++) {
+    const a = hist[i];
+    const player = i % 2;
+    const stack = player === 0 ? p1Stack : p2Stack;
+    if (a === 'x') {
+      // check
+    } else if (a === 'c') {
+      // Call: bring caller's round contribution up to opponent's (the level they must match).
+      // Bug fix: previous implementation used `curBet` (size of last action), which is correct
+      // only when caller has 0 in the round. After a raise, caller already has chips committed,
+      // so they only owe (opponent's contrib − own contrib).
+      const myContrib  = player === 0 ? p1c : p2c;
+      const oppContrib = player === 0 ? p2c : p1c;
+      const callAmt = Math.min(Math.max(0, oppContrib - myContrib), stack);
+      pot += callAmt;
+      if (player === 0) { p1c += callAmt; p1Stack -= callAmt; }
+      else              { p2c += callAmt; p2Stack -= callAmt; }
+      return { terminal: true, foldedBy: -1, p1c, p2c, pot, p1Stack, p2Stack, curBet };
+    } else if (a === 'f') {
+      return { terminal: true, foldedBy: player, p1c, p2c, pot, p1Stack, p2Stack, curBet };
+    } else {
+      // bet/raise size action
+      const size = betSizeChips(a, pot, stack, fractions);
+      curBet = size;
+      pot += size;
+      if (player === 0) { p1c += size; p1Stack -= size; }
+      else              { p2c += size; p2Stack -= size; }
+    }
+  }
+  if (hist === 'xx') return { terminal: true, foldedBy: -1, p1c, p2c, pot, p1Stack, p2Stack, curBet };
+  return { terminal: false, foldedBy: -1, p1c, p2c, pot, p1Stack, p2Stack, curBet, nextActor: hist.length % 2 };
+}
+
+function settleRoundBP(hist, startPot, startStack) {
+  return settleRoundDyn(hist, startPot, startStack, BLUEPRINT_FRACTIONS);
+}
+
+// Legal actions in the BLUEPRINT (used for Villain decisions and during blueprint training).
+function legalActionsBP(hist, pot, actorStack) {
+  if (actorStack <= 0) return [];
+  const noBet = (hist === '' || hist === 'x');
+  if (noBet) {
+    const out = ['x'];
+    const sizes = new Set();
+    for (const lbl of ['h', 'p', 't']) {
+      const sz = betSizeChips(lbl, pot, actorStack, BLUEPRINT_FRACTIONS);
+      if (sz > 0 && sz < actorStack && !sizes.has(sz)) { out.push(lbl); sizes.add(sz); }
+    }
+    out.push('a');
+    return out;
+  }
+  return ['f', 'c'];
+}
+
+// Legal actions for HERO at a given state, using a custom menu config.
+//   heroOpenLabels: array of labels Hero allows when opening (must include 'x' and 'a')
+//   heroRespLabels: array of labels Hero allows when facing a bet (must include 'f' and 'c')
+//   fractions: lookup from bet label → fraction
+//   curBet: size of pending bet at this decision (0 if none — no bet pending)
+function legalActionsCustom(hist, pot, actorStack, heroOpenLabels, heroRespLabels, fractions, curBet) {
+  if (actorStack <= 0) return [];
+  const noBet = (hist === '' || hist === 'x');
+  if (noBet) {
+    const out = ['x'];
+    const seenSize = new Set();
+    for (const lbl of heroOpenLabels) {
+      if (lbl === 'x' || lbl === 'a') continue;
+      const sz = betSizeChips(lbl, pot, actorStack, fractions);
+      if (sz > 0 && sz < actorStack && !seenSize.has(sz)) { out.push(lbl); seenSize.add(sz); }
+    }
+    if (heroOpenLabels.includes('a')) out.push('a');
+    return out;
+  }
+  // Facing a bet — fold/call always legal. Raises must be STRICTLY larger than curBet
+  // (otherwise it's not a raise, just a partial call). Sizes ≥ stack collapse to all-in.
+  const out = ['f', 'c'];
+  const seenSize = new Set();
+  for (const lbl of heroRespLabels) {
+    if (lbl === 'f' || lbl === 'c' || lbl === 'a') continue;
+    const sz = betSizeChips(lbl, pot, actorStack, fractions);
+    if (sz <= curBet) continue;          // ← filter out non-raises
+    if (sz > 0 && sz < actorStack && !seenSize.has(sz)) { out.push(lbl); seenSize.add(sz); }
+  }
+  if (heroRespLabels.includes('a') && actorStack > curBet) out.push('a');
+  return out;
+}
+
+function playerToAct(hist) { return hist.length % 2; }
+
+function showdownWinner(p1Card, p2Card, board) {
+  const p1Pair = (p1Card === board);
+  const p2Pair = (p2Card === board);
+  if (p1Pair && !p2Pair) return 0;
+  if (p2Pair && !p1Pair) return 1;
+  if (p1Card > p2Card) return 0;
+  if (p1Card < p2Card) return 1;
+  return -1;
+}
+
+function dealProb(p1, p2) { return (p1 === p2) ? 2 / 30 : 4 / 30; }
+function boardDist(p1, p2) {
+  const counts = [2, 2, 2];
+  counts[p1] -= 1; counts[p2] -= 1;
+  const total = counts.reduce((a, b) => a + b, 0);
+  const out = [];
+  for (let r = 0; r < NUM_RANKS; r++) {
+    if (counts[r] > 0) out.push({ rank: r, prob: counts[r] / total });
+  }
+  return out;
+}
+
+// =============================================================
+// Information-set node (variable-length action arrays)
+// =============================================================
+class Node {
+  constructor(legal) {
+    this.legal = legal.slice();
+    this.numActions = legal.length;
+    this.regretSum = new Array(this.numActions).fill(0);
+    this.strategySum = new Array(this.numActions).fill(0);
+  }
+  getStrategy() {
+    let sum = 0;
+    const s = new Array(this.numActions).fill(0);
+    for (let a = 0; a < this.numActions; a++) {
+      s[a] = Math.max(this.regretSum[a], 0);
+      sum += s[a];
+    }
+    if (sum > 0) for (let a = 0; a < this.numActions; a++) s[a] /= sum;
+    else         for (let a = 0; a < this.numActions; a++) s[a] = 1 / this.numActions;
+    return s;
+  }
+  getAverageStrategy() {
+    const sum = this.strategySum.reduce((a, b) => a + b, 0);
+    if (sum > 0) return this.strategySum.map(x => x / sum);
+    return new Array(this.numActions).fill(1 / this.numActions);
+  }
+}
+
+// =============================================================
+// Blueprint trainer (runs on page load) — produces avg strategy
+// =============================================================
+class Blueprint {
+  constructor() {
+    this.nodes = new Map();
+    this.iter = 0;
+  }
+  key(player, card, r1, board, r2) {
+    const b = (board === null || board === undefined) ? '?' : RANKS[board];
+    return `${player}|${RANKS[card]}|${r1 || '·'}|${b}|${r2 || '·'}`;
+  }
+  getNode(player, card, r1, board, r2, legal) {
+    const k = this.key(player, card, r1, board, r2);
+    let n = this.nodes.get(k);
+    if (!n) { n = new Node(legal); this.nodes.set(k, n); }
+    return n;
+  }
+  cfr(p1Card, p2Card, board, r1, r2, p1R, p2R, cR) {
+    const startPot1 = 2 * ANTE, startStack1 = STACK_SIZE;
+    const s1 = settleRoundBP(r1, startPot1, startStack1);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      return s1.foldedBy === 0 ? -p1T : +p2T;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this.cfr(p1Card, p2Card, rank, r1, '', p1R, p2R, cR * prob);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._dec(p1Card, p2Card, null, r1, '', p1R, p2R, cR, 1, s1.pot, s1.p1Stack, s1.p2Stack);
+    }
+    const startPot2 = s1.pot, startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      if (w === 0) return +p2T;
+      if (w === 1) return -p1T;
+      return 0;
+    }
+    const s2 = settleRoundBP(r2, startPot2, startStack2);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      return s2.foldedBy === 0 ? -p1T : +p2T;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      if (w === 0) return +p2T;
+      if (w === 1) return -p1T;
+      return 0;
+    }
+    return this._dec(p1Card, p2Card, board, r1, r2, p1R, p2R, cR, 2, s2.pot, s2.p1Stack, s2.p2Stack);
+  }
+  _dec(p1Card, p2Card, board, r1, r2, p1R, p2R, cR, round, pot, p1S, p2S) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = legalActionsBP(hist, pot, actorStack);
+    const node = this.getNode(player, card, r1, board, r2, legal);
+    const strat = node.getStrategy();
+    const util = new Array(legal.length).fill(0);
+    let nodeUtil = 0;
+    for (let a = 0; a < legal.length; a++) {
+      const nh = hist + legal[a];
+      const nr1 = round === 1 ? nh : r1;
+      const nr2 = round === 2 ? nh : r2;
+      const nP1 = player === 0 ? p1R * strat[a] : p1R;
+      const nP2 = player === 1 ? p2R * strat[a] : p2R;
+      util[a] = this.cfr(p1Card, p2Card, board, nr1, nr2, nP1, nP2, cR);
+      nodeUtil += strat[a] * util[a];
+    }
+    const sign = player === 0 ? 1 : -1;
+    const cfReach = cR * (player === 0 ? p2R : p1R);
+    const ownReach = player === 0 ? p1R : p2R;
+    for (let a = 0; a < legal.length; a++) {
+      const reg = sign * (util[a] - nodeUtil);
+      node.regretSum[a]   += cfReach * reg;
+      node.strategySum[a] += ownReach * strat[a];
+    }
+    return nodeUtil;
+  }
+  trainOne() {
+    this.iter++;
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const prob = dealProb(a, b);
+        if (prob === 0) continue;
+        this.cfr(a, b, null, '', '', 1, 1, prob);
+      }
+    }
+  }
+  trainMany(n) { for (let i = 0; i < n; i++) this.trainOne(); }
+
+  // Get average strategy at a specific infoset key. Returns { legal, probs } or null.
+  avgAt(player, card, r1, board, r2) {
+    const k = this.key(player, card, r1, board, r2);
+    const n = this.nodes.get(k);
+    if (!n) return null;
+    return { legal: n.legal.slice(), probs: n.getAverageStrategy() };
+  }
+
+  // ----- Best-response computation (full game, used to gate "blueprint solid") -----
+  snapshotAvg() {
+    const m = new Map();
+    for (const [k, n] of this.nodes) m.set(k, { strat: n.getAverageStrategy(), legal: n.legal.slice() });
+    return m;
+  }
+
+  exploitability() {
+    const avg = this.snapshotAvg();
+    const br0 = this.bestResponseValue(0, avg);
+    const br1 = this.bestResponseValue(1, avg);
+    return (br0 + br1) / 2;
+  }
+
+  bestResponseValue(brPlayer, oppAvg) {
+    let brStrat = new Map();
+    for (let it = 0; it < 8; it++) {
+      const cfvSums = new Map();
+      for (let a = 0; a < NUM_RANKS; a++) {
+        for (let b = 0; b < NUM_RANKS; b++) {
+          const prob = dealProb(a, b);
+          if (prob === 0) continue;
+          this._brWalk(a, b, null, '', '', prob, brPlayer, oppAvg, brStrat, cfvSums);
+        }
+      }
+      let changed = false;
+      for (const [k, vs] of cfvSums) {
+        let bestA = 0, bestV = -Infinity;
+        for (let i = 0; i < vs.length; i++) if (vs[i] > bestV) { bestV = vs[i]; bestA = i; }
+        if (brStrat.get(k) !== bestA) { changed = true; brStrat.set(k, bestA); }
+      }
+      if (!changed && it > 0) break;
+    }
+    let total = 0;
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const prob = dealProb(a, b);
+        if (prob === 0) continue;
+        total += prob * this._brEval(a, b, null, '', '', brPlayer, oppAvg, brStrat);
+      }
+    }
+    return total;
+  }
+
+  _brWalk(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums) {
+    const s1 = settleRoundBP(r1, 2 * ANTE, STACK_SIZE);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const u = s1.foldedBy === 0 ? -p1T : +p2T;
+      return brPlayer === 0 ? u : -u;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brWalk(p1Card, p2Card, rank, r1, '', cfReach * prob, brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brDec(p1Card, p2Card, null, r1, '', cfReach, brPlayer, oppAvg, brStrat, cfvSums, 1, s1.pot, s1.p1Stack, s1.p2Stack);
+    }
+    const startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u = 0;
+      if (w === 0) u = +p2T; else if (w === 1) u = -p1T;
+      return brPlayer === 0 ? u : -u;
+    }
+    const s2 = settleRoundBP(r2, s1.pot, startStack2);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const u = s2.foldedBy === 0 ? -p1T : +p2T;
+      return brPlayer === 0 ? u : -u;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u = 0;
+      if (w === 0) u = +p2T; else if (w === 1) u = -p1T;
+      return brPlayer === 0 ? u : -u;
+    }
+    return this._brDec(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums, 2, s2.pot, s2.p1Stack, s2.p2Stack);
+  }
+  _brDec(p1Card, p2Card, board, r1, r2, cfReach, brPlayer, oppAvg, brStrat, cfvSums, round, pot, p1S, p2S) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = legalActionsBP(hist, pot, actorStack);
+    const key = this.key(player, card, r1, board, r2);
+    if (player === brPlayer) {
+      const childUtils = new Array(legal.length).fill(0);
+      for (let a = 0; a < legal.length; a++) {
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        childUtils[a] = this._brWalk(p1Card, p2Card, board, nr1, nr2, cfReach, brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      let cum = cfvSums.get(key);
+      if (!cum) { cum = new Array(legal.length).fill(0); cfvSums.set(key, cum); }
+      for (let a = 0; a < legal.length; a++) cum[a] += cfReach * childUtils[a];
+      const chosen = brStrat.has(key) ? Math.min(brStrat.get(key), legal.length - 1) : 0;
+      return childUtils[chosen];
+    } else {
+      const rec = oppAvg.get(key);
+      let strat;
+      if (rec && rec.strat.length === legal.length) strat = rec.strat;
+      else strat = new Array(legal.length).fill(1 / legal.length);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brWalk(p1Card, p2Card, board, nr1, nr2, cfReach * strat[a], brPlayer, oppAvg, brStrat, cfvSums);
+      }
+      return v;
+    }
+  }
+  _brEval(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat) {
+    const s1 = settleRoundBP(r1, 2 * ANTE, STACK_SIZE);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const u = s1.foldedBy === 0 ? -p1T : +p2T;
+      return brPlayer === 0 ? u : -u;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brEval(p1Card, p2Card, rank, r1, '', brPlayer, oppAvg, brStrat);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brEvalDec(p1Card, p2Card, null, r1, '', brPlayer, oppAvg, brStrat, 1, s1.pot, s1.p1Stack, s1.p2Stack);
+    }
+    const startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u = 0;
+      if (w === 0) u = +p2T; else if (w === 1) u = -p1T;
+      return brPlayer === 0 ? u : -u;
+    }
+    const s2 = settleRoundBP(r2, s1.pot, startStack2);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const u = s2.foldedBy === 0 ? -p1T : +p2T;
+      return brPlayer === 0 ? u : -u;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u = 0;
+      if (w === 0) u = +p2T; else if (w === 1) u = -p1T;
+      return brPlayer === 0 ? u : -u;
+    }
+    return this._brEvalDec(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat, 2, s2.pot, s2.p1Stack, s2.p2Stack);
+  }
+  _brEvalDec(p1Card, p2Card, board, r1, r2, brPlayer, oppAvg, brStrat, round, pot, p1S, p2S) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = legalActionsBP(hist, pot, actorStack);
+    const key = this.key(player, card, r1, board, r2);
+    if (player === brPlayer) {
+      const a = brStrat.has(key) ? Math.min(brStrat.get(key), legal.length - 1) : 0;
+      const nh = hist + legal[a];
+      const nr1 = round === 1 ? nh : r1;
+      const nr2 = round === 2 ? nh : r2;
+      return this._brEval(p1Card, p2Card, board, nr1, nr2, brPlayer, oppAvg, brStrat);
+    } else {
+      const rec = oppAvg.get(key);
+      let strat;
+      if (rec && rec.strat.length === legal.length) strat = rec.strat;
+      else strat = new Array(legal.length).fill(1 / legal.length);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brEval(p1Card, p2Card, board, nr1, nr2, brPlayer, oppAvg, brStrat);
+      }
+      return v;
+    }
+  }
+}
+
+// =============================================================
+// Range tracker
+// =============================================================
+// Compute, for each (private card of each player), the conditional probability
+// that the player holds that card given the public history actually observed.
+// We walk the public history through the blueprint and apply Bayes' rule.
+//
+// Returns:
+//   { p1Range: [3], p2Range: [3], jointReach: number }
+// where pXRange[r] = P(player X has rank r | public history).
+function inferRanges(blueprint, r1, board, r2) {
+  // For each (a, b) deal, compute the reach probability of the public history
+  // given each player plays the blueprint. Then normalize.
+  const reach = []; // reach[a][b] = probability of (P1 card a, P2 card b, this public hist)
+  for (let a = 0; a < NUM_RANKS; a++) {
+    reach[a] = new Array(NUM_RANKS).fill(0);
+    for (let b = 0; b < NUM_RANKS; b++) {
+      reach[a][b] = dealProb(a, b) * publicHistoryReach(blueprint, a, b, r1, board, r2);
+    }
+  }
+  // P1 range: marginalize out b
+  const p1Range = [0, 0, 0];
+  const p2Range = [0, 0, 0];
+  let total = 0;
+  for (let a = 0; a < NUM_RANKS; a++) {
+    for (let b = 0; b < NUM_RANKS; b++) {
+      p1Range[a] += reach[a][b];
+      p2Range[b] += reach[a][b];
+      total += reach[a][b];
+    }
+  }
+  if (total > 0) {
+    for (let i = 0; i < 3; i++) { p1Range[i] /= total; p2Range[i] /= total; }
+  }
+  return { p1Range, p2Range, reach, total };
+}
+
+// Probability that the specified public history is reached given (P1=a, P2=b)
+// and both players play the blueprint average strategies.
+// Includes board chance probability if board is specified.
+function publicHistoryReach(blueprint, p1Card, p2Card, r1, board, r2) {
+  // Walk r1 first: each action is taken by some player using their blueprint avg strategy.
+  let prob = 1;
+  let r1State = settleRoundBP('', 2 * ANTE, STACK_SIZE);
+  for (let i = 0; i < r1.length; i++) {
+    const a = r1[i];
+    const histSoFar = r1.substring(0, i);
+    if (r1State.terminal) return 0; // history extends past round end → 0 reach
+    const player = playerToAct(histSoFar);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? r1State.p1Stack : r1State.p2Stack;
+    const avg = blueprint.avgAt(player, card, histSoFar, null, '');
+    if (!avg) return 0;
+    const idx = avg.legal.indexOf(a);
+    if (idx < 0) return 0;
+    prob *= avg.probs[idx];
+    r1State = settleRoundBP(r1.substring(0, i + 1), 2 * ANTE, STACK_SIZE);
+  }
+  // After walking r1: must be terminal (call/check-check/fold) for board to be revealed.
+  if (board !== null && (!r1State.terminal || r1State.foldedBy >= 0)) return 0;
+
+  // Board reveal probability
+  if (board !== null) {
+    const dist = boardDist(p1Card, p2Card);
+    const m = dist.find(d => d.rank === board);
+    if (!m) return 0;
+    prob *= m.prob;
+  }
+
+  // Walk r2 if provided (and board is set)
+  if (r2 && board !== null) {
+    const startPot2 = r1State.pot;
+    const startStack2 = r1State.p1Stack;
+    if (startStack2 === 0) return r2.length === 0 ? prob : 0;
+    let r2State = settleRoundDyn('', startPot2, startStack2, BLUEPRINT_FRACTIONS);
+    for (let i = 0; i < r2.length; i++) {
+      const a = r2[i];
+      const histSoFar = r2.substring(0, i);
+      if (r2State.terminal) return 0;
+      const player = playerToAct(histSoFar);
+      const card = player === 0 ? p1Card : p2Card;
+      const avg = blueprint.avgAt(player, card, r1, board, histSoFar);
+      if (!avg) return 0;
+      const idx = avg.legal.indexOf(a);
+      if (idx < 0) return 0;
+      prob *= avg.probs[idx];
+      r2State = settleRoundDyn(r2.substring(0, i + 1), startPot2, startStack2, BLUEPRINT_FRACTIONS);
+    }
+  }
+  return prob;
+}
+
+// =============================================================
+// Subgame solver — re-solves from a chosen spot with custom Hero menu
+// =============================================================
+class Subgame {
+  // spot: { r1, board, r2, hero }   — hero = 0 (P1) or 1 (P2)
+  // heroOpenMenu, heroRespMenu — arrays of action labels Hero can use
+  // fractions — combined fraction lookup including custom + blueprint sizes
+  // blueprint — the trained Blueprint (used for Villain strategies)
+  constructor(spot, heroOpenMenu, heroRespMenu, fractions, blueprint) {
+    this.spot = spot;
+    this.heroOpenMenu = heroOpenMenu;
+    this.heroRespMenu = heroRespMenu;
+    this.fractions = fractions;
+    this.blueprint = blueprint;
+    this.nodes = new Map();
+    this.iter = 0;
+
+    // Pre-compute ranges
+    const { p1Range, p2Range } = inferRanges(blueprint, spot.r1, spot.board, spot.r2);
+    this.p1Range = p1Range;
+    this.p2Range = p2Range;
+
+    // History to identify Hero's root infoset across cards (we'll record root strategies here)
+    this.spotIsRoot = true;
+  }
+
+  key(player, card, r1, board, r2) {
+    const b = (board === null || board === undefined) ? '?' : RANKS[board];
+    return `${player}|${RANKS[card]}|${r1 || '·'}|${b}|${r2 || '·'}`;
+  }
+
+  getNode(player, card, r1, board, r2, legal) {
+    const k = this.key(player, card, r1, board, r2);
+    let n = this.nodes.get(k);
+    if (!n) { n = new Node(legal); this.nodes.set(k, n); }
+    return n;
+  }
+
+  // Legal actions at a state, varying by who acts.
+  legalAt(player, hist, pot, actorStack, curBet) {
+    if (player === this.spot.hero) {
+      return legalActionsCustom(hist, pot, actorStack, this.heroOpenMenu, this.heroRespMenu, this.fractions, curBet || 0);
+    }
+    return legalActionsBP(hist, pot, actorStack);
+  }
+
+  // Get strategy for VILLAIN at a given infoset. Uses blueprint avg strategy by label.
+  // If blueprint has no entry, fall back to uniform.
+  villainStrategy(player, card, r1, board, r2, legalNow) {
+    const avg = this.blueprint.avgAt(player, card, r1, board, r2);
+    if (!avg) return new Array(legalNow.length).fill(1 / legalNow.length);
+    // Realign by label (blueprint legal might differ if menus diverge — but villain uses BP menu)
+    const out = new Array(legalNow.length).fill(0);
+    let total = 0;
+    for (let i = 0; i < legalNow.length; i++) {
+      const idx = avg.legal.indexOf(legalNow[i]);
+      if (idx >= 0) { out[i] = avg.probs[idx]; total += out[i]; }
+    }
+    if (total > 0) for (let i = 0; i < out.length; i++) out[i] /= total;
+    else for (let i = 0; i < out.length; i++) out[i] = 1 / out.length;
+    return out;
+  }
+
+  // CFR recursion within the subgame.
+  cfr(p1Card, p2Card, board, r1, r2, p1R, p2R, cR) {
+    const startPot1 = 2 * ANTE, startStack1 = STACK_SIZE;
+    const s1 = settleRoundDyn(r1, startPot1, startStack1, this.fractions);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      return s1.foldedBy === 0 ? -p1T : +p2T;
+    }
+    if (s1.terminal && board === null) {
+      // Board chance — but in subgame the board is FIXED (set in spot).
+      // This path means we're walking from the root of the full game;
+      // for subgame we always start from spot.r1 + spot.board, so this only fires
+      // if spot.r1 ended without fold but board not yet sampled (we deal it).
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this.cfr(p1Card, p2Card, rank, r1, '', p1R, p2R, cR * prob);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._dec(p1Card, p2Card, null, r1, '', p1R, p2R, cR, 1, s1.pot, s1.p1Stack, s1.p2Stack, s1.curBet);
+    }
+    const startPot2 = s1.pot, startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      if (w === 0) return +p2T;
+      if (w === 1) return -p1T;
+      return 0;
+    }
+    const s2 = settleRoundDyn(r2, startPot2, startStack2, this.fractions);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      return s2.foldedBy === 0 ? -p1T : +p2T;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      if (w === 0) return +p2T;
+      if (w === 1) return -p1T;
+      return 0;
+    }
+    return this._dec(p1Card, p2Card, board, r1, r2, p1R, p2R, cR, 2, s2.pot, s2.p1Stack, s2.p2Stack, s2.curBet);
+  }
+
+  _dec(p1Card, p2Card, board, r1, r2, p1R, p2R, cR, round, pot, p1S, p2S, curBet) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = this.legalAt(player, hist, pot, actorStack, curBet);
+
+    if (player === this.spot.hero) {
+      // Hero — we update regret here.
+      const node = this.getNode(player, card, r1, board, r2, legal);
+      const strat = node.getStrategy();
+      const util = new Array(legal.length).fill(0);
+      let nodeUtil = 0;
+      for (let a = 0; a < legal.length; a++) {
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        const nP1 = player === 0 ? p1R * strat[a] : p1R;
+        const nP2 = player === 1 ? p2R * strat[a] : p2R;
+        util[a] = this.cfr(p1Card, p2Card, board, nr1, nr2, nP1, nP2, cR);
+        nodeUtil += strat[a] * util[a];
+      }
+      const sign = player === 0 ? 1 : -1;
+      const cfReach = cR * (player === 0 ? p2R : p1R);
+      const ownReach = player === 0 ? p1R : p2R;
+      for (let a = 0; a < legal.length; a++) {
+        const reg = sign * (util[a] - nodeUtil);
+        node.regretSum[a]   += cfReach * reg;
+        node.strategySum[a] += ownReach * strat[a];
+      }
+      return nodeUtil;
+    } else {
+      // Villain — fixed strategy from blueprint.
+      const strat = this.villainStrategy(player, card, r1, board, r2, legal);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        const nP1 = player === 0 ? p1R * strat[a] : p1R;
+        const nP2 = player === 1 ? p2R * strat[a] : p2R;
+        v += strat[a] * this.cfr(p1Card, p2Card, board, nr1, nr2, nP1, nP2, cR);
+      }
+      return v;
+    }
+  }
+
+  // Train one CFR iteration from the spot, sampling cards according to ranges.
+  trainOne() {
+    this.iter++;
+    const { r1, board, r2 } = this.spot;
+    // For each (a, b) deal compatible with the range (i.e. nonzero reach), do CFR.
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const reach = dealProb(a, b) * publicHistoryReach(this.blueprint, a, b, r1, board, r2);
+        if (reach === 0) continue;
+        // The chance reach we feed the recursion = reach (probability of this deal AND public hist)
+        this.cfr(a, b, board, r1, r2, 1, 1, reach);
+      }
+    }
+  }
+  trainMany(n) { for (let i = 0; i < n; i++) this.trainOne(); }
+
+  // Subgame exploitability — fixed Villain (blueprint), Hero best-responds.
+  // Same fixed-point BR over Hero infosets only.
+  exploitability() {
+    let brStrat = new Map();
+    for (let it = 0; it < 6; it++) {
+      const cfvSums = new Map();
+      const { r1, board, r2 } = this.spot;
+      for (let a = 0; a < NUM_RANKS; a++) {
+        for (let b = 0; b < NUM_RANKS; b++) {
+          const reach = dealProb(a, b) * publicHistoryReach(this.blueprint, a, b, r1, board, r2);
+          if (reach === 0) continue;
+          this._brWalk(a, b, board, r1, r2, reach, brStrat, cfvSums);
+        }
+      }
+      let changed = false;
+      for (const [k, vs] of cfvSums) {
+        let best = 0, bv = -Infinity;
+        for (let i = 0; i < vs.length; i++) if (vs[i] > bv) { bv = vs[i]; best = i; }
+        if (brStrat.get(k) !== best) { changed = true; brStrat.set(k, best); }
+      }
+      if (!changed && it > 0) break;
+    }
+    // Compute BR value vs avg strategy
+    const { r1, board, r2 } = this.spot;
+    let brVal = 0, avgVal = 0;
+    for (let a = 0; a < NUM_RANKS; a++) {
+      for (let b = 0; b < NUM_RANKS; b++) {
+        const reach = dealProb(a, b) * publicHistoryReach(this.blueprint, a, b, r1, board, r2);
+        if (reach === 0) continue;
+        brVal  += reach * this._brEval(a, b, board, r1, r2, brStrat, /*useBR=*/true);
+        avgVal += reach * this._brEval(a, b, board, r1, r2, brStrat, /*useBR=*/false);
+      }
+    }
+    return Math.max(0, brVal - avgVal);
+  }
+
+  _brWalk(p1Card, p2Card, board, r1, r2, cR, brStrat, cfvSums) {
+    const startPot1 = 2 * ANTE, startStack1 = STACK_SIZE;
+    const s1 = settleRoundDyn(r1, startPot1, startStack1, this.fractions);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const u_p1 = s1.foldedBy === 0 ? -p1T : +p2T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brWalk(p1Card, p2Card, rank, r1, '', cR * prob, brStrat, cfvSums);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brDec(p1Card, p2Card, null, r1, '', cR, brStrat, cfvSums, 1, s1.pot, s1.p1Stack, s1.p2Stack, s1.curBet);
+    }
+    const startPot2 = s1.pot, startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2T;
+      else if (w === 1) u_p1 = -p1T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    const s2 = settleRoundDyn(r2, startPot2, startStack2, this.fractions);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const u_p1 = s2.foldedBy === 0 ? -p1T : +p2T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2T;
+      else if (w === 1) u_p1 = -p1T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    return this._brDec(p1Card, p2Card, board, r1, r2, cR, brStrat, cfvSums, 2, s2.pot, s2.p1Stack, s2.p2Stack, s2.curBet);
+  }
+  _brDec(p1Card, p2Card, board, r1, r2, cR, brStrat, cfvSums, round, pot, p1S, p2S, curBet) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = this.legalAt(player, hist, pot, actorStack, curBet);
+    if (player === this.spot.hero) {
+      const childUtils = new Array(legal.length).fill(0);
+      for (let a = 0; a < legal.length; a++) {
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        childUtils[a] = this._brWalk(p1Card, p2Card, board, nr1, nr2, cR, brStrat, cfvSums);
+      }
+      const key = this.key(player, card, r1, board, r2);
+      let cum = cfvSums.get(key);
+      if (!cum) { cum = new Array(legal.length).fill(0); cfvSums.set(key, cum); }
+      for (let a = 0; a < legal.length; a++) cum[a] += cR * childUtils[a];
+      const chosen = brStrat.has(key) ? Math.min(brStrat.get(key), legal.length - 1) : 0;
+      return childUtils[chosen];
+    } else {
+      const strat = this.villainStrategy(player, card, r1, board, r2, legal);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brWalk(p1Card, p2Card, board, nr1, nr2, cR * strat[a], brStrat, cfvSums);
+      }
+      return v;
+    }
+  }
+  _brEval(p1Card, p2Card, board, r1, r2, brStrat, useBR) {
+    return this._brEvalRec(p1Card, p2Card, board, r1, r2, brStrat, useBR);
+  }
+  _brEvalRec(p1Card, p2Card, board, r1, r2, brStrat, useBR) {
+    const startPot1 = 2 * ANTE, startStack1 = STACK_SIZE;
+    const s1 = settleRoundDyn(r1, startPot1, startStack1, this.fractions);
+    if (s1.terminal && s1.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const u_p1 = s1.foldedBy === 0 ? -p1T : +p2T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    if (s1.terminal && board === null) {
+      let v = 0;
+      for (const { rank, prob } of boardDist(p1Card, p2Card)) {
+        v += prob * this._brEvalRec(p1Card, p2Card, rank, r1, '', brStrat, useBR);
+      }
+      return v;
+    }
+    if (!s1.terminal) {
+      return this._brEvalDec(p1Card, p2Card, null, r1, '', brStrat, useBR, 1, s1.pot, s1.p1Stack, s1.p2Stack, s1.curBet);
+    }
+    const startPot2 = s1.pot, startStack2 = s1.p1Stack;
+    if (startStack2 === 0) {
+      const p1T = ANTE + s1.p1c, p2T = ANTE + s1.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2T;
+      else if (w === 1) u_p1 = -p1T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    const s2 = settleRoundDyn(r2, startPot2, startStack2, this.fractions);
+    if (s2.terminal && s2.foldedBy >= 0) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const u_p1 = s2.foldedBy === 0 ? -p1T : +p2T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    if (s2.terminal) {
+      const p1T = ANTE + s1.p1c + s2.p1c, p2T = ANTE + s1.p2c + s2.p2c;
+      const w = showdownWinner(p1Card, p2Card, board);
+      let u_p1 = 0;
+      if (w === 0) u_p1 = +p2T;
+      else if (w === 1) u_p1 = -p1T;
+      return this.spot.hero === 0 ? u_p1 : -u_p1;
+    }
+    return this._brEvalDec(p1Card, p2Card, board, r1, r2, brStrat, useBR, 2, s2.pot, s2.p1Stack, s2.p2Stack, s2.curBet);
+  }
+  _brEvalDec(p1Card, p2Card, board, r1, r2, brStrat, useBR, round, pot, p1S, p2S, curBet) {
+    const hist = round === 1 ? r1 : r2;
+    const player = playerToAct(hist);
+    const card = player === 0 ? p1Card : p2Card;
+    const actorStack = player === 0 ? p1S : p2S;
+    const legal = this.legalAt(player, hist, pot, actorStack, curBet);
+    if (player === this.spot.hero) {
+      let strat;
+      if (useBR) {
+        const key = this.key(player, card, r1, board, r2);
+        const a = brStrat.has(key) ? Math.min(brStrat.get(key), legal.length - 1) : 0;
+        strat = new Array(legal.length).fill(0); strat[a] = 1;
+      } else {
+        const node = this.nodes.get(this.key(player, card, r1, board, r2));
+        strat = node ? node.getAverageStrategy() : new Array(legal.length).fill(1 / legal.length);
+        if (strat.length !== legal.length) strat = new Array(legal.length).fill(1 / legal.length);
+      }
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brEvalRec(p1Card, p2Card, board, nr1, nr2, brStrat, useBR);
+      }
+      return v;
+    } else {
+      const strat = this.villainStrategy(player, card, r1, board, r2, legal);
+      let v = 0;
+      for (let a = 0; a < legal.length; a++) {
+        if (strat[a] === 0) continue;
+        const nh = hist + legal[a];
+        const nr1 = round === 1 ? nh : r1;
+        const nr2 = round === 2 ? nh : r2;
+        v += strat[a] * this._brEvalRec(p1Card, p2Card, board, nr1, nr2, brStrat, useBR);
+      }
+      return v;
+    }
+  }
+
+  // Get Hero strategy at the spot's root for each card. Returns Map cardIdx → { legal, probs }
+  rootStrategies() {
+    const { r1, board, r2, hero } = this.spot;
+    const out = new Map();
+    for (let c = 0; c < NUM_RANKS; c++) {
+      const k = this.key(hero, c, r1, board, r2);
+      const n = this.nodes.get(k);
+      if (n) out.set(c, { legal: n.legal.slice(), probs: n.getAverageStrategy() });
+    }
+    return out;
+  }
+
+  // Hero EV at the spot for each card (vs Villain blueprint, with current avg strategies).
+  rootEV() {
+    const { r1, board, r2 } = this.spot;
+    const ev = [0, 0, 0];
+    for (let c = 0; c < NUM_RANKS; c++) {
+      let total = 0, num = 0;
+      for (let opp = 0; opp < NUM_RANKS; opp++) {
+        const p1 = this.spot.hero === 0 ? c : opp;
+        const p2 = this.spot.hero === 0 ? opp : c;
+        const reach = dealProb(p1, p2) * publicHistoryReach(this.blueprint, p1, p2, r1, board, r2);
+        if (reach === 0) continue;
+        const v = this._brEvalRec(p1, p2, board, r1, r2, new Map(), /*useBR=*/false);
+        total += reach * v;
+        num   += reach;
+      }
+      ev[c] = num > 0 ? total / num : 0;
+    }
+    return ev;
+  }
+}
+
+// =============================================================
+// UI controller
+// =============================================================
+const COLOR_MAP = {
+  x: 'col-x', h: 'col-h', p: 'col-p', t: 'col-t', a: 'col-a',
+  c: 'col-c', f: 'col-f',
+};
+function colorFor(label) { return COLOR_MAP[label] || 'col-custom'; }
+
+function fracToLabel(label) {
+  const found = PRESET_BET_SIZES.find(s => s.label === label);
+  if (found) return found.name;
+  if (label === 'a') return 'all-in';
+  if (label === 'x') return 'check';
+  if (label === 'c') return 'call';
+  if (label === 'f') return 'fold';
+  return label;
+}
+
+class App {
+  constructor() {
+    this.blueprint = new Blueprint();
+    this.subgame = null;
+    this.bpDone = false;
+    this.solving = false;
+
+    // Default custom menus = same as blueprint, so user starts with familiar set
+    this.heroOpenSelected = new Set(['x', 'h', 'p', 't', 'a']);
+    this.heroRespSelected = new Set(['f', 'c']);
+
+    this.spot = { r1: '', board: null, r2: '', hero: 0 };
+
+    this.chart = new MiniChart(document.getElementById('convChart'));
+
+    this.bindControls();
+    this.startBlueprintTraining();
+  }
+
+  bindControls() {
+    document.getElementById('btnSolve').addEventListener('click', () => this.runSubgame());
+    document.getElementById('btnReset').addEventListener('click', () => this.resetSpot());
+    document.getElementById('selR1').addEventListener('change', e => { this.spot.r1 = e.target.value; this.onSpotChange(); });
+    document.getElementById('selBoard').addEventListener('change', e => {
+      const v = e.target.value;
+      this.spot.board = v === '' ? null : parseInt(v);
+      this.onSpotChange();
+    });
+    document.getElementById('selR2').addEventListener('change', e => { this.spot.r2 = e.target.value; this.onSpotChange(); });
+    document.getElementById('selHero').addEventListener('change', e => { this.spot.hero = parseInt(e.target.value); this.onSpotChange(); });
+  }
+
+  // Train the blueprint until ε ≤ TARGET_EPS_MBB, then keep refining in the background.
+  // Re-solving is gated until the threshold is reached.
+  startBlueprintTraining() {
+    const TARGET_EPS_MBB = 1.0;     // user's "blueprint solid" target
+    const FIRST_CHECK    = 500;
+    const CHECK_EVERY    = 1000;    // BR computation is ~50ms — keep it moderate
+    let nextCheck = FIRST_CHECK;
+    let lastEpsMbb = Infinity;
+
+    document.getElementById('solveStatus').textContent = 'Training blueprint…';
+    const tick = () => {
+      // PAUSE blueprint training while a subgame is being solved — Villain must
+      // stay fixed during the re-solve, otherwise CFR's convergence breaks.
+      if (this.solving) { requestAnimationFrame(tick); return; }
+
+      const start = Date.now();
+      // Use ~50ms slices so the tab stays responsive.
+      while (Date.now() - start < 50) {
+        this.blueprint.trainMany(50);
+      }
+      document.getElementById('statBpIter').textContent = this.blueprint.iter.toLocaleString();
+
+      if (this.blueprint.iter >= nextCheck) {
+        const e = this.blueprint.exploitability();
+        lastEpsMbb = (e / 2) * 1000;
+        const stat = document.getElementById('statBpExpl');
+        stat.textContent = lastEpsMbb.toFixed(2);
+
+        if (lastEpsMbb <= TARGET_EPS_MBB) {
+          stat.style.color = 'var(--green)';
+          if (!this.bpDone) {
+            this.bpDone = true;
+            this.populateAllDropdowns();
+            this.refreshMenuButtons();
+            this.onSpotChange();
+          }
+          if (!this.solving) document.getElementById('solveStatus').textContent =
+            `Blueprint solid · ε ${lastEpsMbb.toFixed(2)} mbb/g · still refining in background.`;
+        } else {
+          stat.style.color = 'var(--orange)';
+          document.getElementById('solveStatus').textContent =
+            `Training blueprint · ε ${lastEpsMbb.toFixed(2)} mbb/g · solving unlocks at ε ≤ ${TARGET_EPS_MBB}.`;
+        }
+        nextCheck = this.blueprint.iter + CHECK_EVERY;
+      }
+
+      // Never stop — keep refining indefinitely after threshold.
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // ----- Dropdowns: round-1 and round-2 history selectors -----
+  populateAllDropdowns() {
+    // Round 1: includes BOTH in-progress decision spots AND completed sequences.
+    // In-progress = where someone is still to act, so a Hero decision can land here.
+    const r1Options = [
+      { value: '',     label: '(start of round 1) · P1 to act' },
+      // P2 to act after one P1 action
+      { value: 'x',    label: 'x  · P1 checked → P2 to act' },
+      { value: 'h',    label: 'h  · P1 bet ½ pot → P2 to act' },
+      { value: 'p',    label: 'p  · P1 bet pot → P2 to act' },
+      { value: 't',    label: 't  · P1 bet 2× pot → P2 to act' },
+      { value: 'a',    label: 'a  · P1 all-in → P2 to act' },
+      // P1 to act again after P1 checked, P2 bet
+      { value: 'xh',   label: 'xh · check, P2 bet ½ pot → P1 to act' },
+      { value: 'xp',   label: 'xp · check, P2 bet pot → P1 to act' },
+      { value: 'xt',   label: 'xt · check, P2 bet 2× pot → P1 to act' },
+      { value: 'xa',   label: 'xa · check, P2 all-in → P1 to act' },
+      // Completed (round-1 ends, board reveal next)
+      { value: 'xx',   label: 'xx   → board reveal' },
+      { value: 'hc',   label: 'hc   → board reveal' },
+      { value: 'pc',   label: 'pc   → board reveal' },
+      { value: 'tc',   label: 'tc   → board reveal' },
+      { value: 'ac',   label: 'ac   → board reveal (both all-in)' },
+      { value: 'xhc',  label: 'xhc  → board reveal' },
+      { value: 'xpc',  label: 'xpc  → board reveal' },
+      { value: 'xtc',  label: 'xtc  → board reveal' },
+      { value: 'xac',  label: 'xac  → board reveal (both all-in)' },
+    ];
+    this.fillSelect('selR1', r1Options);
+
+    // Round 2 will be populated when board is set
+    this.fillSelect('selBoard', [{ value: '', label: '— (round 1 in progress)' }]);
+    this.fillSelect('selR2', [{ value: '', label: '— (no round 2 yet)' }]);
+  }
+
+  fillSelect(id, options) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    for (const opt of options) {
+      const o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      el.appendChild(o);
+    }
+  }
+
+  refreshBoardDropdown() {
+    const r1 = this.spot.r1;
+    if (!isRoundTerminal(r1) || r1.endsWith('f')) {
+      this.fillSelect('selBoard', [{ value: '', label: '— (no board)' }]);
+      this.spot.board = null;
+      return;
+    }
+    const opts = [{ value: '', label: '— (no board yet)' }];
+    for (let r = 0; r < NUM_RANKS; r++) opts.push({ value: String(r), label: RANKS[r] });
+    this.fillSelect('selBoard', opts);
+    if (this.spot.board === null) document.getElementById('selBoard').value = '';
+    else                          document.getElementById('selBoard').value = String(this.spot.board);
+  }
+
+  refreshR2Dropdown() {
+    if (this.spot.board === null) {
+      this.fillSelect('selR2', [{ value: '', label: '— (no round 2 yet)' }]);
+      this.spot.r2 = '';
+      return;
+    }
+    // Round 2 in-progress histories (where someone is to act):
+    const r2Inprog = ['', 'x', 'h', 'p', 't', 'a', 'xh', 'xp', 'xt', 'xa'];
+    const opts = [];
+    for (const h of r2Inprog) {
+      const lab = h === '' ? '(start of round 2)' : h;
+      opts.push({ value: h, label: lab });
+    }
+    this.fillSelect('selR2', opts);
+    document.getElementById('selR2').value = this.spot.r2 || '';
+  }
+
+  // ----- Bet menu UI -----
+  buildMenuButtons() {
+    const open = document.getElementById('openMenu');
+    const resp = document.getElementById('respMenu');
+    open.innerHTML = ''; resp.innerHTML = '';
+
+    // Always-required: x and a (check + all-in) for opening
+    const reqOpenBtn = (lbl, name) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'size-toggle required';
+      b.innerHTML = `<span>${name}</span>`;
+      open.appendChild(b);
+    };
+    reqOpenBtn('x', 'check');
+
+    // Preset bet sizes
+    for (const sz of PRESET_BET_SIZES) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.label = sz.label;
+      b.className = 'size-toggle' + (this.heroOpenSelected.has(sz.label) ? ' active' : '');
+      b.innerHTML = `<span>${sz.name}</span><span class="frac">${sz.frac.toFixed(2)}×</span>`;
+      b.addEventListener('click', () => {
+        if (this.solving) this.stopSubgame();
+        if (this.heroOpenSelected.has(sz.label)) this.heroOpenSelected.delete(sz.label);
+        else this.heroOpenSelected.add(sz.label);
+        b.classList.toggle('active');
+        this.refreshMenuInfo();
+      });
+      open.appendChild(b);
+    }
+    reqOpenBtn('a', 'all-in');
+    this.heroOpenSelected.add('x'); this.heroOpenSelected.add('a');
+
+    // Response menu — always fold + call, plus optional raise sizes
+    const reqRespBtn = (lbl, name) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'size-toggle required';
+      b.innerHTML = `<span>${name}</span>`;
+      resp.appendChild(b);
+    };
+    reqRespBtn('f', 'fold');
+    reqRespBtn('c', 'call');
+    for (const sz of PRESET_RAISE_SIZES) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.label = sz.label;
+      b.className = 'size-toggle' + (this.heroRespSelected.has(sz.label) ? ' active' : '');
+      b.innerHTML = `<span>raise ${sz.name}</span><span class="frac">${sz.frac.toFixed(2)}×</span>`;
+      b.addEventListener('click', () => {
+        if (this.heroRespSelected.has(sz.label)) this.heroRespSelected.delete(sz.label);
+        else this.heroRespSelected.add(sz.label);
+        b.classList.toggle('active');
+        this.refreshMenuInfo();
+      });
+      resp.appendChild(b);
+    }
+    const aBtn = document.createElement('button');
+    aBtn.type = 'button';
+    aBtn.dataset.label = 'a';
+    aBtn.className = 'size-toggle' + (this.heroRespSelected.has('a') ? ' active' : '');
+    aBtn.innerHTML = `<span>raise all-in</span>`;
+    aBtn.addEventListener('click', () => {
+      if (this.solving) this.stopSubgame();
+      if (this.heroRespSelected.has('a')) this.heroRespSelected.delete('a');
+      else this.heroRespSelected.add('a');
+      aBtn.classList.toggle('active');
+      this.refreshMenuInfo();
+    });
+    resp.appendChild(aBtn);
+    this.heroRespSelected.add('f'); this.heroRespSelected.add('c');
+  }
+
+  refreshMenuButtons() {
+    this.buildMenuButtons();
+    this.refreshMenuInfo();
+  }
+
+  refreshMenuInfo() {
+    const total = this.heroOpenSelected.size + this.heroRespSelected.size;
+    document.getElementById('menuActiveCount').textContent =
+      `${this.heroOpenSelected.size} open · ${this.heroRespSelected.size} response · ${total} total`;
+  }
+
+  // Handle spot change → repopulate dependent selectors and update summary.
+  onSpotChange() {
+    if (!this.bpDone) return;
+    // Auto-stop if user changes spot mid-solve (results would be for the old spot)
+    if (this.solving) this.stopSubgame();
+
+    // R1 must end in non-fold for board to be revealed
+    if (this.spot.r1 && !isRoundTerminal(this.spot.r1)) {
+      this.spot.board = null; this.spot.r2 = '';
+    } else if (this.spot.r1 && this.spot.r1.endsWith('f')) {
+      this.spot.board = null; this.spot.r2 = '';
+    } else if (this.spot.r1 === '') {
+      this.spot.board = null; this.spot.r2 = '';
+    }
+    this.refreshBoardDropdown();
+    this.refreshR2Dropdown();
+    this.updateSpotSummary();
+    this.updateRangeDisplay();
+    this.checkSolveAvailable();
+    // Clear strategy view when spot changes
+    this.renderStrategyMatrix(null);
+    this.chart.reset();
+    this.chart.render();
+    document.getElementById('statSgIter').textContent = '—';
+    document.getElementById('statSgExpl').textContent = '—';
+    document.getElementById('sgIterLive').textContent = '0';
+    document.getElementById('sgExplLive').textContent = '—';
+    const runStatusEl = document.getElementById('sgRunStatus');
+    if (runStatusEl) { runStatusEl.textContent = 'idle'; runStatusEl.style.color = 'var(--muted)'; }
+  }
+
+  updateSpotSummary() {
+    const sum = document.getElementById('spotSummary');
+    // Determine pot/stacks at the spot
+    let pot = 2, stack = STACK_SIZE, actor = 0, valid = false, validMsg = '';
+    try {
+      const s1 = settleRoundBP(this.spot.r1, 2 * ANTE, STACK_SIZE);
+      if (this.spot.r1 && !s1.terminal) {
+        // Mid round 1
+        if (this.spot.board !== null) { validMsg = 'Round 2 starts only after round 1 ends.'; }
+        actor = playerToAct(this.spot.r1);
+        pot = s1.pot;
+        stack = actor === 0 ? s1.p1Stack : s1.p2Stack;
+        valid = !validMsg;
+      } else if (this.spot.r1 && s1.terminal && s1.foldedBy >= 0) {
+        validMsg = 'Round-1 fold ends the hand. Pick a non-fold history.';
+      } else if (this.spot.r1 === '') {
+        // Start of round 1
+        actor = 0; pot = 2; stack = STACK_SIZE; valid = (this.spot.board === null);
+        if (!valid) validMsg = 'Set R1 to a completed sequence to reveal a board.';
+      } else if (s1.terminal && this.spot.board === null) {
+        validMsg = 'Pick a board card.';
+      } else {
+        // Round 2 territory
+        const startPot2 = s1.pot, startStack2 = s1.p1Stack;
+        if (startStack2 === 0) {
+          validMsg = 'Both players are all-in — no round-2 betting possible. Showdown only.';
+        } else {
+          const s2 = settleRoundBP(this.spot.r2, startPot2, startStack2);
+          if (s2.terminal) validMsg = 'Round 2 already complete (call/check or fold).';
+          else {
+            actor = playerToAct(this.spot.r2);
+            pot = s2.pot;
+            stack = actor === 0 ? s2.p1Stack : s2.p2Stack;
+            valid = true;
+          }
+        }
+      }
+    } catch (e) { validMsg = 'Invalid spot: ' + e.message; }
+
+    const round = (this.spot.r1 === '' || (!isRoundTerminal(this.spot.r1))) ? 1 : 2;
+    const heroLabel = this.spot.hero === 0 ? 'P1' : 'P2';
+    const actorLabel = actor === 0 ? 'P1' : 'P2';
+    const heroIsActor = (this.spot.hero === actor);
+
+    sum.innerHTML = `
+      <span class="chip"><span class="k">Round</span><span class="v">${round}</span></span>
+      <span class="chip"><span class="k">Pot</span><span class="v">${pot}</span></span>
+      <span class="chip"><span class="k">Stack to act</span><span class="v">${stack}</span></span>
+      <span class="chip"><span class="k">Acting player</span><span class="v ${heroIsActor ? 'acting' : ''}">${actorLabel}${heroIsActor ? ' (Hero)' : ''}</span></span>
+      <span class="chip"><span class="k">Hero</span><span class="v">${heroLabel}</span></span>
+      ${validMsg ? `<span class="chip"><span class="k" style="color:var(--red);">issue</span><span class="v" style="color:var(--red);">${validMsg}</span></span>` : ''}
+    `;
+    this._spotValid = valid && heroIsActor;
+    this._spotInvalidReason = !heroIsActor ? 'Acting player is Villain — switch Hero or change history.' : validMsg;
+  }
+
+  checkSolveAvailable() {
+    const btn = document.getElementById('btnSolve');
+    btn.disabled = !this.bpDone || !this._spotValid;
+    if (!this.bpDone) document.getElementById('solveStatus').textContent = 'Training blueprint...';
+    else if (this._spotValid) document.getElementById('solveStatus').textContent = 'Ready to re-solve.';
+    else document.getElementById('solveStatus').textContent = this._spotInvalidReason || 'Pick a valid spot.';
+  }
+
+  resetSpot() {
+    this.spot = { r1: '', board: null, r2: '', hero: 0 };
+    document.getElementById('selR1').value = '';
+    document.getElementById('selHero').value = '0';
+    this.heroOpenSelected = new Set(['x', 'h', 'p', 't', 'a']);
+    this.heroRespSelected = new Set(['f', 'c']);
+    this.refreshMenuButtons();
+    this.onSpotChange();
+  }
+
+  updateRangeDisplay() {
+    if (!this.bpDone) return;
+    const { r1, board, r2 } = this.spot;
+    const { p1Range, p2Range } = inferRanges(this.blueprint, r1, board, r2);
+    const villainRange = this.spot.hero === 0 ? p2Range : p1Range;
+    const bar = document.getElementById('villainRangeBar');
+    bar.innerHTML = '';
+    for (let r = 0; r < NUM_RANKS; r++) {
+      const seg = document.createElement('div');
+      seg.className = 'range-seg ' + RANKS[r];
+      seg.style.width = `${(villainRange[r] * 100).toFixed(2)}%`;
+      bar.appendChild(seg);
+    }
+    document.getElementById('rngJ').textContent = (villainRange[0] * 100).toFixed(0) + '%';
+    document.getElementById('rngQ').textContent = (villainRange[1] * 100).toFixed(0) + '%';
+    document.getElementById('rngK').textContent = (villainRange[2] * 100).toFixed(0) + '%';
+  }
+
+  // ----- Run the subgame solver: toggle between Re-solve / Stop -----
+  runSubgame() {
+    if (!this.bpDone || !this._spotValid) return;
+    if (this.solving) {
+      this.stopSubgame();
+      return;
+    }
+
+    // Start fresh
+    this.solving = true;
+    const btn = document.getElementById('btnSolve');
+    btn.textContent = 'Stop';
+    btn.classList.remove('primary');
+    document.getElementById('solveStatus').textContent = 'Re-solving — click Stop when stable.';
+    document.getElementById('sgRunStatus').textContent = 'running';
+    document.getElementById('sgRunStatus').style.color = 'var(--green)';
+
+    // Build fraction lookup: blueprint sizes + all presets
+    const fractions = Object.assign({}, BLUEPRINT_FRACTIONS);
+    for (const sz of PRESET_BET_SIZES) fractions[sz.label] = sz.frac;
+
+    const heroOpenMenu = Array.from(this.heroOpenSelected);
+    const heroRespMenu = Array.from(this.heroRespSelected);
+    this.subgame = new Subgame(this.spot, heroOpenMenu, heroRespMenu, fractions, this.blueprint);
+
+    this.chart.reset();
+    this._sgLoop();
+  }
+
+  stopSubgame() {
+    if (!this.solving) return;
+    this.solving = false;
+    const btn = document.getElementById('btnSolve');
+    btn.textContent = 'Re-solve';
+    btn.classList.add('primary');
+    document.getElementById('sgRunStatus').textContent = 'stopped';
+    document.getElementById('sgRunStatus').style.color = 'var(--muted)';
+    const it = this.subgame ? this.subgame.iter : 0;
+    document.getElementById('solveStatus').textContent = `Stopped at ${it.toLocaleString()} iter. Click Re-solve to start fresh.`;
+    // Final render
+    if (this.subgame) {
+      this.renderStrategyMatrix(this.subgame);
+      this.renderBlueprintComparison();
+    }
+  }
+
+  _sgLoop() {
+    if (!this.solving) return;
+    const start = Date.now();
+    while (Date.now() - start < 60) {
+      this.subgame.trainMany(20);
+    }
+    const it = this.subgame.iter;
+    document.getElementById('sgIterLive').textContent = it.toLocaleString();
+    document.getElementById('statSgIter').textContent = it.toLocaleString();
+
+    // Sample exploitability on a logarithmic-ish cadence so cost stays bounded.
+    const last = this.chart.points[this.chart.points.length - 1];
+    const gap = last ? (it - last.iter) : 0;
+    const sampleEvery = it < 200 ? 50 : it < 2000 ? 200 : it < 20000 ? 1000 : 5000;
+    if (!last || gap >= sampleEvery) {
+      const e = this.subgame.exploitability();
+      const mbb = (e / 2) * 1000;
+      this.chart.push(it, Math.max(0.01, mbb));
+      this.chart.render();
+      document.getElementById('sgExplLive').textContent = mbb.toFixed(2);
+      document.getElementById('statSgExpl').textContent = mbb.toFixed(2);
+    }
+
+    // Live strategy refresh every ~500 iters
+    if (it % 500 === 0) {
+      this.renderStrategyMatrix(this.subgame);
+      this.renderBlueprintComparison();
+    }
+
+    requestAnimationFrame(() => this._sgLoop());
+  }
+
+  renderStrategyMatrix(subgame) {
+    const grid = document.getElementById('strategyMatrix');
+    grid.innerHTML = '';
+    if (!subgame) {
+      for (let c = 0; c < 3; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'card-cell';
+        cell.innerHTML = `
+          <div class="card-head">
+            <span class="card-rank ${RANKS[c]}">${RANKS[c]}</span>
+            <span class="ev">— ev</span>
+          </div>
+          <div class="stacked-bar"></div>
+          <div class="action-list" style="color:var(--muted); font-size:11px;">Run re-solve to compute strategy.</div>`;
+        grid.appendChild(cell);
+      }
+      return;
+    }
+    const strats = subgame.rootStrategies();
+    const evs = subgame.rootEV();
+    for (let c = 0; c < 3; c++) {
+      const rec = strats.get(c);
+      const cell = document.createElement('div');
+      cell.className = 'card-cell';
+      const ev = evs[c];
+      const evClass = ev > 0.05 ? 'pos' : (ev < -0.05 ? 'neg' : '');
+      const evStr = (ev >= 0 ? '+' : '') + ev.toFixed(2);
+      let bar = '<div class="stacked-bar">';
+      let list = '<div class="action-list">';
+      if (rec) {
+        for (let i = 0; i < rec.legal.length; i++) {
+          const lbl = rec.legal[i];
+          const p = rec.probs[i];
+          if (p < 0.005) continue;
+          const w = (p * 100).toFixed(2);
+          const cls = colorFor(lbl);
+          bar += `<span class="seg ${cls}" style="width:${w}%" title="${fracToLabel(lbl)} ${w}%">${p > 0.06 ? lbl : ''}</span>`;
+        }
+        for (let i = 0; i < rec.legal.length; i++) {
+          const lbl = rec.legal[i];
+          const p = rec.probs[i];
+          const cls = colorFor(lbl);
+          const dim = p < 0.005 ? ' dim' : '';
+          list += `
+            <div class="action-row${dim}">
+              <span class="swatch ${cls}"></span>
+              <span class="lbl">${fracToLabel(lbl)} <span style="color:var(--muted);">(${lbl})</span></span>
+              <span class="pct">${(p * 100).toFixed(1)}%</span>
+            </div>`;
+        }
+      } else {
+        list += `<div style="color:var(--muted); font-size:11px;">Hero never reaches this card given the inferred range.</div>`;
+      }
+      bar += '</div>';
+      list += '</div>';
+      cell.innerHTML = `
+        <div class="card-head">
+          <span class="card-rank ${RANKS[c]}">${RANKS[c]}</span>
+          <span class="ev ${evClass}">${evStr} ev</span>
+        </div>
+        ${bar}
+        ${list}`;
+      grid.appendChild(cell);
+    }
+  }
+
+  renderBlueprintComparison() {
+    // Show the BLUEPRINT's strategy at this spot for each card (for comparison).
+    const out = document.getElementById('blueprintEv');
+    const lines = [];
+    const { r1, board, r2 } = this.spot;
+    for (let c = 0; c < 3; c++) {
+      const avg = this.blueprint.avgAt(this.spot.hero, c, r1, board, r2);
+      if (!avg) {
+        lines.push(`${RANKS[c]}: <span style="color:var(--muted);">no blueprint data</span>`);
+        continue;
+      }
+      const parts = [];
+      for (let i = 0; i < avg.legal.length; i++) {
+        if (avg.probs[i] < 0.01) continue;
+        parts.push(`${avg.legal[i]}=${(avg.probs[i] * 100).toFixed(0)}%`);
+      }
+      lines.push(`<span style="color:var(--text);">${RANKS[c]}:</span> ${parts.join(' · ')}`);
+    }
+    out.innerHTML = lines.join('<br>');
+  }
+}
+
+// =============================================================
+// Mini chart (subgame convergence)
+// =============================================================
+class MiniChart {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.points = [];
+    this._resize();
+    window.addEventListener('resize', () => { this._resize(); this.render(); });
+  }
+  _resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.W = rect.width;
+    this.H = rect.height || 200;
+    this.canvas.width = this.W * dpr;
+    this.canvas.height = this.H * dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  push(iter, expl) { this.points.push({ iter, expl }); }
+  reset() { this.points = []; }
+  render() {
+    const ctx = this.ctx;
+    const W = this.W, H = this.H;
+    ctx.clearRect(0, 0, W, H);
+    if (this.points.length < 2) {
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '11px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Subgame ε will plot here once solving begins.', W / 2, H / 2);
+      return;
+    }
+    // If every sample is at the floor (≤ 0.01), the subgame has fully converged —
+    // a flat line is uninformative. Show a "converged" overlay instead.
+    const allAtFloor = this.points.every(p => p.expl <= 0.011);
+    if (allAtFloor) {
+      ctx.fillStyle = 'rgba(63, 223, 142, 0.85)';
+      ctx.font = '600 14px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Subgame ε ≈ 0  ·  Hero has found the best response', W / 2, H / 2 - 10);
+      ctx.fillStyle = 'rgba(122, 132, 153, 0.85)';
+      ctx.font = '12px -apple-system, system-ui, sans-serif';
+      ctx.fillText('Strategy is stable — click Stop to read the result', W / 2, H / 2 + 12);
+      return;
+    }
+    const padL = 50, padR = 14, padT = 12, padB = 22;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const itMax = this.points[this.points.length - 1].iter;
+    let lo = Infinity, hi = -Infinity;
+    for (const p of this.points) {
+      const v = Math.max(1e-2, p.expl);
+      if (v < lo) lo = v; if (v > hi) hi = v;
+    }
+    const logLo = Math.log10(Math.max(1e-2, lo * 0.5));
+    const logHi = Math.log10(Math.max(hi * 1.2, lo * 2));
+    ctx.strokeStyle = '#232b3f'; ctx.lineWidth = 1;
+    for (let g = Math.floor(logLo); g <= Math.ceil(logHi); g++) {
+      const y = padT + (1 - (g - logLo) / (logHi - logLo)) * innerH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillStyle = '#7a8499';
+      ctx.font = '10px "SF Mono", Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`10^${g}`, padL - 6, y + 4);
+    }
+    ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < this.points.length; i++) {
+      const p = this.points[i];
+      const lv = Math.log10(Math.max(1e-2, p.expl));
+      const x = padL + (p.iter / Math.max(1, itMax)) * innerW;
+      const y = padT + (1 - (lv - logLo) / (logHi - logLo)) * innerH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+const app = new App();
+</script>
+
+</body>
+</html>
