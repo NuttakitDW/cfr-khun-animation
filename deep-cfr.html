@@ -1115,11 +1115,16 @@ class MLP {
     const acts = this.forward(x);
     const L = this.W.length;
     const out = acts[L];
+    // Skip if forward already produced non-finite values — caller will reset.
+    for (let i = 0; i < out.length; i++) if (!Number.isFinite(out[i])) return NaN;
     let dz = new Float64Array(out.length);
     let loss = 0;
     for (let i = 0; i < out.length; i++) {
       const d = out[i] - target[i];
-      dz[i] = sampleWeight * d;
+      // Clip per-output gradient. Without this, warm-start + linear weighting
+      // can compound a single overshoot into Inf weights, then NaN.
+      const dClip = Math.max(-5, Math.min(5, d));
+      dz[i] = sampleWeight * dClip;
       loss += d * d;
     }
     loss *= 0.5;
@@ -1234,12 +1239,13 @@ class InfoSet {
 
   /** Strategy from regret matching on the network's predicted advantages. */
   getStrategy() {
-    const pos0 = Math.max(this.regretSum[0], 0);
-    const pos1 = Math.max(this.regretSum[1], 0);
+    const a0 = Number.isFinite(this.regretSum[0]) ? this.regretSum[0] : 0;
+    const a1 = Number.isFinite(this.regretSum[1]) ? this.regretSum[1] : 0;
+    const pos0 = Math.max(a0, 0);
+    const pos1 = Math.max(a1, 0);
     const sum = pos0 + pos1;
     if (sum > 0) return [pos0 / sum, pos1 / sum];
-    // All advantages <= 0: fall back to uniform (argmax on noisy advantages
-    // collapses to a pure strategy and biases sampled regrets badly on Kuhn).
+    // All advantages <= 0 (or non-finite): fall back to uniform.
     return [0.5, 0.5];
   }
 
@@ -1279,6 +1285,12 @@ class CFRTrainer {
     return this.memoryType === 'reservoir'
       ? new Reservoir(this.memoryCapacity)
       : new SlidingWindow(this.memoryCapacity);
+  }
+
+  _netHasNaN(net) {
+    for (const W of net.W) for (let i = 0; i < W.length; i++) if (!Number.isFinite(W[i])) return true;
+    for (const b of net.b) for (let i = 0; i < b.length; i++) if (!Number.isFinite(b[i])) return true;
+    return false;
   }
 
   reset() {
@@ -1412,6 +1424,11 @@ class CFRTrainer {
     const mem = this.advMemory[player];
     if (mem.size() === 0) return 0;
     if (this.trainFromScratch) {
+      this.advNet[player] = new MLP(this.netSpec);
+    }
+    // Recovery: if any weight has gone non-finite (NaN/Inf), reset this net
+    // before training. Otherwise NaN propagates forever through forward passes.
+    if (this._netHasNaN(this.advNet[player])) {
       this.advNet[player] = new MLP(this.netSpec);
     }
     const buf = mem.buffer;
