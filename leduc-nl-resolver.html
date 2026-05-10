@@ -1977,6 +1977,7 @@ class App {
     this.subgame = new Subgame(this.spot, heroOpenMenu, heroRespMenu, fractions, this.blueprint);
 
     this.chart.reset();
+    this._lastStratIt = undefined;       // force first render at the next tick
     this._sgLoop();
   }
 
@@ -2020,10 +2021,13 @@ class App {
       document.getElementById('statSgExpl').textContent = mbb.toFixed(2);
     }
 
-    // Live strategy refresh every ~500 iters
-    if (it % 500 === 0) {
+    // Live strategy refresh: first render right away, then every ~500 iters.
+    // (Previous `it % 500 === 0` check almost never fired because `trainMany(20)`
+    // jumps in steps of 20 and the time-bounded loop usually skips past 500.)
+    if (this._lastStratIt === undefined || (it - this._lastStratIt) >= 500) {
       this.renderStrategyMatrix(this.subgame);
       this.renderBlueprintComparison();
+      this._lastStratIt = it;
     }
 
     requestAnimationFrame(() => this._sgLoop());
