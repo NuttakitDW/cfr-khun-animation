@@ -152,51 +152,6 @@ main {
 .panel em { color: var(--muted); font-style: normal; }
 .kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 13px; }
 
-/* Unverified-note disclaimer banner */
-.unverified {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
-  align-items: start;
-  background:
-    repeating-linear-gradient(135deg,
-      rgba(255,94,122,0.04) 0px, rgba(255,94,122,0.04) 8px,
-      transparent 8px, transparent 16px),
-    rgba(255,94,122,0.05);
-  border: 1px solid rgba(255,94,122,0.35);
-  border-left: 3px solid var(--red);
-  border-radius: 12px;
-  padding: 14px 18px;
-}
-.unverified .badge {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: rgba(255,94,122,0.18);
-  color: #ff7a91;
-  margin-top: 2px;
-  white-space: nowrap;
-}
-.unverified .copy {
-  font-size: 13px;
-  color: var(--text);
-  line-height: 1.55;
-}
-.unverified .copy strong { color: #ff9aac; font-weight: 600; }
-.unverified .copy .muted-line {
-  display: block;
-  color: var(--muted);
-  font-size: 12.5px;
-  margin-top: 4px;
-}
-@media (max-width: 700px) {
-  .unverified { grid-template-columns: 1fr; }
-}
-
 /* The big "aha" callout */
 .aha {
   background:
@@ -528,15 +483,6 @@ footer a:hover { color: var(--accent); }
 </header>
 
 <main>
-
-  <!-- ================= UNVERIFIED DISCLAIMER ================= -->
-  <div class="unverified">
-    <span class="badge">Unverified</span>
-    <div class="copy">
-      <strong>Personal study summary — not an authoritative source.</strong> Plain-English notes on Maletic (2019), written while reading. Not peer-reviewed; may contain misreadings or oversimplifications. Do <strong>not</strong> cite this page.
-      <span class="muted-line">For anything load-bearing, read the original paper (SSRN ID 3178186) and the cited references — Chan, Lakonishok &amp; Sougiannis 2001; Eberhart, Maxwell &amp; Siddique 2004; Novy-Marx 2013; Fama &amp; French 2006/2015.</span>
-    </div>
-  </div>
 
   <!-- ================= THE BIG AHA ================= -->
   <div class="aha">
