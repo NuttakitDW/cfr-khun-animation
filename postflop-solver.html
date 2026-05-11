@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside postflop-solver — how an open-source NLH solver beats PioSOLVER</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --cyan: #3fc8d4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.stat-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.stat .value {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat .value.accent { color: var(--accent); }
+.stat .value.gold   { color: var(--gold); }
+.stat .value.green  { color: var(--green); }
+.stat .value.red    { color: var(--red); }
+.stat .value.purple { color: var(--purple); }
+
+main {
+  padding: 28px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.panel h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.panel p { color: var(--text); margin: 0 0 12px; font-size: 14px; }
+.panel p.muted { color: var(--muted); font-size: 13px; }
+.panel ul { color: var(--text); font-size: 14px; margin: 0 0 12px; padding-left: 20px; }
+.panel ul li { margin-bottom: 6px; }
+.panel ul li::marker { color: var(--dim); }
+.panel strong { color: var(--text); }
+.panel em { color: var(--muted); font-style: normal; }
+.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 13px; }
+
+/* Unverified-note disclaimer banner */
+.unverified {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,94,122,0.04) 0px, rgba(255,94,122,0.04) 8px,
+      transparent 8px, transparent 16px),
+    rgba(255,94,122,0.05);
+  border: 1px solid rgba(255,94,122,0.35);
+  border-left: 3px solid var(--red);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+.unverified .badge {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(255,94,122,0.18);
+  color: #ff7a91;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.unverified .copy { font-size: 13px; color: var(--text); line-height: 1.55; }
+.unverified .copy strong { color: #ff9aac; font-weight: 600; }
+.unverified .copy .muted-line {
+  display: block; color: var(--muted); font-size: 12.5px; margin-top: 4px;
+}
+@media (max-width: 700px) { .unverified { grid-template-columns: 1fr; } }
+
+/* The big "aha" callout */
+.aha {
+  background:
+    linear-gradient(135deg, rgba(91,158,255,0.10), rgba(191,140,255,0.06) 60%, rgba(255,213,74,0.08));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.aha::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--gold));
+}
+.aha .tag {
+  font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase;
+  color: var(--gold); font-weight: 700; margin-bottom: 8px;
+}
+.aha .headline {
+  font-size: 22px; font-weight: 700; margin: 0 0 12px;
+  color: var(--text); letter-spacing: -0.3px; line-height: 1.35;
+}
+.aha .body { color: var(--text); font-size: 14.5px; margin: 0; }
+.aha .body em { color: var(--gold); font-style: italic; }
+
+/* Pipeline diagram */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 8px 0 4px;
+}
+.pipe-step {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+}
+.pipe-step .num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+}
+.pipe-step.s1 .num { color: var(--accent); }
+.pipe-step.s2 .num { color: var(--purple); }
+.pipe-step.s3 .num { color: var(--gold); }
+.pipe-step .name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.pipe-step .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.pipe-step:not(:last-child)::after {
+  content: ''; position: absolute; right: -10px; top: 50%;
+  width: 8px; height: 8px;
+  border-top: 2px solid var(--dim);
+  border-right: 2px solid var(--dim);
+  transform: translateY(-50%) rotate(45deg);
+  z-index: 5;
+}
+@media (max-width: 900px) {
+  .pipeline { grid-template-columns: 1fr; }
+  .pipe-step:not(:last-child)::after {
+    right: 50%; top: auto; bottom: -10px;
+    transform: translateX(50%) rotate(135deg);
+  }
+}
+
+/* Node-type cards */
+.node-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.node-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.node-card.decision { border-left: 3px solid var(--accent); }
+.node-card.chance   { border-left: 3px solid var(--purple); }
+.node-card.terminal { border-left: 3px solid var(--gold); }
+.node-card .tag {
+  display: inline-block;
+  font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700;
+  padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
+}
+.node-card.decision .tag { background: rgba(91,158,255,0.15); color: var(--accent); }
+.node-card.chance   .tag { background: rgba(191,140,255,0.15); color: var(--purple); }
+.node-card.terminal .tag { background: rgba(255,213,74,0.15); color: var(--gold); }
+.node-card h4 { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: var(--text); }
+.node-card .text { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.node-card .text code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px; color: var(--accent);
+  background: rgba(91,158,255,0.08);
+  padding: 1px 5px; border-radius: 3px;
+}
+@media (max-width: 900px) { .node-grid { grid-template-columns: 1fr; } }
+
+/* Math block */
+.formula-row {
+  background: var(--panel-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  color: var(--accent);
+  margin: 8px 0;
+  overflow-x: auto;
+  line-height: 1.65;
+}
+.formula-row .lbl { color: var(--muted); }
+.formula-row .val { color: var(--gold); }
+
+/* Parameter table for DCFR */
+table.params {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+table.params th, table.params td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.params th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--muted); font-weight: 600;
+  background: rgba(255,255,255,0.02);
+}
+table.params td.sym  { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); width: 12%; }
+table.params td.use  { color: var(--text); width: 30%; }
+table.params td.book { color: var(--muted); width: 18%; font-family: "SF Mono", Menlo, Consolas, monospace; }
+table.params td.here { width: 18%; font-family: "SF Mono", Menlo, Consolas, monospace; }
+table.params td.note { color: var(--muted); width: 22%; }
+.delta {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* Tricks grid */
+.tricks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.trick {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.trick .tag {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.trick h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--text); }
+.trick p  { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.trick p .hilite { color: var(--gold); font-weight: 600; }
+@media (max-width: 900px) { .tricks { grid-template-columns: 1fr; } }
+
+/* Wow stats */
+.wow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.wow-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: left;
+}
+.wow-card .num {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 26px; font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.wow-card.a .num { color: var(--accent); }
+.wow-card.g .num { color: var(--gold); }
+.wow-card.p .num { color: var(--purple); }
+.wow-card.gr .num { color: var(--green); }
+.wow-card .lbl {
+  font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--muted); font-weight: 600;
+}
+@media (max-width: 900px) { .wow-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Code-walk callout (similar to example-quote) */
+.codewalk {
+  background: var(--bg-2);
+  border-left: 3px solid var(--cyan);
+  padding: 10px 14px;
+  margin: 10px 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.6;
+}
+.codewalk strong { color: var(--text); font-weight: 600; }
+.codewalk a { color: var(--accent); text-decoration: none; }
+.codewalk a:hover { text-decoration: underline; }
+
+/* Reading list / refs */
+.reading-list { display: grid; gap: 10px; }
+.read-item {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.read-item .order {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  letter-spacing: 1px; margin-top: 2px;
+}
+.read-item .title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 3px; }
+.read-item .blurb { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.5; }
+.read-item a { color: var(--accent); text-decoration: none; }
+.read-item a:hover { text-decoration: underline; }
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Inside postflop-solver</h1>
+    <span class="sub">An open-source Rust library that out-runs PioSOLVER — algorithm, architecture, engineering</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat">
+      <span class="label">Language</span>
+      <span class="value accent">Rust</span>
+    </div>
+    <div class="stat">
+      <span class="label">Algorithm</span>
+      <span class="value purple">Customized DCFR</span>
+    </div>
+    <div class="stat">
+      <span class="label">Abstraction</span>
+      <span class="value green">None (real cards)</span>
+    </div>
+    <div class="stat">
+      <span class="label">License</span>
+      <span class="value">AGPLv3</span>
+    </div>
+    <div class="stat">
+      <span class="label">Status</span>
+      <span class="value red">Suspended Oct 2023</span>
+    </div>
+    <div class="stat">
+      <span class="label">Author</span>
+      <span class="value gold">Wataru Inariba</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= THE BIG AHA ================= -->
+  <div class="aha">
+    <div class="tag">The single takeaway</div>
+    <p class="headline">One developer, ~10k lines of Rust, AGPL-licensed — and per the author's benchmarks, <em>faster than PioSOLVER and GTO+</em>. The whole thing is a customized Discounted CFR running over the actual 1326-hand combo space, no card abstraction.</p>
+    <p class="body">Commercial postflop solvers cost hundreds of dollars and run on proprietary code most users never see. This repo is the entire engine — game tree builder, hand evaluator, DCFR loop, isomorphism reductions, SIMD-tuned hot paths, optional 16-bit compression — sitting in <span class="mono" style="color:var(--muted);">src/</span>. It's the backend of <strong>WASM Postflop</strong> (in-browser) and <strong>Desktop Postflop</strong>, and it's the closest thing to a reference implementation of a modern NLH solver that the public has.</p>
+  </div>
+
+  <!-- ================= WOW NUMBERS ================= -->
+  <section class="panel">
+    <h2>Section 0 · The headline numbers</h2>
+    <h3>Scope of what one Rust crate is doing</h3>
+    <div class="wow-grid">
+      <div class="wow-card a">
+        <div class="num">1326</div>
+        <div class="lbl">Hand combos per player, per node</div>
+      </div>
+      <div class="wow-card p">
+        <div class="num">0%</div>
+        <div class="lbl">Card abstraction (full combo resolution)</div>
+      </div>
+      <div class="wow-card g">
+        <div class="num">DCFR</div>
+        <div class="lbl">α = 1.5, β = 0, γ = 3, reset@4ⁿ</div>
+      </div>
+      <div class="wow-card gr">
+        <div class="num">16-bit</div>
+        <div class="lbl">Optional compressed storage (~16× memory savings)</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">A typical full-turn solve on a single spot tracks per-action regret and strategy for up to <span class="mono">~1300 hand combos × ~6 actions × thousands of decision nodes</span>. Multiply by 4 bytes (f32) or 2 bytes (i16) and you're at multiple gigabytes per spot. That's why "memory layout" is a real engineering concern, not a footnote.</p>
+  </section>
+
+  <!-- ================= SECTION 1: WHAT IT DOES ================= -->
+  <section class="panel">
+    <h2>Section 1 · What it does</h2>
+    <h3>Inputs in, GTO strategy out</h3>
+    <p>You hand it a fully specified postflop spot — <strong>ranges, board, stacks, allowed bet sizes</strong> — and it returns, for every reachable decision node and every hand a player could hold there, the mixing frequencies that approximate the Nash equilibrium of the configured subgame.</p>
+    <div class="formula-row">
+      <span class="lbl">Input</span>  : (OOP range, IP range, flop[, turn[, river]], pot, stacks, bet-size menu, rake)<br>
+      <span class="lbl">Output</span> : strategy[node][action][hand] &nbsp; → &nbsp; play frequency<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; expected_values[node][hand] &nbsp; → &nbsp; per-hand EV (chips)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; equity[node][hand] &nbsp; → &nbsp; raw equity vs opponent range
+    </div>
+    <p>Where most beginners assume "GTO solver = magic," this library is explicit about what it actually computes: an <strong>ε-Nash equilibrium of an <em>abstracted-action</em> subgame</strong>. The abstraction is purely over <em>bet sizes</em> (you choose a menu like <span class="kw">60%, geometric, all-in</span>), not over cards — every one of the 1326 hand combos is tracked individually.</p>
+  </section>
+
+  <!-- ================= SECTION 2: ALGORITHM RECAP ================= -->
+  <section class="panel">
+    <h2>Section 2 · The algorithm</h2>
+    <h3>Customized Discounted CFR</h3>
+    <p>The algorithm is <strong>Discounted CFR</strong> (Brown &amp; Sandholm, 2019) — a variant of CFR that <em>down-weights old regrets and old strategies</em> so the running averages don't carry early-iteration noise. The README admits to two deviations from the paper's recommended parameters, both visible in <span class="mono">src/solver.rs</span>:</p>
+    <table class="params">
+      <thead>
+        <tr><th>Param</th><th>Role</th><th>Paper</th><th>This solver</th><th>Why it matters</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sym">α</td>
+          <td class="use">Discount on past <strong>positive</strong> regrets</td>
+          <td class="book">1.5</td>
+          <td class="here">1.5  ✓</td>
+          <td class="note">Good actions accumulate fast</td>
+        </tr>
+        <tr>
+          <td class="sym">β</td>
+          <td class="use">Discount on past <strong>negative</strong> regrets</td>
+          <td class="book">0  (weight → ½)</td>
+          <td class="here">0.5 (constant) ≡ β=0</td>
+          <td class="note">Bad actions decay by half each pass</td>
+        </tr>
+        <tr>
+          <td class="sym">γ</td>
+          <td class="use">Discount on past cumulative <strong>strategy</strong></td>
+          <td class="book">2</td>
+          <td class="here"><span class="delta">3</span></td>
+          <td class="note">More aggressive recency bias</td>
+        </tr>
+        <tr>
+          <td class="sym">reset</td>
+          <td class="use">Cumulative-strategy reset</td>
+          <td class="book">none</td>
+          <td class="here"><span class="delta">at iterations 1, 4, 16, 64…</span></td>
+          <td class="note">Effectively a windowed average</td>
+        </tr>
+        <tr>
+          <td class="sym">order</td>
+          <td class="use">Player update scheduling</td>
+          <td class="book">simultaneous</td>
+          <td class="here">alternating</td>
+          <td class="note">CFR+ style, helps convergence</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="codewalk">
+      <strong>Where this lives:</strong> <a href="https://github.com/b-inary/postflop-solver/blob/main/src/solver.rs">src/solver.rs</a> lines 11–37 build the per-iteration <span style="color:var(--text);">DiscountParams</span> struct. The pow-of-4 reset is computed via <strong>x.leading_zeros() ^ 31 &amp; !1</strong> — a one-line bit-twiddle that yields the largest power of 4 ≤ current iteration.
+    </div>
+    <p class="muted">For background on CFR / CFR+ / DCFR / MCCFR specifically, see <a href="cfr-simulation.html" style="color:var(--accent); text-decoration:none;">CFR Simulation</a>, <a href="cfr-plus.html" style="color:var(--accent); text-decoration:none;">CFR+</a>, <a href="dcfr.html" style="color:var(--accent); text-decoration:none;">DCFR</a>, and <a href="mccfr.html" style="color:var(--accent); text-decoration:none;">MCCFR</a> on this site.</p>
+  </section>
+
+  <!-- ================= SECTION 3: PIPELINE ================= -->
+  <section class="panel">
+    <h2>Section 3 · The pipeline</h2>
+    <h3>Build · Solve · Query — three stages, one struct</h3>
+    <div class="pipeline">
+      <div class="pipe-step s1">
+        <div class="num">STAGE 01 · BUILD</div>
+        <div class="name">Tree + game state</div>
+        <div class="desc">CardConfig + TreeConfig → ActionTree::new() enumerates every action sequence. PostFlopGame::with_config attaches ranges, hand strengths, and isomorphism maps.</div>
+      </div>
+      <div class="pipe-step s2">
+        <div class="num">STAGE 02 · SOLVE</div>
+        <div class="name">DCFR iteration</div>
+        <div class="desc">allocate_memory() reserves per-node regret/strategy arrays. solve() runs alternating-update DCFR, checking exploitability every 10 iters. finalize() emits the time-averaged strategy.</div>
+      </div>
+      <div class="pipe-step s3">
+        <div class="num">STAGE 03 · QUERY</div>
+        <div class="name">Read-only inspection</div>
+        <div class="desc">Navigate via play() / back_to_root(). strategy(), expected_values(), equity(), private_cards() expose the GTO frequencies, EVs, and CFVs at every node.</div>
+      </div>
+    </div>
+    <div class="codewalk">
+      <strong>End-to-end in 4 lines:</strong>
+<br>let action_tree = ActionTree::new(tree_config).unwrap();
+<br>let mut game = PostFlopGame::with_config(card_config, action_tree).unwrap();
+<br>game.allocate_memory(false);
+<br>let exploit = solve(&amp;mut game, 1000, 0.005 * pot, true);
+    </div>
+  </section>
+
+  <!-- ================= SECTION 4: NODE TYPES ================= -->
+  <section class="panel">
+    <h2>Section 4 · Inside the recursion</h2>
+    <h3>Three node types, three things to do</h3>
+    <p>The solver's core is <span class="kw">solve_recursive()</span> — a DFS over the action tree carrying down a vector of <strong>counterfactual reach probabilities</strong> (probability the opponent would have arrived at this node, per opponent hand). What happens at each node depends on its type:</p>
+    <div class="node-grid">
+      <div class="node-card decision">
+        <span class="tag">Decision</span>
+        <h4>Player to act</h4>
+        <p class="text">Compute the current strategy from cumulative regrets via <strong>regret matching</strong> (<code>max(R,0)/Σ</code>). Recurse into each action to get per-action counterfactual values. Update cum_regret (weighted by α or β depending on sign) and cum_strategy (weighted by γ). Return the strategy-weighted sum as the node's CFV.</p>
+      </div>
+      <div class="node-card chance">
+        <span class="tag">Chance</span>
+        <h4>Card dealt</h4>
+        <p class="text">Scale incoming reach by <code>1 / chance_factor</code> (accounting for the random card draw blocked by both ranges). Recurse into each possible card — but skip isomorphic suits and reuse their result via a precomputed swap-list. Sum children to get the node's CFV.</p>
+      </div>
+      <div class="node-card terminal">
+        <span class="tag">Terminal</span>
+        <h4>Fold / Showdown</h4>
+        <p class="text">Fold: ±pot share weighted by opponent reach. Showdown: pre-sorted hand evaluator (<code>hand_table.rs</code>) compares every player hand against every opponent hand in O(n) instead of O(n²), using SIMD-friendly access patterns.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px;">Note: the recursion is fully <strong>deterministic</strong> — no Monte Carlo sampling. Every chance outcome and every legal action is traversed every iteration. The library has no MCCFR variant; the speed comes from cheap-per-iteration work, not from sampling.</p>
+  </section>
+
+  <!-- ================= SECTION 5: PERFORMANCE TRICKS ================= -->
+  <section class="panel">
+    <h2>Section 5 · The performance tricks</h2>
+    <h3>Why a Rust hobby project can out-run paid solvers</h3>
+    <div class="tricks">
+
+      <div class="trick">
+        <div class="tag">SIMD</div>
+        <h4>Hand-tuned vector instructions</h4>
+        <p>Hot loops (regret updates, weighted sums, hand evaluation) are written so the compiler emits SIMD on x86, ARM, <em>and</em> WASM (<span class="hilite">v128</span>). The author explicitly reviews the assembly output to verify the kernels vectorize.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Multithreading</div>
+        <h4>Rayon parallel recursion</h4>
+        <p>At every node, the DFS into child subtrees runs in parallel across CPU cores via Rayon's <span class="hilite">into_par_iter</span>. Each thread gets its own subtree to recurse through; the regret/strategy arrays are atomically scattered back.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Isomorphism</div>
+        <h4>Skip equivalent suits</h4>
+        <p>If the flop is monotone (or has any suit symmetry), the solver computes the turn/river for only one representative suit and remaps the result for the equivalents. On a monotone flop this is a <span class="hilite">3× win</span> for free.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Precision</div>
+        <h4>f32 storage, f64 summation</h4>
+        <p>Everything that's stored — regrets, strategies, CFVs — is f32. But every running sum is accumulated in <span class="hilite">f64</span> to avoid catastrophic cancellation. Half the memory traffic, none of the numerical drift.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Compression</div>
+        <h4>Optional 16-bit storage</h4>
+        <p>Per-node regret/strategy can be stored as <span class="hilite">i16</span> + one f32 scaling factor per array. <span class="hilite">~16× memory savings</span>, ~1 bit of precision lost. Lets a 5 GB turn solve fit in 350 MB.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Custom alloc</div>
+        <h4>Stack-based scratch allocator</h4>
+        <p>Optional <span class="hilite">custom-alloc</span> feature (nightly Rust) replaces the global allocator's per-recursion-call <span class="hilite">Vec::with_capacity</span> with a bump allocator. Solving paths allocate millions of tiny temporary vectors; this avoids hammering jemalloc/system malloc.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Bunching</div>
+        <h4>Correct multi-fold modeling</h4>
+        <p>Optionally accounts for the <span class="hilite">bunching effect</span> — that folded preflop players removed cards non-uniformly, biasing the postflop deck. Most commercial solvers either ignore this or use heuristics; this one counts combinations correctly. Slow when enabled.</p>
+      </div>
+
+      <div class="trick">
+        <div class="tag">Engine</div>
+        <h4>No card abstraction</h4>
+        <p>Every hand combo is tracked individually. The library refuses to bucket hands — it just makes the underlying combo-level computation fast enough that you don't need to. This is the cleanest possible solver semantics: <span class="hilite">no information lost to abstraction</span>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 6: VALUE-NET DATASETS ================= -->
+  <section class="panel">
+    <h2>Section 6 · Bonus use-case</h2>
+    <h3>It quietly emits perfect value-network training data</h3>
+    <p>Every solved node persists the per-hand counterfactual values used during the DCFR update. The public API <span class="kw">expected_values_detail(player)</span> exposes them, post-normalized to per-hand EVs in chips. This is exactly the target signal that <strong>DeepStack</strong> and <strong>ReBeL</strong> train neural value networks against.</p>
+    <div class="formula-row">
+      <span class="lbl">Input </span>: (board, OOP range, IP range, pot, stacks)<br>
+      <span class="lbl">Output</span>: oop_cfv [1326-vector], ip_cfv [1326-vector]
+    </div>
+    <p>So a dataset generator built on this library looks like: sample a public state → solve to low exploitability → walk to nodes of interest → call <span class="kw">expected_values_detail(0)</span> and <span class="kw">expected_values_detail(1)</span> → write tensors to disk. Repeat at scale, train a value net, you have a depth-limited re-solver. (See <a href="custom-bet-solver.html" style="color:var(--accent); text-decoration:none;">Building a Custom Bet-Size Solver</a> for the surrounding architecture.)</p>
+  </section>
+
+  <!-- ================= SECTION 7: WHY IT'S IMPRESSIVE ================= -->
+  <section class="panel">
+    <h2>Section 7 · So why is this impressive</h2>
+    <h3>One person, one repo, one strong claim — and the code earns it</h3>
+    <ul>
+      <li><strong>The performance claim is concrete.</strong> The README states the engine "surpasses paid solvers such as PioSOLVER and GTO+." That's not a vague benchmark — it's a public bet against the two best-known commercial products in the space, both of which have full-time engineering teams.</li>
+      <li><strong>No card abstraction.</strong> Most academic CFR work bucketed postflop hands into a few hundred clusters per street. This library refuses to bucket. Every combo, every node, every iteration. The performance work is what makes that refusal viable.</li>
+      <li><strong>The DCFR customization is non-trivial.</strong> γ=3 instead of 2, plus a power-of-4 strategy reset — these are tuning choices that only emerge from running the algorithm hundreds of times and watching what helps. They're not in any paper.</li>
+      <li><strong>It's production code, not a paper artifact.</strong> Backs <span class="mono">WASM Postflop</span> (in-browser) and <span class="mono">Desktop Postflop</span> — actual apps with users. The compression mode, the rake support, the donk-size options, the node-locking API — all of it exists because real users need it.</li>
+      <li><strong>It runs in the browser.</strong> The same Rust code compiles to WASM and runs in a tab. SIMD kernels include a WASM SIMD path. That's a real engineering decision, not a checkbox.</li>
+      <li><strong>The whole thing fits in <span class="mono" style="color:var(--gold);">~10k lines of Rust</span>.</strong> No build system pyrotechnics, no internal frameworks. Solver + tree builder + hand evaluator + range parser + I/O, all in <span class="mono">src/</span>.</li>
+      <li><strong>AGPLv3.</strong> The strongest copyleft license. The author chose to make even network-served forks open. Then in October 2023 they pivoted to building a commercial product and stopped accepting contributions — which is itself a story: open-source was the marketing for the commercial pivot, and the public got a top-tier engine in the process.</li>
+    </ul>
+  </section>
+
+  <!-- ================= SECTION 8: REFERENCES ================= -->
+  <section class="panel">
+    <h2>Section 8 · References</h2>
+    <h3>Where to read more</h3>
+    <div class="reading-list">
+      <div class="read-item">
+        <span class="order">01</span>
+        <div>
+          <p class="title"><a href="https://github.com/b-inary/postflop-solver" target="_blank" rel="noopener">b-inary / postflop-solver</a></p>
+          <p class="blurb">The repository itself. README documents the algorithm choices; <span class="mono">src/solver.rs</span> is the entry point for the DCFR loop.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">02</span>
+        <div>
+          <p class="title"><a href="https://arxiv.org/abs/1809.04040" target="_blank" rel="noopener">Brown &amp; Sandholm 2019 — Solving Imperfect-Information Games via Discounted Regret Minimization</a></p>
+          <p class="blurb">The DCFR paper. Provides the α/β/γ scheme this solver builds on. Recommends γ=2; this codebase uses γ=3.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">03</span>
+        <div>
+          <p class="title"><a href="https://github.com/b-inary/wasm-postflop" target="_blank" rel="noopener">WASM Postflop</a></p>
+          <p class="blurb">The in-browser front-end. Compiles this library to WebAssembly + WASM SIMD. Live at <span class="mono">wasm-postflop.pages.dev</span>.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">04</span>
+        <div>
+          <p class="title"><a href="https://github.com/b-inary/desktop-postflop" target="_blank" rel="noopener">Desktop Postflop</a></p>
+          <p class="blurb">Native (Tauri) front-end on top of the same engine. Demonstrates the same code path used in apps with end users.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">05</span>
+        <div>
+          <p class="title"><a href="https://github.com/b-inary/postflop-solver/issues/46" target="_blank" rel="noopener">Repo issue #46 — Suspension announcement (Oct 2023)</a></p>
+          <p class="blurb">The author's own statement about pausing open-source development to build a commercial product. Useful context for why this repo is frozen as of late 2023.</p>
+        </div>
+      </div>
+      <div class="read-item">
+        <span class="order">06</span>
+        <div>
+          <p class="title"><a href="dcfr.html">DCFR (this site)</a> · <a href="cfr-plus.html">CFR+</a> · <a href="cfr-simulation.html">Vanilla CFR</a></p>
+          <p class="blurb">Toy-scale walkthroughs of the algorithm family this solver lives in. Start here if "discounted regret matching" doesn't yet read as English.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+</body>
+</html>
