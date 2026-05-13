@@ -4,6 +4,8 @@
   "rewrites": [
     { "source": "/badugi",                "destination": "https://badugi-tutorial.vercel.app/badugi" },
     { "source": "/badugi/:path*",         "destination": "https://badugi-tutorial.vercel.app/badugi/:path*" },
+    { "source": "/thai-music-ime",        "destination": "https://thai-music-ime.vercel.app/" },
+    { "source": "/thai-music-ime/:path*", "destination": "https://thai-music-ime.vercel.app/:path*" },
     { "source": "/cfr-simulation",        "destination": "/cfr-simulation.html" },
     { "source": "/cfr-simulation/:path*", "destination": "/:path*" }
   ]
