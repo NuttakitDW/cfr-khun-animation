@@ -690,37 +690,33 @@ function genRazz(gid, name){
 function genDraw27(gid, name, triple){
   for(let tryN=0; tryN<80; tryN++){
     const B=Builder();
-    // hero keeps 4 cards to a smooth 2-7 low, draws one
-    // pick 4 distinct ranks from a low run that avoids being a made straight
-    const ceil = RNG.pick([7,8]);
-    // build four distinct ranks <= ceil-ish that aren't 4-to-a-straight
-    let four=null;
-    for(let a=0;a<40 && !four;a++){
-      const cand = shuffle([2,3,4,5,6,7,8].filter(r=>r<=ceil)).slice(0,4).sort((x,y)=>x-y);
-      if(cand.length<4) continue;
-      four = cand;
+    // You keep four cards and draw one. The HIGH of your four is locked, so the best
+    // hand you can make is a low of exactly that high — you're filling a made T-low.
+    const T = RNG.pick([7,8]);                       // your locked high card
+    const lowerPool = [2,3,4,5,6,7].filter(r=>r<T);  // no ace — the ace plays HIGH in 2-7
+    let lowers=null;
+    for(let a=0;a<40 && !lowers;a++){
+      const cand = shuffle(lowerPool).slice(0,3).sort((x,y)=>x-y);
+      if(cand.length===3) lowers=cand;
     }
-    if(!four) continue;
+    if(!lowers) continue;
+    const four=[...lowers, T];                       // T is the highest card
     const sui=shuffle(SUITS);
-    const hero = four.map((r,i)=>B.add(C(r, i<3?sui[0]:sui[1]))); // avoid accidental flush by mixing later cards
-    // ensure not 4 of same suit (no flush concern for draw of 1 anyway)
-    const heroRanks=new Set(four);
-    // In 2-7 a 7-low (7-5-4-3-2) is the nuts — nothing beats it, so "or better" only
-    // makes sense for an 8-low target.
-    const lowLabel = ceil===7 ? 'a 7-low (the best hand in 2-7)' : 'an 8-low or better';
-    const target = { label: lowLabel, pred:c=>{
+    const hero = four.map((r,i)=>B.add(C(r, sui[i%3]))); // mix suits — no 4-flush
+    const Tstr = RANK_STR[T];
+    const target = { label:`a made ${Tstr}-low`, pred:c=>{
       const five=[...hero,c];
-      const r=rank5(five,false,true); // 2-7: ace high, straights & flushes count against
-      return r[0]===0 && Math.max(...five.map(x=>x.r))<=ceil;
+      const r=rank5(five,false,true); // 2-7: ace HIGH, straights & flushes count against you
+      return r[0]===0 && Math.max(...five.map(x=>x.r))<=T;
     }};
     const outs=countOuts(hero, target.pred);
     if(outs.length<1) continue;
     return { gid, name, fam:'low', badge:'low', street: triple?'Drawing one (after a draw)':'Drawing one',
-      hero, board:[], dead:[], heroLabel:'Your hand (drawing one — toss nothing shown)', boardLabel:'',
+      hero, board:[], dead:[], heroLabel:`Your hand — drawing one (your ${Tstr} is the high)`, boardLabel:'',
       drawName: (triple?'2-7 Triple Draw':'2-7 Single Draw')+' — one-card draw',
       target, outs,
-      hint:`Any card pairing you is dead. A card that makes a straight or flush also counts AGAINST you. Count clean cards ≤ ${ceil}.`,
-      context:'Deuce-to-Seven: best hand is 7-5-4-3-2. Aces are HIGH; straights & flushes are bad.' };
+      hint:`Your ${Tstr} is locked as your high card, so you're filling a ${Tstr}-low. A card that pairs you, or makes a straight or flush, is a brick — and an ace plays HIGH, so it's a brick too. Count the clean cards below your ${Tstr}.`,
+      context:'Deuce-to-Seven: best hand is 7-5-4-3-2. Aces are HIGH; straights & flushes count against you.' };
   }
   return null;
 }
