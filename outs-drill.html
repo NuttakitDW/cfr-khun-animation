@@ -202,6 +202,44 @@ footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: va
 footer a { color: var(--muted); text-decoration: none; }
 footer a:hover { color: var(--accent); }
 
+/* ---- tab bar ---- */
+.tabs { display: flex; gap: 6px; width: 100%; margin-top: 14px; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 8px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+/* ---- rules tab ---- */
+.rules-intro { font-size: 14px; color: var(--text); line-height: 1.65; }
+.rules-intro b { color: var(--gold); }
+.rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; margin-top: 4px; }
+.rule-card h3 .sys { font-family: "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); font-weight: 600; }
+.rule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rule-table th, .rule-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+.rule-table th { color: var(--muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
+.rule-table td.mono { font-family: "SF Mono", Menlo, monospace; }
+.rule-table tr:last-child td { border-bottom: none; }
+.yes { color: var(--green); font-weight: 700; }
+.no2 { color: var(--red); font-weight: 700; }
+.best-low { font-family: "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.gtag { font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 6px; background: var(--panel-3); border: 1px solid var(--border); color: var(--text); }
+.gtag.a5 { background: rgba(63,223,142,0.12); border-color: rgba(63,223,142,0.4); color: var(--green); }
+.gtag.d7 { background: rgba(255,94,122,0.12); border-color: rgba(255,94,122,0.4); color: #ff8aa0; }
+.gtag.bad { background: rgba(191,140,255,0.12); border-color: rgba(191,140,255,0.4); color: var(--purple); }
+.note-card { margin-top: 16px; }
+.note-card ul { margin: 8px 0 0; padding-left: 18px; }
+.note-card li { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 6px; }
+.note-card li b { color: var(--text); }
+.note-card li .a5 { color: var(--green); font-weight: 700; }
+.note-card li .d7 { color: #ff8aa0; font-weight: 700; }
+@media (max-width: 900px){ .rules-grid { grid-template-columns: 1fr; } }
+
 @media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -214,9 +252,14 @@ footer a:hover { color: var(--accent); }
     <span class="sub">Mixed-game outs trainer — Hold'em · Omaha · Stud · Razz · 2-7 Draw</span>
     <a class="home" href="/">← home</a>
   </div>
+  <nav class="tabs">
+    <button id="tabDrill" class="active">Drill</button>
+    <button id="tabRules">Lowball Rules</button>
+  </nav>
 </header>
 
 <main>
+ <div id="drillView">
   <div class="controls">
     <div class="seg" id="gameSeg"></div>
     <div class="stats-row">
@@ -290,6 +333,72 @@ footer a:hover { color: var(--accent); }
       </p>
     </section>
   </div>
+ </div><!-- /drillView -->
+
+ <div id="rulesView" class="hidden">
+  <section class="panel" style="margin-bottom:16px">
+    <h2>Reference</h2>
+    <h3>Reading the low: Ace-to-Five vs. Deuce-to-Seven</h3>
+    <p class="rules-intro">
+      Every lowball and hi-lo split game scores the low hand with one of two systems. The fast rule:
+      <b>almost everything uses Ace-to-Five — the only exception is the Deuce-to-Seven (2-7) family.</b>
+      The two systems disagree on exactly two things: whether the ace is low, and whether straights/flushes
+      hurt your low.
+    </p>
+  </section>
+
+  <div class="rules-grid">
+    <section class="panel rule-card">
+      <h2>System 1 · the common one</h2>
+      <h3>Ace-to-Five <span class="sys">(“California” / A-5)</span></h3>
+      <table class="rule-table">
+        <tr><th>Rule</th><th>How it works</th></tr>
+        <tr><td>Ace</td><td class="mono">Plays <span class="yes">LOW</span> (counts as 1)</td></tr>
+        <tr><td>Straights</td><td>Ignored — <span class="yes">don’t count</span> against the low</td></tr>
+        <tr><td>Flushes</td><td>Ignored — <span class="yes">don’t count</span> against the low</td></tr>
+        <tr><td>Pairs</td><td><span class="no2">Hurt</span> — you want five distinct ranks</td></tr>
+        <tr><td>Best low</td><td><span class="best-low">A-2-3-4-5</span> — “the wheel”, a straight, still the nut low</td></tr>
+      </table>
+      <div class="badge-row">
+        <span class="gtag a5">Razz</span>
+        <span class="gtag a5">Seven Card Stud Hi-Lo (8-or-better)</span>
+        <span class="gtag a5">Omaha Hi-Lo (8-or-better)</span>
+        <span class="gtag a5">A-5 Triple Draw</span>
+      </div>
+    </section>
+
+    <section class="panel rule-card">
+      <h2>System 2 · the exception</h2>
+      <h3>Deuce-to-Seven <span class="sys">(“Kansas City” / 2-7)</span></h3>
+      <table class="rule-table">
+        <tr><th>Rule</th><th>How it works</th></tr>
+        <tr><td>Ace</td><td class="mono">Plays <span class="no2">HIGH</span> only — a bad low card</td></tr>
+        <tr><td>Straights</td><td><span class="no2">Count</span> against you — they make a high hand</td></tr>
+        <tr><td>Flushes</td><td><span class="no2">Count</span> against you — they make a high hand</td></tr>
+        <tr><td>Pairs</td><td><span class="no2">Hurt</span> — you want five distinct ranks</td></tr>
+        <tr><td>Best low</td><td><span class="best-low">7-5-4-3-2</span> — not a straight, not one suit</td></tr>
+      </table>
+      <div class="badge-row">
+        <span class="gtag d7">2-7 Triple Draw</span>
+        <span class="gtag d7">2-7 Single Draw</span>
+        <span class="gtag d7">No-Limit 2-7 Single Draw</span>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel note-card">
+    <h2>Cheat sheet</h2>
+    <h3>What actually changes between them</h3>
+    <ul>
+      <li><b>The ace.</b> <span class="a5">A-5:</span> ace is your <b>best</b> low card. <span class="d7">2-7:</span> ace is your <b>worst</b> — it only counts high.</li>
+      <li><b>Straights &amp; flushes.</b> <span class="a5">A-5:</span> they’re invisible to the low, so 4-5-6-7-8 and A-2-3-4-5 are perfectly good lows. <span class="d7">2-7:</span> they’re high hands, so you must dodge them.</li>
+      <li><b>Pairs hurt in both.</b> A low is five cards of distinct ranks; pairing up kills it either way.</li>
+      <li><b>“8-or-better” qualifier.</b> In split games (Stud/Omaha Hi-Lo) the low only exists if you can make five distinct ranks all <b>8 or lower</b>. Otherwise no one wins the low half. These are all A-5 games.</li>
+      <li><b>Your understanding, confirmed:</b> for every lowball variant <i>except</i> the 2-7 family, straights and flushes do <span class="a5">not</span> count against the low — and the ace plays low.</li>
+      <li><b>Badugi is separate.</b> It uses its own ranking — four cards of distinct rank <i>and</i> distinct suit, ace low — so it isn’t A-5 or 2-7. <span class="gtag bad" style="margin-left:6px">Badugi</span></li>
+    </ul>
+  </section>
+ </div><!-- /rulesView -->
 </main>
 
 <footer>
@@ -936,6 +1045,17 @@ const newBtn=document.createElement('button');
 newBtn.className='btn primary'; newBtn.textContent='New hand'; newBtn.style.order='-1';
 newBtn.onclick=newHand;
 document.querySelector('.controls').insertBefore(newBtn, gameSeg);
+
+/* tab switching */
+function showTab(which){
+  const drill = which==='drill';
+  el('drillView').classList.toggle('hidden', !drill);
+  el('rulesView').classList.toggle('hidden', drill);
+  el('tabDrill').classList.toggle('active', drill);
+  el('tabRules').classList.toggle('active', !drill);
+}
+el('tabDrill').onclick=()=>showTab('drill');
+el('tabRules').onclick=()=>showTab('rules');
 
 buildSeg();
 renderStats();
