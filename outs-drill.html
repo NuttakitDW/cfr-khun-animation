@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counting Outs Drill — Mixed Games</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+header .home { margin-left: auto; color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+
+main { padding: 22px 28px 8px; max-width: 1180px; margin: 0 auto; }
+
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; }
+
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.seg button {
+  font: inherit; font-size: 11.5px; font-weight: 600;
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 7px; padding: 5px 9px; cursor: pointer; white-space: nowrap;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+.seg button.active.mix { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
+
+.stats-row { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
+.stat { text-align: right; }
+.stat .lab { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.stat .val { font-family: "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; color: var(--text); }
+.stat .val.green { color: var(--green); }
+.stat .val.gold { color: var(--gold); }
+
+.grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+section.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+section.panel h2 { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: var(--text); }
+
+.spot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.game-badge {
+  font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
+  background: rgba(255,140,66,0.15); color: var(--orange);
+}
+.game-badge.holdem { background: rgba(91,158,255,0.15); color: var(--accent); }
+.game-badge.omaha  { background: rgba(191,140,255,0.15); color: var(--purple); }
+.game-badge.stud   { background: rgba(63,200,212,0.15); color: var(--cyan); }
+.game-badge.low    { background: rgba(63,223,142,0.15); color: var(--green); }
+.street-tag { font-size: 11px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+
+.card-block { margin: 14px 0; }
+.card-block .clab { font-size: 9.5px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin-bottom: 7px; }
+.card-row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; min-height: 10px; }
+
+.pcard {
+  width: 46px; height: 64px; border-radius: 7px;
+  background: linear-gradient(180deg, #f4f6fb, #dfe5ef);
+  border: 1px solid #b9c2d4; color: #14233f;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: "SF Mono", Menlo, monospace; font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  position: relative; flex-shrink: 0;
+}
+.pcard .r { font-size: 19px; line-height: 1; }
+.pcard .s { font-size: 17px; line-height: 1; margin-top: 2px; }
+.pcard.red { color: #d8324f; }
+.pcard.dead { filter: grayscale(0.7) brightness(0.62); opacity: .8; }
+.pcard.dead::after {
+  content:""; position:absolute; inset:0; border-radius:7px;
+  background: repeating-linear-gradient(45deg, rgba(0,0,0,0.08) 0 4px, transparent 4px 8px);
+}
+.pcard.placeholder {
+  background: transparent; border: 1.5px dashed var(--dim); color: var(--dim);
+  box-shadow: none; font-size: 22px;
+}
+.pcard.placeholder .r { font-size: 22px; }
+
+.question {
+  margin-top: 16px; padding: 14px 16px; border-radius: 10px;
+  background: var(--panel-2); border: 1px solid var(--border);
+}
+.question .q { font-size: 15.5px; color: var(--text); font-weight: 600; }
+.question .q b { color: var(--gold); }
+.question .ctx { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+.answer { margin-top: 16px; }
+.numpad { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.numpad button {
+  width: 40px; height: 40px; border-radius: 8px; font: inherit; font-weight: 700;
+  font-family: "SF Mono", Menlo, monospace; font-size: 15px; cursor: pointer;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+}
+.numpad button:hover { border-color: var(--accent); color: var(--accent); }
+.answer-row { display: flex; gap: 8px; align-items: center; }
+.answer-row input {
+  font: inherit; font-family: "SF Mono", Menlo, monospace; font-size: 18px; font-weight: 700;
+  width: 84px; padding: 8px 12px; border-radius: 8px; text-align: center;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+.answer-row input:focus { outline: none; border-color: var(--accent); }
+
+.feedback { margin-top: 16px; min-height: 10px; }
+.verdict { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.verdict.ok { color: var(--green); }
+.verdict.no { color: var(--red); }
+.verdict .pill { font-family: "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
+.explain { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+.explain b { color: var(--text); }
+.outs-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.chip {
+  font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+  padding: 3px 7px; border-radius: 5px; background: rgba(255,213,74,0.13);
+  border: 1px solid rgba(255,213,74,0.4); color: var(--gold);
+}
+.chip.red { color: #ff8aa0; background: rgba(255,94,122,0.12); border-color: rgba(255,94,122,0.4); }
+
+.hidden { display: none !important; }
+
+/* right column */
+.kv { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.kv .k { color: var(--muted); }
+.kv .v { font-family: "SF Mono", Menlo, monospace; font-weight: 700; }
+.gamestat { margin-bottom: 12px; }
+.gamestat .gname { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.gamestat .gname b { color: var(--text); font-weight: 600; }
+.track { height: 7px; border-radius: 4px; background: rgba(255,255,255,0.05); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .5s cubic-bezier(.2,.7,.2,1); }
+.muted-note { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 4px; }
+
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.toggle-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+.hint-box { margin-top: 10px; font-size: 12.5px; color: var(--cyan); background: rgba(63,200,212,0.07); border: 1px solid rgba(63,200,212,0.25); border-radius: 8px; padding: 9px 12px; }
+
+footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Counting Outs Drill</h1>
+    <span class="sub">Mixed-game outs trainer — Hold'em · Omaha · Stud · Razz · 2-7 Draw</span>
+    <a class="home" href="/">← home</a>
+  </div>
+</header>
+
+<main>
+  <div class="controls">
+    <div class="seg" id="gameSeg"></div>
+    <div class="stats-row">
+      <div class="stat"><div class="lab">Streak</div><div class="val gold" id="stStreak">0</div></div>
+      <div class="stat"><div class="lab">Best</div><div class="val" id="stBest">0</div></div>
+      <div class="stat"><div class="lab">Accuracy</div><div class="val green" id="stAcc">—</div></div>
+      <div class="stat"><div class="lab">Hands</div><div class="val" id="stHands">0</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="spot-head">
+        <span class="game-badge" id="gameBadge">—</span>
+        <span class="street-tag" id="streetTag"></span>
+      </div>
+      <h3 id="drawName">Press “New hand”</h3>
+
+      <div class="card-block" id="heroBlock">
+        <div class="clab" id="heroLabel">Your hand</div>
+        <div class="card-row" id="heroRow"></div>
+      </div>
+
+      <div class="card-block" id="boardBlock">
+        <div class="clab" id="boardLabel">Board</div>
+        <div class="card-row" id="boardRow"></div>
+      </div>
+
+      <div class="card-block hidden" id="deadBlock">
+        <div class="clab">Exposed / dead cards — already seen, can never be outs</div>
+        <div class="card-row" id="deadRow"></div>
+      </div>
+
+      <div class="question">
+        <div class="q" id="questionText">Choose a game above, then deal a hand.</div>
+        <div class="ctx" id="contextText"></div>
+      </div>
+
+      <div class="hint-box hidden" id="hintBox"></div>
+
+      <div class="answer">
+        <div class="numpad" id="numpad"></div>
+        <div class="answer-row">
+          <input type="number" id="answerInput" min="0" max="40" placeholder="#" inputmode="numeric">
+          <button class="btn primary" id="submitBtn">Submit</button>
+          <button class="btn ghost" id="hintBtn">Hint</button>
+          <button class="btn ghost" id="revealBtn">Reveal</button>
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" id="autoNext"><label for="autoNext">Auto-deal next hand after a correct answer</label>
+        </div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Session</h2>
+      <h3>Per-game accuracy</h3>
+      <div id="gameStats"></div>
+      <div style="margin-top:18px">
+        <div class="kv"><span class="k">Average response</span><span class="v" id="avgTime">—</span></div>
+        <div class="kv"><span class="k">Total correct</span><span class="v" id="totCorrect">0</span></div>
+        <div class="kv"><span class="k">Total seen</span><span class="v" id="totSeen">0</span></div>
+      </div>
+      <button class="btn ghost" id="resetStats" style="margin-top:16px;width:100%">Reset session stats</button>
+      <p class="muted-note" style="margin-top:16px">
+        Outs are counted exactly against the deck for each spot. In <b>Stud</b> &amp; <b>Razz</b>, exposed cards
+        are removed first — count your <b>live</b> outs. In <b>Omaha</b>, you must use exactly two hole cards.
+        In <b>2-7</b>, straights and flushes count against you (a pair always does).
+      </p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+/* ============================================================
+   CARD MODEL + EVALUATORS
+   ============================================================ */
+const SUITS = ['s','h','d','c'];
+const SUIT_GLYPH = {s:'♠',h:'♥',d:'♦',c:'♣'};
+const SUIT_IDX = {s:0,h:1,d:2,c:3};
+const RANKS = [2,3,4,5,6,7,8,9,10,11,12,13,14];
+const RANK_STR = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'T',11:'J',12:'Q',13:'K',14:'A'};
+
+const C = (r,s)=>({r,s});
+const keyOf = c => c.r*4 + SUIT_IDX[c.s];
+const isRed = c => c.s==='h' || c.s==='d';
+function fullDeck(){ const d=[]; for(const r of RANKS) for(const s of SUITS) d.push(C(r,s)); return d; }
+
+function combos(arr,k){
+  const res=[], n=arr.length;
+  if(k>n) return res;
+  const idx=Array.from({length:k},(_,i)=>i);
+  while(true){
+    res.push(idx.map(i=>arr[i]));
+    let i=k-1;
+    while(i>=0 && idx[i]===i+n-k) i--;
+    if(i<0) break;
+    idx[i]++;
+    for(let j=i+1;j<k;j++) idx[j]=idx[j-1]+1;
+  }
+  return res;
+}
+
+// rank a 5-card hand -> comparable array [cat, ...kickers]
+function rank5(cards, aceLow, useSF){
+  const ranks = cards.map(c => (aceLow && c.r===14) ? 1 : c.r);
+  const freq = {};
+  for(const r of ranks) freq[r]=(freq[r]||0)+1;
+  const groups = Object.keys(freq).map(Number).sort((a,b)=> (freq[b]-freq[a]) || (b-a));
+  const counts = groups.map(r=>freq[r]);
+  const isFlush = useSF && new Set(cards.map(c=>c.s)).size===1;
+  const uniq=[...new Set(ranks)].sort((a,b)=>a-b);
+  let isStraight=false, sHigh=0;
+  if(useSF && uniq.length===5){
+    if(uniq[4]-uniq[0]===4){ isStraight=true; sHigh=uniq[4]; }
+    else if(!aceLow && uniq.join(',')==='2,3,4,5,14'){ isStraight=true; sHigh=5; }
+  }
+  let cat;
+  if(isStraight && isFlush) cat=8;
+  else if(counts[0]===4) cat=7;
+  else if(counts[0]===3 && counts[1]===2) cat=6;
+  else if(isFlush) cat=5;
+  else if(isStraight) cat=4;
+  else if(counts[0]===3) cat=3;
+  else if(counts[0]===2 && counts[1]===2) cat=2;
+  else if(counts[0]===2) cat=1;
+  else cat=0;
+  if(cat===4 || cat===8) return [cat, sHigh];
+  return [cat, ...groups];
+}
+function cmp(a,b){
+  const n=Math.max(a.length,b.length);
+  for(let i=0;i<n;i++){ const x=a[i]||0,y=b[i]||0; if(x!==y) return x-y; }
+  return 0;
+}
+function bestHigh(cards, aceLow, useSF){
+  let best=null;
+  for(const c of combos(cards,5)){ const r=rank5(c,aceLow,useSF); if(!best||cmp(r,best)>0) best=r; }
+  return best;
+}
+function bestOmaha(hole, board, aceLow, useSF, low){
+  let best=null;
+  for(const h of combos(hole,2)) for(const b of combos(board,3)){
+    const r=rank5([...h,...b],aceLow,useSF);
+    if(!best || (low ? cmp(r,best)<0 : cmp(r,best)>0)) best=r;
+  }
+  return best;
+}
+
+/* ============================================================
+   OUT COUNTER
+   ============================================================ */
+function countOuts(seen, predicate){
+  const used = new Set(seen.map(keyOf));
+  const outs=[];
+  for(const c of fullDeck()){
+    if(used.has(keyOf(c))) continue;
+    if(predicate(c)) outs.push(c);
+  }
+  return outs;
+}
+
+/* ============================================================
+   SCENARIO GENERATORS
+   ============================================================ */
+const RNG = {
+  int:(n)=>Math.floor(Math.random()*n),
+  pick:(a)=>a[Math.floor(Math.random()*a.length)],
+};
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=RNG.int(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+// builder that tracks used cards
+function Builder(){
+  const used = new Set();
+  function take(c){ used.add(keyOf(c)); return c; }
+  return {
+    used,
+    has:(c)=>used.has(keyOf(c)),
+    // a free card of rank r (optionally avoiding suits in avoid[])
+    rank(r, avoid=[]){
+      const ss = shuffle(SUITS).filter(s=>!avoid.includes(s));
+      for(const s of ss){ const c=C(r,s); if(!used.has(keyOf(c))) return take(c); }
+      return null;
+    },
+    // a free card of suit s with rank from pool
+    suit(s, pool){
+      for(const r of shuffle(pool)){ const c=C(r,s); if(!used.has(keyOf(c))) return take(c); }
+      return null;
+    },
+    // a free random card matching filter(card)
+    rand(filter){
+      const d = shuffle(fullDeck());
+      for(const c of d){ if(!used.has(keyOf(c)) && filter(c)) return take(c); }
+      return null;
+    },
+    add(c){ return take(c); }
+  };
+}
+
+function consecutiveLow(minLow, maxLow, len){ // pick a starting low rank for a run of length `len`
+  const lo = minLow + RNG.int(maxLow-minLow+1);
+  return Array.from({length:len},(_,i)=>lo+i);
+}
+
+// ---- HOLD'EM (flop, one card to come) ----
+function genHoldem(gid, name){
+  const archetypes = ['flush','oesd','gutshot','set','twopair','overcards','combo15','combo12','pairToTrips'];
+  for(let tryN=0; tryN<60; tryN++){
+    const arc = RNG.pick(archetypes);
+    const B = Builder();
+    let hero=[], board=[], target, drawName, why, hint;
+    try{
+      if(arc==='flush'){
+        const suit = RNG.pick(SUITS);
+        const hr = shuffle([14,13,12,11,10,9]).slice(0,2);
+        hero=[B.add(C(hr[0],suit)), B.add(C(hr[1],suit))];
+        const bp = shuffle(RANKS.filter(r=>!hr.includes(r)));
+        board=[B.add(C(bp[0],suit)), B.add(C(bp[1],suit))];
+        board.push(B.rand(c=>c.s!==suit && c.r!==board[0].r && c.r!==board[1].r && !hero.some(h=>h.r===c.r)));
+        target = { label:'a flush', pred:c=>bestHigh([...hero,...board,c],false,true)[0]>=5 };
+        drawName='Flush draw'; hint='Four to a flush — count the suit cards left in the deck.';
+      } else if(arc==='oesd'){
+        const run = consecutiveLow(5,10,4); // 4 in a row, open both ends
+        const cards = shuffle(run).map((r,i)=>C(r, SUITS[i%2===0?0:1])); // alternate 2 suits, no flush draw
+        hero=[B.add(cards[0]), B.add(cards[1])];
+        board=[B.add(cards[2]), B.add(cards[3])];
+        const off = B.rand(c=>c.r<run[0]-1 && Math.abs(c.r-run[0])>1 && !run.includes(c.r) && c.r!==run[0]-1 && c.r!==run[3]+1);
+        board.push(off);
+        target = { label:'a straight', pred:c=>bestHigh([...hero,...board,c],false,true)[0]===4 };
+        drawName='Open-ended straight draw'; hint='Open both ends — two ranks complete it.';
+      } else if(arc==='gutshot'){
+        // 4 ranks with one internal gap, e.g. 7,8,T,J missing 9
+        const lo = 6+RNG.int(4);
+        const four = [lo,lo+1,lo+3,lo+4]; const gap=lo+2;
+        const sui = shuffle(SUITS);
+        const cards = four.map((r,i)=>C(r, sui[i%2]));
+        hero=[B.add(cards[0]), B.add(cards[3])];
+        board=[B.add(cards[1]), B.add(cards[2])];
+        board.push(B.rand(c=>!four.includes(c.r) && c.r!==gap && c.r<lo-1));
+        target = { label:'a straight', pred:c=>bestHigh([...hero,...board,c],false,true)[0]===4 };
+        drawName='Gutshot (inside) straight draw'; hint='Only one rank fills the gap.';
+      } else if(arc==='set'){
+        const R = RNG.pick([5,6,7,8,9,10,11,12,13]);
+        hero=[B.rank(R), B.rank(R)];
+        const others = shuffle(RANKS.filter(r=>r!==R)).slice(0,2);
+        board=[B.rank(R), B.rand(c=>c.r===others[0]), B.rand(c=>c.r===others[1])];
+        // ensure no flush on board+hero (3+ same suit) — accept, set outs unaffected by suit
+        target = { label:'a full house or quads', pred:c=>bestHigh([...hero,...board,c],false,true)[0]>=6 };
+        drawName='Set (drawing to a full house)'; hint='Pair the board or hit your case card.';
+      } else if(arc==='twopair'){
+        const rs = shuffle([6,7,8,9,10,11,12,13]).slice(0,2);
+        const cR = RNG.pick(RANKS.filter(r=>!rs.includes(r)));
+        hero=[B.rank(rs[0]), B.rank(rs[1])];
+        board=[B.rank(rs[0]), B.rank(rs[1]), B.rank(cR)];
+        target = { label:'a full house', pred:c=>bestHigh([...hero,...board,c],false,true)[0]>=6 };
+        drawName='Two pair (drawing to a full house)'; hint='Either of your pairs needs to trip up.';
+      } else if(arc==='overcards'){
+        const hr = shuffle([14,13,12,11]).slice(0,2);
+        hero=[B.rank(hr[0]), B.rank(hr[1])];
+        const lows = shuffle([2,3,4,5,6,7,8,9].filter(r=>!hr.includes(r))).slice(0,3);
+        board=[B.rank(lows[0]), B.rank(lows[1]), B.rank(lows[2])];
+        const set = new Set(hr);
+        target = { label:'a pair of one of your two overcards', pred:c=>set.has(c.r) };
+        drawName='Two overcards'; hint='You can pair either of your two cards.';
+      } else if(arc==='combo15' || arc==='combo12'){
+        const suit = RNG.pick(SUITS);
+        // hero two suited connectors; both ends of the straight ALSO sit in the suit -> true 4-flush + draw
+        const lo = 7+RNG.int(2); // 7..8
+        const run = arc==='combo15' ? [lo,lo+1,lo+2,lo+3] : [lo,lo+1,lo+2,lo+4]; // oesd vs gutshot combo
+        hero=[B.add(C(run[1],suit)), B.add(C(run[2],suit))];
+        // board: run[0] and run[3] both suited -> hero(2)+board(2) = four to a flush
+        board=[B.add(C(run[0],suit)), B.add(C(run[3],suit))];
+        board.push(B.rand(c=>c.s!==suit && !run.includes(c.r) && c.r<=lo-3 && !hero.some(h=>h.r===c.r)));
+        target = { label:'a straight or flush', pred:c=>bestHigh([...hero,...board,c],false,true)[0]>=4 };
+        drawName = arc==='combo15' ? 'Combo draw — flush + open-ended straight' : 'Combo draw — flush + gutshot';
+        hint='Add the flush outs and the straight outs (don’t double-count the cards in your suit).';
+      } else { // pairToTrips
+        const R = RNG.pick([7,8,9,10,11,12,13,14]);
+        const k = RNG.pick(RANKS.filter(r=>r!==R));
+        hero=[B.rank(R), B.rank(k)];
+        const others = shuffle(RANKS.filter(r=>r!==R && r!==k)).slice(0,2);
+        board=[B.rank(R), B.rank(others[0]), B.rank(others[1])];
+        target = { label:'three of a kind (your case cards)', pred:c=>c.r===R };
+        drawName='One pair (drawing to trips)'; hint='Only the two remaining cards of your pair’s rank make trips.';
+      }
+    }catch(e){ continue; }
+    if(hero.includes(null)||board.includes(null)) continue;
+    const seen=[...hero,...board];
+    if(new Set(seen.map(keyOf)).size !== seen.length) continue;
+    // hero must not already satisfy target
+    if(arc!=='overcards'){ if(bestHigh([...hero,...board],false,true)[0] >= (arc==='set'||arc==='twopair'?6:arc==='pairToTrips'?3:arc==='flush'?5:4)) continue; }
+    const outs = countOuts(seen, target.pred);
+    if(outs.length < 1) continue;
+    return {
+      gid, name, fam:'holdem', badge:'holdem', street:'Flop — one card to come',
+      hero, board, dead:[], heroLabel:'Your hand', boardLabel:'Board (flop)',
+      drawName, target, outs, hint,
+      context:'Limit & No-Limit Hold’em count outs the same way — only the betting differs.'
+    };
+  }
+  return null;
+}
+
+// ---- OMAHA (PLO high / O8) ----
+function genOmaha(gid, name, hilo){
+  for(let tryN=0; tryN<80; tryN++){
+    const B = Builder();
+    let hero=[], board=[], target, drawName, hint, context;
+    try{
+      if(hilo){
+        // O8: low draw (two low cards in hand, two low on board) OR nut-flush draw
+        if(Math.random()<0.7){
+          const lowR = shuffle([2,3,4,5,6,7,8].filter(r=>r!==1)); // ace handled separately
+          const useAce = Math.random()<0.6;
+          const hLow = useAce ? [14, lowR[0]] : [lowR[0], lowR[1]];
+          hero=[B.rank(hLow[0]), B.rank(hLow[1]), B.rand(c=>c.r>=10), B.rand(c=>c.r>=10)];
+          const bLowPool = shuffle([2,3,4,5,6,7,8].filter(r=>!hLow.includes(r)));
+          board=[B.rank(bLowPool[0]), B.rank(bLowPool[1]), B.rand(c=>c.r>=10 && !hero.some(h=>h.r===c.r))];
+          target = { label:'a qualifying low (8-or-better)', pred:c=>{
+            const r=bestOmaha(hero,[...board,c],true,false,true); return r[0]===0 && r[1]<=8;
+          }};
+          drawName='Low draw (Omaha Hi-Lo)';
+          hint='You need TWO unpaired cards 8-or-lower from your hand + board. Count cards that complete five distinct low ranks.';
+          context='Omaha-8: use exactly two hole cards for the low. Aces play low.';
+          // require not already qualifying
+          const r0=bestOmaha(hero,board,true,false,true);
+          if(r0[0]===0 && r0[1]<=8) continue;
+        } else {
+          const suit=RNG.pick(SUITS);
+          hero=[B.add(C(14,suit)), B.add(C(RNG.pick([13,12,11,10,9]),suit)), B.rand(c=>c.s!==suit), B.rand(c=>c.s!==suit)];
+          const bp=shuffle(RANKS.filter(r=>!hero.map(h=>h.r).includes(r)));
+          board=[B.add(C(bp[0],suit)), B.add(C(bp[1],suit)), B.rand(c=>c.s!==suit)];
+          target={ label:'a flush', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]>=5 };
+          drawName='Nut flush draw (Omaha)';
+          hint='You hold exactly two of the suit; the board has two. Count remaining suit cards.';
+          context='Omaha: you must use exactly two hole cards — a one-card "backdoor" suit does nothing.';
+          if(bestOmaha(hero,board,false,true,false)[0]>=5) continue;
+        }
+      } else {
+        // PLO high: flush draw or big wrap
+        if(Math.random()<0.5){
+          const suit=RNG.pick(SUITS);
+          const hr=shuffle([14,13,12,11,10,9]).slice(0,2);
+          hero=[B.add(C(hr[0],suit)), B.add(C(hr[1],suit)), B.rand(c=>c.s!==suit), B.rand(c=>c.s!==suit)];
+          const bp=shuffle(RANKS.filter(r=>!hero.map(h=>h.r).includes(r)));
+          board=[B.add(C(bp[0],suit)), B.add(C(bp[1],suit)), B.rand(c=>c.s!==suit)];
+          target={ label:'a flush', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]>=5 };
+          drawName='Flush draw (Omaha)';
+          hint='Exactly two of your hole cards are suited — count the remaining cards of that suit.';
+          context='Pot-Limit Omaha: exactly two hole cards. Board pairs can also matter.';
+          if(bestOmaha(hero,board,false,true,false)[0]>=5) continue;
+        } else {
+          // wrap: four connected hole cards around two board connectors
+          const lo=6+RNG.int(4);
+          const hr=[lo,lo+1,lo+3,lo+4];
+          const sui=shuffle(SUITS);
+          hero=hr.map((r,i)=>B.add(C(r,sui[i%4])));
+          const bcon=[lo+2, lo+5];
+          board=[B.rand(c=>c.r===bcon[0]), B.rand(c=>c.r===bcon[1] && c.r<=14), B.rand(c=>c.r<lo-2 && !hr.includes(c.r))];
+          if(board.includes(null)) continue;
+          target={ label:'a straight', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]===4 };
+          drawName='Straight wrap (Omaha)';
+          hint='A four-card wrap hits a LOT of cards — count every rank that completes a straight.';
+          context='Omaha wraps can have 13–20 outs. Count them precisely.';
+          if(bestOmaha(hero,board,false,true,false)[0]>=4) continue;
+        }
+      }
+    }catch(e){ continue; }
+    if(hero.includes(null)||board.includes(null)) continue;
+    const seen=[...hero,...board];
+    if(new Set(seen.map(keyOf)).size!==seen.length) continue;
+    const outs=countOuts(seen, target.pred);
+    if(outs.length<1) continue;
+    return { gid, name, fam:'omaha', badge:'omaha', street:'Flop — one card to come',
+      hero, board, dead:[], heroLabel:'Your hand (use exactly two)', boardLabel:'Board (flop)',
+      drawName, target, outs, hint, context };
+  }
+  return null;
+}
+
+// ---- STUD high / Stud Hi-Lo (flush or straight draw, live-card discounting) ----
+function genStud(gid, name, hilo){
+  for(let tryN=0; tryN<80; tryN++){
+    const B=Builder();
+    let hero=[], dead=[], target, drawName, hint;
+    const mode = hilo ? RNG.pick(['flush','low']) : RNG.pick(['flush','straight']);
+    try{
+      if(mode==='flush'){
+        const suit=RNG.pick(SUITS);
+        const hr=shuffle(RANKS).slice(0,4);
+        hero=hr.map(r=>B.add(C(r,suit)));
+        target={ label:'a flush (a 5th '+SUIT_GLYPH[suit]+')', pred:c=>c.s===suit };
+        drawName='Four-flush in Stud';
+        hint='Nine of your suit exist; subtract any you can see exposed.';
+      } else if(mode==='straight'){
+        const run=consecutiveLow(5,10,4);
+        const sui=shuffle(SUITS);
+        hero=run.map((r,i)=>B.add(C(r,sui[i%4])));
+        const ends=[run[0]-1, run[3]+1].filter(r=>r>=2&&r<=14);
+        const endset=new Set(ends);
+        target={ label:'an open-ended straight', pred:c=>endset.has(c.r) };
+        drawName='Four to an open-ended straight (Stud)';
+        hint='Two ranks complete it (×4 suits) — minus any exposed.';
+      } else { // low (stud hi-lo)
+        const lows=shuffle([2,3,4,5,6,7,8].concat([14])).slice(0,4); // include ace low maybe
+        const distinct=[...new Set(lows)].slice(0,4);
+        hero=distinct.map(r=>B.rank(r));
+        target={ label:'a qualifying low (a 5th distinct card 8-or-lower)', pred:c=>{
+          const lr = c.r===14?1:c.r;
+          if(lr>8) return false;
+          const haveLow=new Set(hero.map(h=>h.r===14?1:h.r));
+          return !haveLow.has(lr);
+        }};
+        drawName='Four to a low (Stud Hi-Lo)';
+        hint='You need a 5th distinct card 8-or-lower (aces count low). Pairs don’t help the low.';
+      }
+    }catch(e){ continue; }
+    if(hero.includes(null)) continue;
+    // deal some exposed/dead cards (opponents' upcards + folds) that overlap the outs sometimes
+    const nDead = 4 + RNG.int(4);
+    for(let i=0;i<nDead;i++){ const c=B.rand(()=>true); if(c) dead.push(c); }
+    const seen=[...hero,...dead];
+    const outs=countOuts(seen, target.pred);
+    if(outs.length<1) continue;
+    return { gid, name, fam:'stud', badge:'stud', street:hilo?'5th street':'5th street',
+      hero, board:[], dead, heroLabel:'Your cards', boardLabel:'',
+      drawName, target, outs, hint,
+      context:'Count LIVE outs only — every exposed card of the rank/suit you need is gone.' };
+  }
+  return null;
+}
+
+// ---- RAZZ (low draw, live cards) ----
+function genRazz(gid, name){
+  for(let tryN=0; tryN<80; tryN++){
+    const B=Builder();
+    // hero: four distinct low cards (a smooth draw), e.g. four to a 7/8
+    const pool = shuffle([14,2,3,4,5,6,7,8]); // ace + low
+    const four = [...new Set(pool)].slice(0,4);
+    const hero = four.map(r=>B.rank(r));
+    if(hero.includes(null)) continue;
+    const heroLow = new Set(hero.map(h=>h.r===14?1:h.r));
+    const high = Math.max(...[...heroLow]);
+    const tgtCeil = Math.max(high, 8); // make a low at or below this
+    const target = { label:`a qualifying low (a 5th distinct card making your ${tgtCeil===8?'8':RANK_STR[tgtCeil]||'low'} or better)`,
+      pred:c=>{ const lr=c.r===14?1:c.r; if(lr>tgtCeil) return false; return !heroLow.has(lr); } };
+    // dead cards
+    const nDead=4+RNG.int(4); const dead=[];
+    for(let i=0;i<nDead;i++){ const c=B.rand(()=>true); if(c) dead.push(c); }
+    const seen=[...hero,...dead];
+    const outs=countOuts(seen, target.pred);
+    if(outs.length<1) continue;
+    return { gid, name, fam:'razz', badge:'low', street:'5th street',
+      hero, board:[], dead, heroLabel:'Your cards (lowest 5 wins)', boardLabel:'',
+      drawName:'Four-card low (Razz)', target, outs,
+      hint:'In Razz, straights & flushes don’t matter. You need a 5th unpaired card '+tgtCeil+'-or-lower. Subtract dead ones.',
+      context:'Razz = A-to-5 low; aces are low, pairing your hand hurts.' };
+  }
+  return null;
+}
+
+// ---- 2-7 DRAW (single & triple) ----
+function genDraw27(gid, name, triple){
+  for(let tryN=0; tryN<80; tryN++){
+    const B=Builder();
+    // hero keeps 4 cards to a smooth 2-7 low, draws one
+    // pick 4 distinct ranks from a low run that avoids being a made straight
+    const ceil = RNG.pick([7,8]);
+    // build four distinct ranks <= ceil-ish that aren't 4-to-a-straight
+    let four=null;
+    for(let a=0;a<40 && !four;a++){
+      const cand = shuffle([2,3,4,5,6,7,8].filter(r=>r<=ceil)).slice(0,4).sort((x,y)=>x-y);
+      if(cand.length<4) continue;
+      four = cand;
+    }
+    if(!four) continue;
+    const sui=shuffle(SUITS);
+    const hero = four.map((r,i)=>B.add(C(r, i<3?sui[0]:sui[1]))); // avoid accidental flush by mixing later cards
+    // ensure not 4 of same suit (no flush concern for draw of 1 anyway)
+    const heroRanks=new Set(four);
+    const target = { label:`a ${ceil}-low or better`, pred:c=>{
+      const five=[...hero,c];
+      const r=rank5(five,false,true); // 2-7: ace high, straights & flushes count against
+      return r[0]===0 && Math.max(...five.map(x=>x.r))<=ceil;
+    }};
+    const outs=countOuts(hero, target.pred);
+    if(outs.length<1) continue;
+    return { gid, name, fam:'low', badge:'low', street: triple?'Drawing one (after a draw)':'Drawing one',
+      hero, board:[], dead:[], heroLabel:'Your hand (drawing one — toss nothing shown)', boardLabel:'',
+      drawName: (triple?'2-7 Triple Draw':'2-7 Single Draw')+' — one-card draw',
+      target, outs,
+      hint:`Any card pairing you is dead. A card that makes a straight or flush also counts AGAINST you. Count clean cards ≤ ${ceil}.`,
+      context:'Deuce-to-Seven: best hand is 7-5-4-3-2. Aces are HIGH; straights & flushes are bad.' };
+  }
+  return null;
+}
+
+/* dispatch */
+function generate(gid){
+  const g = GAMES.find(x=>x.id===gid);
+  switch(g.fam){
+    case 'holdem': return genHoldem(gid, g.name);
+    case 'plo': return genOmaha(gid, g.name, false);
+    case 'o8': return genOmaha(gid, g.name, true);
+    case 'stud': return genStud(gid, g.name, false);
+    case 'studhl': return genStud(gid, g.name, true);
+    case 'razz': return genRazz(gid, g.name);
+    case 'draw27': return genDraw27(gid, g.name, g.triple);
+  }
+}
+
+/* ============================================================
+   GAME LIST + UI
+   ============================================================ */
+const GAMES = [
+  { id:'lhe',     name:"Limit Hold'em",                  fam:'holdem', short:'LHE' },
+  { id:'nlhe',    name:"No-Limit Hold'em",               fam:'holdem', short:'NLHE' },
+  { id:'plo',     name:'Pot-Limit Omaha',                fam:'plo',    short:'PLO' },
+  { id:'o8',      name:'Omaha Hi-Lo 8/b',                fam:'o8',     short:'O8' },
+  { id:'stud',    name:'Seven Card Stud',                fam:'stud',   short:'Stud' },
+  { id:'studhl',  name:'Stud Hi-Lo 8/b',                 fam:'studhl', short:'Stud8' },
+  { id:'razz',    name:'Razz',                           fam:'razz',   short:'Razz' },
+  { id:'27single',name:'NL 2-7 Single Draw',             fam:'draw27', short:'2-7', triple:false },
+  { id:'27triple',name:'Limit 2-7 Triple Draw',          fam:'draw27', short:'TripDr', triple:true },
+];
+
+let mode = 'mix';            // 'mix' or a specific gid
+let current = null;          // current spot
+let answered = false;
+const STORE_KEY = 'outsDrillStats_v1';
+
+const stats = loadStats();
+function loadStats(){
+  try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)); if(s&&s.perGame) return s; }catch(e){}
+  return { seen:0, correct:0, streak:0, best:0, times:[], perGame:{} };
+}
+function saveStats(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(stats)); }catch(e){} }
+
+/* build game segmented control */
+const gameSeg = document.getElementById('gameSeg');
+function buildSeg(){
+  gameSeg.innerHTML='';
+  const mix=document.createElement('button');
+  mix.textContent='All Mix (random)'; mix.dataset.id='mix'; mix.className='mix';
+  gameSeg.appendChild(mix);
+  for(const g of GAMES){
+    const b=document.createElement('button'); b.textContent=g.short; b.dataset.id=g.id; b.title=g.name;
+    gameSeg.appendChild(b);
+  }
+  gameSeg.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    mode=b.dataset.id; updateSegActive(); newHand();
+  });
+  updateSegActive();
+}
+function updateSegActive(){
+  [...gameSeg.children].forEach(b=>{
+    b.classList.toggle('active', b.dataset.id===mode);
+  });
+}
+
+/* render a card */
+function cardEl(c, dead){
+  const d=document.createElement('div');
+  d.className='pcard'+(isRed(c)?' red':'')+(dead?' dead':'');
+  d.innerHTML=`<span class="r">${RANK_STR[c.r]}</span><span class="s">${SUIT_GLYPH[c.s]}</span>`;
+  return d;
+}
+function placeholderEl(){
+  const d=document.createElement('div'); d.className='pcard placeholder';
+  d.innerHTML='<span class="r">?</span>'; return d;
+}
+
+const el = id => document.getElementById(id);
+
+function newHand(){
+  let spot=null;
+  for(let i=0;i<6 && !spot;i++){
+    const gid = (mode==='mix') ? RNG.pick(GAMES).id : mode;
+    spot = generate(gid);
+  }
+  if(!spot){ el('questionText').textContent='Could not generate a spot — try again.'; return; }
+  current=spot; answered=false;
+  el('gameBadge').textContent=spot.name;
+  el('gameBadge').className='game-badge '+spot.badge;
+  el('streetTag').textContent=spot.street;
+  el('drawName').textContent=spot.drawName;
+  el('heroLabel').textContent=spot.heroLabel;
+
+  const hr=el('heroRow'); hr.innerHTML='';
+  spot.hero.forEach(c=>hr.appendChild(cardEl(c,false)));
+  // show a placeholder for the incoming card to make "one card to come" tangible
+  if(spot.fam==='holdem'||spot.fam==='omaha'){ /* board placeholder added in board */ }
+
+  const bb=el('boardBlock'), br=el('boardRow');
+  if(spot.board && spot.board.length){
+    bb.classList.remove('hidden'); el('boardLabel').textContent=spot.boardLabel;
+    br.innerHTML=''; spot.board.forEach(c=>br.appendChild(cardEl(c,false)));
+    br.appendChild(placeholderEl()); // the card to come
+  } else { bb.classList.add('hidden'); }
+
+  const db=el('deadBlock'), dr=el('deadRow');
+  if(spot.dead && spot.dead.length){ db.classList.remove('hidden'); dr.innerHTML=''; spot.dead.forEach(c=>dr.appendChild(cardEl(c,true))); }
+  else db.classList.add('hidden');
+
+  el('questionText').innerHTML=`How many <b>outs</b> do you have to make <b>${spot.target.label}</b>?`;
+  el('contextText').textContent=spot.context||'';
+  el('hintBox').classList.add('hidden'); el('hintBox').textContent='';
+  el('feedback').innerHTML='';
+  el('answerInput').value=''; el('answerInput').focus();
+  startTime=performance.now();
+}
+
+let startTime=0;
+function submit(){
+  if(!current || answered) return;
+  const val=parseInt(el('answerInput').value,10);
+  if(isNaN(val)){ el('answerInput').focus(); return; }
+  answered=true;
+  const correctN=current.outs.length;
+  const ok = val===correctN;
+  const dt=(performance.now()-startTime)/1000;
+
+  // stats
+  stats.seen++; stats.times.push(dt); if(stats.times.length>50) stats.times.shift();
+  const pg = stats.perGame[current.gid] || (stats.perGame[current.gid]={seen:0,correct:0});
+  pg.seen++;
+  if(ok){ stats.correct++; pg.correct++; stats.streak++; stats.best=Math.max(stats.best,stats.streak); }
+  else { stats.streak=0; }
+  saveStats(); renderStats();
+
+  // feedback
+  const fb=el('feedback');
+  const outChips = current.outs.map(c=>`<span class="chip${isRed(c)?' red':''}">${RANK_STR[c.r]}${SUIT_GLYPH[c.s]}</span>`).join('');
+  fb.innerHTML = `
+    <div class="verdict ${ok?'ok':'no'}">
+      ${ok?'✓ Correct':'✗ Not quite'} <span class="pill">your answer: ${val}</span>
+      <span class="pill">actual outs: ${correctN}</span>
+    </div>
+    <div class="explain"><b>${current.drawName}</b> → ${correctN} out${correctN===1?'':'s'} to ${current.target.label}.
+    ${current.hint||''}</div>
+    <div class="outs-list">${outChips}</div>`;
+
+  // reveal the to-come placeholder? leave as ?, the chips show outs.
+  if(ok && el('autoNext').checked){ setTimeout(newHand, 1100); }
+}
+
+function reveal(){
+  if(!current) return;
+  answered=true;
+  const correctN=current.outs.length;
+  const outChips = current.outs.map(c=>`<span class="chip${isRed(c)?' red':''}">${RANK_STR[c.r]}${SUIT_GLYPH[c.s]}</span>`).join('');
+  el('feedback').innerHTML = `
+    <div class="verdict"><span class="pill">actual outs: ${correctN}</span></div>
+    <div class="explain"><b>${current.drawName}</b> → <b>${correctN}</b> out${correctN===1?'':'s'} to ${current.target.label}. ${current.hint||''}</div>
+    <div class="outs-list">${outChips}</div>`;
+}
+
+function showHint(){
+  if(!current) return;
+  el('hintBox').classList.remove('hidden');
+  el('hintBox').textContent = current.hint || 'Count the cards in the deck that complete your draw.';
+}
+
+function renderStats(){
+  el('stStreak').textContent=stats.streak;
+  el('stBest').textContent=stats.best;
+  el('stHands').textContent=stats.seen;
+  el('stAcc').textContent = stats.seen ? Math.round(100*stats.correct/stats.seen)+'%' : '—';
+  el('totCorrect').textContent=stats.correct;
+  el('totSeen').textContent=stats.seen;
+  el('avgTime').textContent = stats.times.length ? (stats.times.reduce((a,b)=>a+b,0)/stats.times.length).toFixed(1)+'s' : '—';
+
+  const gs=el('gameStats'); gs.innerHTML='';
+  for(const g of GAMES){
+    const pg=stats.perGame[g.id];
+    const pct = pg&&pg.seen ? Math.round(100*pg.correct/pg.seen) : 0;
+    const wrap=document.createElement('div'); wrap.className='gamestat';
+    wrap.innerHTML=`<div class="gname"><b>${g.name}</b><span>${pg?pg.correct+'/'+pg.seen:'—'}</span></div>
+      <div class="track"><span style="width:${pg&&pg.seen?pct:0}%"></span></div>`;
+    gs.appendChild(wrap);
+  }
+}
+
+/* numpad */
+const numpad=el('numpad');
+for(let i=0;i<=15;i++){
+  const b=document.createElement('button'); b.textContent=i;
+  b.onclick=()=>{ el('answerInput').value=i; submit(); };
+  numpad.appendChild(b);
+}
+
+/* events */
+el('submitBtn').onclick=submit;
+el('revealBtn').onclick=reveal;
+el('hintBtn').onclick=showHint;
+el('answerInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='n' && (answered)) newHand();
+});
+el('resetStats').onclick=()=>{
+  if(!confirm('Reset all session stats?')) return;
+  Object.assign(stats,{seen:0,correct:0,streak:0,best:0,times:[],perGame:{}});
+  saveStats(); renderStats();
+};
+
+/* "New hand" via submit feedback: add a dedicated button at top of controls */
+const newBtn=document.createElement('button');
+newBtn.className='btn primary'; newBtn.textContent='New hand'; newBtn.style.order='-1';
+newBtn.onclick=newHand;
+document.querySelector('.controls').insertBefore(newBtn, gameSeg);
+
+buildSeg();
+renderStats();
+newHand();
+</script>
+</body>
+</html>
