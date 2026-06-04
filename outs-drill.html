@@ -703,7 +703,10 @@ function genDraw27(gid, name, triple){
     const hero = four.map((r,i)=>B.add(C(r, i<3?sui[0]:sui[1]))); // avoid accidental flush by mixing later cards
     // ensure not 4 of same suit (no flush concern for draw of 1 anyway)
     const heroRanks=new Set(four);
-    const target = { label:`a ${ceil}-low or better`, pred:c=>{
+    // In 2-7 a 7-low (7-5-4-3-2) is the nuts — nothing beats it, so "or better" only
+    // makes sense for an 8-low target.
+    const lowLabel = ceil===7 ? 'a 7-low (the best hand in 2-7)' : 'an 8-low or better';
+    const target = { label: lowLabel, pred:c=>{
       const five=[...hero,c];
       const r=rank5(five,false,true); // 2-7: ace high, straights & flushes count against
       return r[0]===0 && Math.max(...five.map(x=>x.r))<=ceil;
