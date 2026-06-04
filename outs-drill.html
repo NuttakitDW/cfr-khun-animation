@@ -665,10 +665,12 @@ function genRazz(gid, name){
     const hero = four.map(r=>B.rank(r));
     if(hero.includes(null)) continue;
     const heroLow = new Set(hero.map(h=>h.r===14?1:h.r));
-    const high = Math.max(...[...heroLow]);
-    const tgtCeil = Math.max(high, 8); // make a low at or below this
-    const target = { label:`a qualifying low (a 5th distinct card making your ${tgtCeil===8?'8':RANK_STR[tgtCeil]||'low'} or better)`,
-      pred:c=>{ const lr=c.r===14?1:c.r; if(lr>tgtCeil) return false; return !heroLow.has(lr); } };
+    const high = Math.max(...[...heroLow]);   // your highest card = the "high" of your low
+    const highStr = high===1 ? 'A' : RANK_STR[high];
+    // Razz has NO qualifier — lowest hand wins. You keep your four cards, so your high
+    // is locked: any unpaired card below it fills your low. Count those (minus dead).
+    const target = { label:`a ${highStr}-low (fill your four-card low)`,
+      pred:c=>{ const lr=c.r===14?1:c.r; if(lr>high) return false; return !heroLow.has(lr); } };
     // dead cards
     const nDead=4+RNG.int(4); const dead=[];
     for(let i=0;i<nDead;i++){ const c=B.rand(()=>true); if(c) dead.push(c); }
@@ -676,10 +678,10 @@ function genRazz(gid, name){
     const outs=countOuts(seen, target.pred);
     if(outs.length<1) continue;
     return { gid, name, fam:'razz', badge:'low', street:'5th street',
-      hero, board:[], dead, heroLabel:'Your cards (lowest 5 wins)', boardLabel:'',
+      hero, board:[], dead, heroLabel:'Your cards (lowest hand wins)', boardLabel:'',
       drawName:'Four-card low (Razz)', target, outs,
-      hint:'In Razz, straights & flushes don’t matter. You need a 5th unpaired card '+tgtCeil+'-or-lower. Subtract dead ones.',
-      context:'Razz = A-to-5 low; aces are low, pairing your hand hurts.' };
+      hint:`In Razz, straights & flushes don’t matter and there is no qualifier — lowest hand wins. Your ${highStr} stays the high, so any unpaired card below it makes your ${highStr}-low. Pairing your hand is a brick; subtract dead cards.`,
+      context:'Razz = A-to-5 low. Aces are low; pairing your hand hurts.' };
   }
   return null;
 }
@@ -740,16 +742,17 @@ function generate(gid){
 /* ============================================================
    GAME LIST + UI
    ============================================================ */
+/* The featured 9-game mix — exact names, no additions. */
 const GAMES = [
-  { id:'lhe',     name:"Limit Hold'em",                  fam:'holdem', short:'LHE' },
-  { id:'nlhe',    name:"No-Limit Hold'em",               fam:'holdem', short:'NLHE' },
-  { id:'plo',     name:'Pot-Limit Omaha',                fam:'plo',    short:'PLO' },
-  { id:'o8',      name:'Omaha Hi-Lo 8/b',                fam:'o8',     short:'O8' },
-  { id:'stud',    name:'Seven Card Stud',                fam:'stud',   short:'Stud' },
-  { id:'studhl',  name:'Stud Hi-Lo 8/b',                 fam:'studhl', short:'Stud8' },
-  { id:'razz',    name:'Razz',                           fam:'razz',   short:'Razz' },
-  { id:'27single',name:'NL 2-7 Single Draw',             fam:'draw27', short:'2-7', triple:false },
-  { id:'27triple',name:'Limit 2-7 Triple Draw',          fam:'draw27', short:'TripDr', triple:true },
+  { id:'lhe',     name:"Limit Hold'em",                       fam:'holdem', short:'LHE' },
+  { id:'o8',      name:'Limit Omaha Hi-Lo 8 or Better',       fam:'o8',     short:'O8' },
+  { id:'stud',    name:'Seven Card Stud',                     fam:'stud',   short:'Stud' },
+  { id:'razz',    name:'Razz',                                fam:'razz',   short:'Razz' },
+  { id:'27single',name:'No-Limit 2-7 Lowball Draw',           fam:'draw27', short:'2-7', triple:false },
+  { id:'nlhe',    name:"No-Limit Hold'em",                    fam:'holdem', short:'NLHE' },
+  { id:'plo',     name:'Pot-Limit Omaha',                     fam:'plo',    short:'PLO' },
+  { id:'27triple',name:'Limit 2-7 Lowball Triple Draw',       fam:'draw27', short:'TripDr', triple:true },
+  { id:'studhl',  name:'Seven Card Stud Hi-Lo 8 or Better',   fam:'studhl', short:'Stud8' },
 ];
 
 let mode = 'mix';            // 'mix' or a specific gid
