@@ -240,6 +240,55 @@ footer a:hover { color: var(--accent); }
 .note-card li .d7 { color: #ff8aa0; font-weight: 700; }
 @media (max-width: 900px){ .rules-grid { grid-template-columns: 1fr; } }
 
+/* ---- time attack + leaderboard ---- */
+.challenge-btn { background: linear-gradient(120deg, var(--purple), var(--accent)); border-color: transparent; color: #08122b; }
+.challenge-btn:hover { filter: brightness(1.08); border-color: transparent; }
+.ta-banner { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 18px; border-radius: 12px;
+  background: linear-gradient(180deg, rgba(191,140,255,0.12), rgba(91,158,255,0.05)); border: 1px solid rgba(191,140,255,0.4); }
+.ta-banner .ta-clock { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--gold); letter-spacing: 1px; min-width: 86px; }
+.ta-banner .ta-clock.warn { color: var(--red); }
+.ta-stat { display: flex; flex-direction: column; }
+.ta-stat .l { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.ta-stat .v { font-family: "SF Mono", Menlo, monospace; font-size: 20px; font-weight: 700; }
+.ta-flash { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 20px; min-width: 24px; opacity: 0; transition: opacity .12s; }
+.ta-flash.ok { color: var(--green); opacity: 1; } .ta-flash.no { color: var(--red); opacity: 1; }
+.ta-banner .spacer { margin-left: auto; }
+body.ta-on #gameSeg, body.ta-on #hintBtn, body.ta-on #revealBtn, body.ta-on .toggle-row, body.ta-on #newBtn, body.ta-on #challengeBtn, body.ta-on .stats-row { display: none !important; }
+body.ta-on .tabs { pointer-events: none; opacity: .4; }
+
+/* modal */
+.modal-bg { position: fixed; inset: 0; background: rgba(5,8,16,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal { width: 100%; max-width: 430px; background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.modal h2 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.modal h3 { margin: 0 0 18px; font-size: 22px; color: var(--text); }
+.res-grid { display: flex; gap: 10px; margin-bottom: 20px; }
+.res-cell { flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.res-cell .l { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.res-cell .v { font-family: "SF Mono", Menlo, monospace; font-size: 26px; font-weight: 700; color: var(--text); }
+.res-cell .v.big { color: var(--gold); }
+.modal label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+.modal input[type=text] { width: 100%; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 8px; background: var(--bg);
+  border: 1px solid var(--border); color: var(--text); margin-bottom: 6px; }
+.modal input[type=text]:focus { outline: none; border-color: var(--accent); }
+.score-err { color: var(--red); font-size: 12px; min-height: 15px; margin: 2px 0 12px; }
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions .btn { flex: 1; text-align: center; }
+
+/* leaderboard table */
+.board-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.board-head .spacer { margin-left: auto; }
+.board-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.board-table th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.board-table th.num, .board-table td.num { text-align: right; }
+.board-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.board-table td.rank { font-family: "SF Mono", Menlo, monospace; color: var(--muted); width: 44px; }
+.board-table tbody tr:first-child td.rank { color: var(--gold); font-weight: 700; }
+.board-table td.name { font-weight: 600; color: var(--text); }
+.board-table td.num { font-family: "SF Mono", Menlo, monospace; color: var(--muted); }
+.board-table td.num.score { color: var(--green); font-weight: 700; font-size: 15px; }
+
 @media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -253,8 +302,9 @@ footer a:hover { color: var(--accent); }
     <a class="home" href="/">← home</a>
   </div>
   <nav class="tabs">
-    <button id="tabDrill" class="active">Drill</button>
-    <button id="tabRules">Lowball Rules</button>
+    <button data-view="drill" class="active">Drill</button>
+    <button data-view="board">Leaderboard</button>
+    <button data-view="rules">Lowball Rules</button>
   </nav>
 </header>
 
@@ -268,6 +318,15 @@ footer a:hover { color: var(--accent); }
       <div class="stat"><div class="lab">Accuracy</div><div class="val green" id="stAcc">—</div></div>
       <div class="stat"><div class="lab">Hands</div><div class="val" id="stHands">0</div></div>
     </div>
+  </div>
+
+  <div class="ta-banner hidden" id="taBanner">
+    <div class="ta-clock" id="taTime">3:00</div>
+    <div class="ta-stat"><span class="l">Correct</span><span class="v" id="taScore">0</span></div>
+    <div class="ta-stat"><span class="l">Attempts</span><span class="v" id="taAttempt">0</span></div>
+    <div class="ta-flash" id="taFlash"></div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="taGiveUp">End now</button>
   </div>
 
   <div class="grid">
@@ -335,6 +394,32 @@ footer a:hover { color: var(--accent); }
   </div>
  </div><!-- /drillView -->
 
+ <div id="boardView" class="hidden">
+  <section class="panel">
+    <div class="board-head">
+      <div>
+        <h2>Time Attack</h2>
+        <h3>Most correct outs in 3 minutes</h3>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="refreshBoard">Refresh</button>
+      <button class="btn challenge-btn" id="startChallenge2">Start 3-min challenge</button>
+    </div>
+    <table class="board-table">
+      <thead>
+        <tr><th class="rank">#</th><th>Player</th><th class="num">Correct</th><th class="num">Acc.</th></tr>
+      </thead>
+      <tbody id="boardBody">
+        <tr><td colspan="4" class="muted-note">Loading…</td></tr>
+      </tbody>
+    </table>
+    <p class="muted-note" style="margin-top:14px">
+      All games, random mix. Each correct answer is +1; a wrong answer just moves on. The clock never stops —
+      type fast and use the number pad. Ties are broken by accuracy.
+    </p>
+  </section>
+ </div><!-- /boardView -->
+
  <div id="rulesView" class="hidden">
   <section class="panel" style="margin-bottom:16px">
     <h2>Reference</h2>
@@ -400,6 +485,25 @@ footer a:hover { color: var(--accent); }
   </section>
  </div><!-- /rulesView -->
 </main>
+
+<div class="modal-bg hidden" id="resultModal">
+  <div class="modal">
+    <h2>Time’s up</h2>
+    <h3>3-minute run complete</h3>
+    <div class="res-grid">
+      <div class="res-cell"><div class="l">Correct</div><div class="v big" id="resCorrect">0</div></div>
+      <div class="res-cell"><div class="l">Attempts</div><div class="v" id="resAttempt">0</div></div>
+      <div class="res-cell"><div class="l">Accuracy</div><div class="v" id="resAcc">—</div></div>
+    </div>
+    <label for="nameInput">Name for the leaderboard</label>
+    <input type="text" id="nameInput" maxlength="16" placeholder="Your name" autocomplete="off">
+    <div class="score-err" id="scoreErr"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="skipScoreBtn">Skip</button>
+      <button class="btn primary" id="submitScoreBtn">Submit to leaderboard</button>
+    </div>
+  </div>
+</div>
 
 <footer>
   Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
@@ -971,9 +1075,18 @@ function submit(){
   if(!current || answered) return;
   const val=parseInt(el('answerInput').value,10);
   if(isNaN(val)){ el('answerInput').focus(); return; }
-  answered=true;
   const correctN=current.outs.length;
   const ok = val===correctN;
+
+  // Time Attack: grade fast, no reveal, advance immediately.
+  if(TA.active){
+    TA.attempted++; if(ok) TA.correct++;
+    flashTA(ok);
+    if(Date.now()>=TA.endAt) endChallenge(); else newHand();
+    return;
+  }
+
+  answered=true;
   const dt=(performance.now()-startTime)/1000;
 
   // stats
@@ -1059,22 +1172,117 @@ el('resetStats').onclick=()=>{
   saveStats(); renderStats();
 };
 
-/* "New hand" via submit feedback: add a dedicated button at top of controls */
+/* "New hand" + "Challenge" buttons at the top of controls */
 const newBtn=document.createElement('button');
-newBtn.className='btn primary'; newBtn.textContent='New hand'; newBtn.style.order='-1';
+newBtn.id='newBtn'; newBtn.className='btn primary'; newBtn.textContent='New hand'; newBtn.style.order='-2';
 newBtn.onclick=newHand;
+const challengeBtn=document.createElement('button');
+challengeBtn.id='challengeBtn'; challengeBtn.className='btn challenge-btn'; challengeBtn.textContent='▶ 3-min Challenge'; challengeBtn.style.order='-1';
+challengeBtn.onclick=startChallenge;
 document.querySelector('.controls').insertBefore(newBtn, gameSeg);
+document.querySelector('.controls').insertBefore(challengeBtn, gameSeg);
 
-/* tab switching */
-function showTab(which){
-  const drill = which==='drill';
-  el('drillView').classList.toggle('hidden', !drill);
-  el('rulesView').classList.toggle('hidden', drill);
-  el('tabDrill').classList.toggle('active', drill);
-  el('tabRules').classList.toggle('active', !drill);
+/* ============================================================
+   TIME ATTACK
+   ============================================================ */
+const TA = { active:false, endAt:0, correct:0, attempted:0, timer:null, DURATION:180 };
+function fmtTime(s){ const m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0'); }
+function flashTA(ok){
+  const f=el('taFlash'); f.textContent=ok?'✓':'✗'; f.className='ta-flash '+(ok?'ok':'no');
+  clearTimeout(flashTA._t); flashTA._t=setTimeout(()=>{ f.className='ta-flash'; }, 350);
 }
-el('tabDrill').onclick=()=>showTab('drill');
-el('tabRules').onclick=()=>showTab('rules');
+function startChallenge(){
+  showTab('drill');
+  TA.active=true; TA.correct=0; TA.attempted=0; TA.endAt=Date.now()+TA.DURATION*1000;
+  mode='mix'; updateSegActive();           // all-games mix for a fair run
+  document.body.classList.add('ta-on');
+  el('taBanner').classList.remove('hidden');
+  tickTimer();
+  TA.timer=setInterval(tickTimer, 250);
+  newHand();
+}
+function tickTimer(){
+  const left=Math.max(0, Math.round((TA.endAt-Date.now())/1000));
+  const clock=el('taTime'); clock.textContent=fmtTime(left);
+  clock.classList.toggle('warn', left<=15);
+  el('taScore').textContent=TA.correct;
+  el('taAttempt').textContent=TA.attempted;
+  if(Date.now()>=TA.endAt) endChallenge();
+}
+function endChallenge(){
+  if(!TA.active) return;
+  TA.active=false; clearInterval(TA.timer);
+  document.body.classList.remove('ta-on');
+  el('taBanner').classList.add('hidden');
+  el('resCorrect').textContent=TA.correct;
+  el('resAttempt').textContent=TA.attempted;
+  el('resAcc').textContent = TA.attempted ? Math.round(100*TA.correct/TA.attempted)+'%' : '—';
+  el('scoreErr').textContent='';
+  el('nameInput').value = localStorage.getItem('outsName')||'';
+  el('submitScoreBtn').disabled=false;
+  el('resultModal').classList.remove('hidden');
+  el('nameInput').focus();
+}
+el('taGiveUp').onclick=endChallenge;
+el('skipScoreBtn').onclick=()=>{ el('resultModal').classList.add('hidden'); newHand(); };
+
+/* ============================================================
+   GLOBAL LEADERBOARD
+   ============================================================ */
+async function loadBoard(){
+  const tb=el('boardBody');
+  tb.innerHTML='<tr><td colspan="4" class="muted-note">Loading…</td></tr>';
+  try{
+    const r=await fetch('/api/leaderboard',{cache:'no-store'});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'failed');
+    const rows=(j.scores||[]);
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="4" class="muted-note">No scores yet — be the first to set one.</td></tr>'; return; }
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    tb.innerHTML=rows.map((s,i)=>{
+      const acc=s.attempted?Math.round(100*s.correct/s.attempted)+'%':'—';
+      return `<tr><td class="rank">${i+1}</td><td class="name">${esc(s.name)}</td>`+
+             `<td class="num score">${s.correct}</td><td class="num">${acc}</td></tr>`;
+    }).join('');
+  }catch(e){
+    tb.innerHTML=`<tr><td colspan="4" class="muted-note">Leaderboard unavailable — ${e.message==='leaderboard backend not configured'?'backend not set up yet.':'try again later.'}</td></tr>`;
+  }
+}
+async function submitScore(){
+  const name=(el('nameInput').value||'').trim().slice(0,16)||'Anon';
+  localStorage.setItem('outsName', name);
+  el('submitScoreBtn').disabled=true; el('scoreErr').textContent='';
+  try{
+    const r=await fetch('/api/leaderboard',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ name, correct:TA.correct, attempted:TA.attempted, durationSec:TA.DURATION })
+    });
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error||'submission failed');
+    el('resultModal').classList.add('hidden');
+    showTab('board');
+  }catch(e){
+    el('scoreErr').textContent='Could not submit: '+e.message;
+    el('submitScoreBtn').disabled=false;
+  }
+}
+el('submitScoreBtn').onclick=submitScore;
+el('refreshBoard').onclick=loadBoard;
+el('startChallenge2').onclick=startChallenge;
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+const VIEWS={drill:'drillView', board:'boardView', rules:'rulesView'};
+function showTab(view){
+  if(TA.active) return;   // don't leave a running challenge
+  for(const [k,id] of Object.entries(VIEWS)) el(id).classList.toggle('hidden', k!==view);
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  if(view==='board') loadBoard();
+}
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(b) showTab(b.dataset.view);
+});
 
 buildSeg();
 renderStats();
