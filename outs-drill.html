@@ -624,21 +624,24 @@ function genHoldem(gid, name){
         target = { label:'a straight or flush', pred:c=>bestHigh([...hero,...board,c],false,true)[0]>=4 };
         drawName = arc==='combo15' ? 'Combo draw — flush + open-ended straight' : 'Combo draw — flush + gutshot';
         hint='Add the flush outs and the straight outs (don’t double-count the cards in your suit).';
-      } else { // pairToTrips
+      } else { // pairToImprove
         const R = RNG.pick([7,8,9,10,11,12,13,14]);
         const k = RNG.pick(RANKS.filter(r=>r!==R));
         hero=[B.rank(R), B.rank(k)];
         const others = shuffle(RANKS.filter(r=>r!==R && r!==k)).slice(0,2);
         board=[B.rank(R), B.rank(others[0]), B.rank(others[1])];
-        target = { label:'three of a kind (your case cards)', pred:c=>c.r===R };
-        drawName='One pair (drawing to trips)'; hint='Only the two remaining cards of your pair’s rank make trips.';
+        // improve to two pair (pair your kicker) OR trips (pair your pair). Pairing the
+        // board doesn't raise your own hand, so only your two ranks count.
+        target = { label:'two pair or trips', pred:c=>c.r===R || c.r===k };
+        drawName='One pair (drawing to improve)';
+        hint='Trip your pair (2 cards) or pair your kicker (3 cards) = 5 outs. Pairing the board doesn’t improve your own hand.';
       }
     }catch(e){ continue; }
     if(hero.includes(null)||board.includes(null)) continue;
     const seen=[...hero,...board];
     if(new Set(seen.map(keyOf)).size !== seen.length) continue;
     // hero must not already satisfy target
-    if(arc!=='overcards'){ if(bestHigh([...hero,...board],false,true)[0] >= (arc==='set'||arc==='twopair'?6:arc==='pairToTrips'?3:arc==='flush'?5:4)) continue; }
+    if(arc!=='overcards'){ if(bestHigh([...hero,...board],false,true)[0] >= (arc==='set'||arc==='twopair'?6:arc==='pairToTrips'?2:arc==='flush'?5:4)) continue; }
     const outs = countOuts(seen, target.pred);
     if(outs.length < 1) continue;
     return {
