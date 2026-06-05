@@ -1039,7 +1039,7 @@ function renderStats(){
 
 /* numpad */
 const numpad=el('numpad');
-for(let i=0;i<=15;i++){
+for(let i=0;i<=16;i++){
   const b=document.createElement('button'); b.textContent=i;
   b.onclick=()=>{ el('answerInput').value=i; submit(); };
   numpad.appendChild(b);
