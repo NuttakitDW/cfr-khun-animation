@@ -276,6 +276,17 @@ body.ta-on .tabs { pointer-events: none; opacity: .4; }
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions .btn { flex: 1; text-align: center; }
 
+/* countdown overlay */
+.cd-overlay { position: fixed; inset: 0; background: rgba(5,8,16,0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 60; }
+.cd-inner { text-align: center; }
+.cd-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+.cd-num { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 150px; line-height: 1; color: var(--gold);
+  text-shadow: 0 0 50px rgba(255,213,74,0.35); }
+.cd-num.go { color: var(--green); font-size: 120px; text-shadow: 0 0 50px rgba(63,223,142,0.5); }
+.cd-num.pop { animation: cdpop .55s cubic-bezier(.2,.8,.2,1); }
+@keyframes cdpop { 0% { transform: scale(.3); opacity: 0; } 45% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
 /* leaderboard table */
 .board-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .board-head .spacer { margin-left: auto; }
@@ -485,6 +496,13 @@ body.ta-on .tabs { pointer-events: none; opacity: .4; }
   </section>
  </div><!-- /rulesView -->
 </main>
+
+<div class="cd-overlay hidden" id="countdownOverlay">
+  <div class="cd-inner">
+    <div class="cd-label">Get ready</div>
+    <div class="cd-num" id="countdownNum">3</div>
+  </div>
+</div>
 
 <div class="modal-bg hidden" id="resultModal">
   <div class="modal">
@@ -1185,17 +1203,40 @@ document.querySelector('.controls').insertBefore(challengeBtn, gameSeg);
 /* ============================================================
    TIME ATTACK
    ============================================================ */
-const TA = { active:false, endAt:0, correct:0, attempted:0, timer:null, DURATION:180 };
+const TA = { active:false, counting:false, endAt:0, correct:0, attempted:0, timer:null, cd:null, DURATION:180 };
 function fmtTime(s){ const m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0'); }
 function flashTA(ok){
   const f=el('taFlash'); f.textContent=ok?'✓':'✗'; f.className='ta-flash '+(ok?'ok':'no');
   clearTimeout(flashTA._t); flashTA._t=setTimeout(()=>{ f.className='ta-flash'; }, 350);
 }
 function startChallenge(){
+  if(TA.active || TA.counting) return;     // ignore double-clicks / re-entry
   showTab('drill');
+  TA.counting=true;
+  document.body.classList.add('ta-on');    // hide controls during the countdown too
+  runCountdown(beginChallenge);
+}
+function runCountdown(done){
+  const ov=el('countdownOverlay'), num=el('countdownNum');
+  const seq=['3','2','1','Go!'];
+  let i=0;
+  ov.classList.remove('hidden');
+  const show=()=>{
+    const isGo = seq[i]==='Go!';
+    num.textContent=seq[i];
+    num.className='cd-num'+(isGo?' go':'');
+    void num.offsetWidth;                  // restart the pop animation each tick
+    num.classList.add('pop');
+    i++;
+    if(i<seq.length) TA.cd=setTimeout(show, 1000);
+    else TA.cd=setTimeout(()=>{ ov.classList.add('hidden'); done(); }, 650);
+  };
+  show();
+}
+function beginChallenge(){
+  TA.counting=false;
   TA.active=true; TA.correct=0; TA.attempted=0; TA.endAt=Date.now()+TA.DURATION*1000;
   mode='mix'; updateSegActive();           // all-games mix for a fair run
-  document.body.classList.add('ta-on');
   el('taBanner').classList.remove('hidden');
   tickTimer();
   TA.timer=setInterval(tickTimer, 250);
@@ -1275,7 +1316,7 @@ el('startChallenge2').onclick=startChallenge;
    ============================================================ */
 const VIEWS={drill:'drillView', board:'boardView', rules:'rulesView'};
 function showTab(view){
-  if(TA.active) return;   // don't leave a running challenge
+  if(TA.active || TA.counting) return;   // don't leave a running challenge / countdown
   for(const [k,id] of Object.entries(VIEWS)) el(id).classList.toggle('hidden', k!==view);
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
   if(view==='board') loadBoard();
