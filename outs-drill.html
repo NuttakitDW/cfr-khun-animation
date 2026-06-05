@@ -732,7 +732,7 @@ function genStud(gid, name, hilo){
         hero=run.map((r,i)=>B.add(C(r,sui[i%4])));
         const ends=[run[0]-1, run[3]+1].filter(r=>r>=2&&r<=14);
         const endset=new Set(ends);
-        target={ label:'an open-ended straight', pred:c=>endset.has(c.r) };
+        target={ label:'a straight', pred:c=>endset.has(c.r) };
         drawName='Four to an open-ended straight (Stud)';
         hint='Two ranks complete it (×4 suits) — minus any exposed.';
       } else { // low (stud hi-lo)
