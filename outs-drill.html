@@ -480,6 +480,22 @@ function bestOmaha(hole, board, aceLow, useSF, low){
   }
   return best;
 }
+// Does ANY legal 2-hole + 3-board combo form a flush? (flush=5, straight flush=8)
+function omahaMakesFlush(hole, board){
+  for(const h of combos(hole,2)) for(const b of combos(board,3)){
+    const cat=rank5([...h,...b],false,true)[0];
+    if(cat===5 || cat===8) return true;
+  }
+  return false;
+}
+// Does ANY legal 2-hole + 3-board combo form a straight? (straight=4, straight flush=8)
+function omahaMakesStraight(hole, board){
+  for(const h of combos(hole,2)) for(const b of combos(board,3)){
+    const cat=rank5([...h,...b],false,true)[0];
+    if(cat===4 || cat===8) return true;
+  }
+  return false;
+}
 
 /* ============================================================
    OUT COUNTER
@@ -664,11 +680,11 @@ function genOmaha(gid, name, hilo){
           hero=[B.add(C(14,suit)), B.add(C(RNG.pick([13,12,11,10,9]),suit)), B.rand(c=>c.s!==suit), B.rand(c=>c.s!==suit)];
           const bp=shuffle(RANKS.filter(r=>!hero.map(h=>h.r).includes(r)));
           board=[B.add(C(bp[0],suit)), B.add(C(bp[1],suit)), B.rand(c=>c.s!==suit)];
-          target={ label:'a flush', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]>=5 };
+          target={ label:'a flush', pred:c=>omahaMakesFlush(hero,[...board,c]) };
           drawName='Nut flush draw (Omaha)';
           hint='You hold exactly two of the suit; the board has two. Count remaining suit cards.';
           context='Omaha: you must use exactly two hole cards — a one-card "backdoor" suit does nothing.';
-          if(bestOmaha(hero,board,false,true,false)[0]>=5) continue;
+          if(omahaMakesFlush(hero,board)) continue;
         }
       } else {
         // PLO high: flush draw or big wrap
@@ -678,11 +694,11 @@ function genOmaha(gid, name, hilo){
           hero=[B.add(C(hr[0],suit)), B.add(C(hr[1],suit)), B.rand(c=>c.s!==suit), B.rand(c=>c.s!==suit)];
           const bp=shuffle(RANKS.filter(r=>!hero.map(h=>h.r).includes(r)));
           board=[B.add(C(bp[0],suit)), B.add(C(bp[1],suit)), B.rand(c=>c.s!==suit)];
-          target={ label:'a flush', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]>=5 };
+          target={ label:'a flush', pred:c=>omahaMakesFlush(hero,[...board,c]) };
           drawName='Flush draw (Omaha)';
           hint='Exactly two of your hole cards are suited — count the remaining cards of that suit.';
           context='Pot-Limit Omaha: exactly two hole cards. Board pairs can also matter.';
-          if(bestOmaha(hero,board,false,true,false)[0]>=5) continue;
+          if(omahaMakesFlush(hero,board)) continue;
         } else {
           // wrap: four connected hole cards around two board connectors
           const lo=6+RNG.int(4);
@@ -692,11 +708,11 @@ function genOmaha(gid, name, hilo){
           const bcon=[lo+2, lo+5];
           board=[B.rand(c=>c.r===bcon[0]), B.rand(c=>c.r===bcon[1] && c.r<=14), B.rand(c=>c.r<lo-2 && !hr.includes(c.r))];
           if(board.includes(null)) continue;
-          target={ label:'a straight', pred:c=>bestOmaha(hero,[...board,c],false,true,false)[0]===4 };
+          target={ label:'a straight', pred:c=>omahaMakesStraight(hero,[...board,c]) };
           drawName='Straight wrap (Omaha)';
           hint='A four-card wrap hits a LOT of cards — count every rank that completes a straight.';
           context='Omaha wraps can have 13–20 outs. Count them precisely.';
-          if(bestOmaha(hero,board,false,true,false)[0]>=4) continue;
+          if(omahaMakesStraight(hero,board)) continue;
         }
       }
     }catch(e){ continue; }
