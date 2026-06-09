@@ -37,15 +37,28 @@ function parseMember(m) {
   catch { return null; }
 }
 
+function accuracy(o) {
+  return o.attempted > 0 ? o.correct / o.attempted : 0;
+}
+
 async function topScores() {
-  // highest scores first, with their numeric score
-  const flat = await redis(['ZRANGE', ZKEY, '0', String(TOP_N - 1), 'REV', 'WITHSCORES']);
-  const out = [];
+  // Over-fetch candidates by score (= correct), then sort authoritatively in JS so ties
+  // are broken by accuracy. The sorted set is ordered by `correct` alone, which leaves
+  // same-score runs in arbitrary order — fetching extra rows guarantees we see every
+  // run that could place in the top N before ranking them.
+  const FETCH = Math.max(TOP_N * 5, 100);
+  const flat = await redis(['ZRANGE', ZKEY, '0', String(FETCH - 1), 'REV', 'WITHSCORES']);
+  const rows = [];
   for (let i = 0; i < flat.length; i += 2) {
     const o = parseMember(flat[i]);
-    if (o) out.push({ name: o.name, correct: o.correct, attempted: o.attempted, ts: o.ts });
+    if (o) rows.push({ name: o.name, correct: o.correct, attempted: o.attempted, ts: o.ts });
   }
-  return out;
+  rows.sort((a, b) =>
+    (b.correct - a.correct) ||        // most correct first
+    (accuracy(b) - accuracy(a)) ||    // then highest accuracy
+    (a.ts - b.ts)                     // then whoever got there first
+  );
+  return rows.slice(0, TOP_N);
 }
 
 module.exports = async (req, res) => {
