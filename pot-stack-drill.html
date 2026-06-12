@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pot &amp; Stack Drill — Chip Math for Mixed Games</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+header .home { margin-left: auto; color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+
+main { padding: 22px 28px 8px; max-width: 1180px; margin: 0 auto; }
+
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; }
+
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.seg button {
+  font: inherit; font-size: 11.5px; font-weight: 600;
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 7px; padding: 5px 9px; cursor: pointer; white-space: nowrap;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+.seg button.active.mix { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
+
+.stats-row { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
+.stat { text-align: right; }
+.stat .lab { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.stat .val { font-family: "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; color: var(--text); }
+.stat .val.green { color: var(--green); }
+.stat .val.gold { color: var(--gold); }
+
+.grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+section.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+section.panel h2 { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: var(--text); }
+
+.spot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.mode-badge {
+  font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
+  background: rgba(91,158,255,0.15); color: var(--accent);
+}
+.mode-badge.pot    { background: rgba(255,213,74,0.15);  color: var(--gold); }
+.mode-badge.chips  { background: rgba(63,223,142,0.15);  color: var(--green); }
+.mode-badge.bbs    { background: rgba(191,140,255,0.15); color: var(--purple); }
+.mode-badge.betpot { background: rgba(255,140,66,0.15);  color: var(--orange); }
+.street-tag { font-size: 11px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+
+.info-strip {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0 10px;
+  font-family: "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted);
+}
+.info-strip b { color: var(--text); font-weight: 700; }
+.info-strip .hero-chip { color: var(--green); }
+
+.action-list { margin: 10px 0 4px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.action-row {
+  display: flex; align-items: center; gap: 12px; padding: 8px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.045); font-size: 14px;
+}
+.action-row:last-child { border-bottom: none; }
+.action-row .ptag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700;
+  width: 58px; flex-shrink: 0; color: var(--muted);
+}
+.action-row.hero { background: rgba(63,223,142,0.06); }
+.action-row.hero .ptag { color: var(--green); }
+.action-row .atxt { color: var(--text); }
+.action-row .atxt .amt { font-family: "SF Mono", Menlo, monospace; font-weight: 700; color: var(--gold); }
+.action-row.foldrow .atxt { color: var(--muted); }
+.street-div {
+  display: flex; align-items: center; gap: 10px; padding: 6px 14px;
+  background: var(--panel-2); font-family: "SF Mono", Menlo, monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--cyan);
+  border-bottom: 1px solid rgba(255,255,255,0.045);
+}
+
+.question {
+  margin-top: 16px; padding: 14px 16px; border-radius: 10px;
+  background: var(--panel-2); border: 1px solid var(--border);
+}
+.question .q { font-size: 15.5px; color: var(--text); font-weight: 600; }
+.question .q b { color: var(--gold); }
+.question .ctx { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+.answer { margin-top: 16px; }
+.answer-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.answer-row input {
+  font: inherit; font-family: "SF Mono", Menlo, monospace; font-size: 18px; font-weight: 700;
+  width: 150px; padding: 8px 12px; border-radius: 8px; text-align: right;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+.answer-row input:focus { outline: none; border-color: var(--accent); }
+.unit-tag { font-family: "SF Mono", Menlo, monospace; font-size: 13px; font-weight: 700; color: var(--muted); min-width: 44px; }
+
+.feedback { margin-top: 16px; min-height: 10px; }
+.verdict { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.verdict.ok { color: var(--green); }
+.verdict.no { color: var(--red); }
+.verdict .pill { font-family: "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
+.explain { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+.explain b { color: var(--text); }
+
+.ledger { margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ledger .lrow {
+  display: flex; justify-content: space-between; gap: 14px; padding: 5px 12px;
+  font-family: "SF Mono", Menlo, monospace; font-size: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.ledger .lrow:last-child { border-bottom: none; }
+.ledger .lrow .lt { color: var(--muted); }
+.ledger .lrow .lp { color: var(--gold); font-weight: 700; flex-shrink: 0; }
+.ledger .lrow.final { background: rgba(255,213,74,0.07); }
+.ledger .lrow.final .lt { color: var(--text); font-weight: 700; }
+
+.hidden { display: none !important; }
+
+/* right column */
+.kv { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.kv .k { color: var(--muted); }
+.kv .v { font-family: "SF Mono", Menlo, monospace; font-weight: 700; }
+.gamestat { margin-bottom: 12px; }
+.gamestat .gname { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.gamestat .gname b { color: var(--text); font-weight: 600; }
+.track { height: 7px; border-radius: 4px; background: rgba(255,255,255,0.05); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .5s cubic-bezier(.2,.7,.2,1); }
+.muted-note { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 4px; }
+
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.toggle-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+.hint-box { margin-top: 10px; font-size: 12.5px; color: var(--cyan); background: rgba(63,200,212,0.07); border: 1px solid rgba(63,200,212,0.25); border-radius: 8px; padding: 9px 12px; }
+
+footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+/* ---- tab bar ---- */
+.tabs { display: flex; gap: 6px; width: 100%; margin-top: 14px; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 8px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+/* ---- shortcuts tab ---- */
+.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.sc-card .formula {
+  font-family: "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--gold);
+  background: rgba(255,213,74,0.07); border: 1px solid rgba(255,213,74,0.25);
+  border-radius: 8px; padding: 10px 14px; margin: 4px 0 12px;
+}
+.sc-card p { font-size: 13px; color: var(--muted); line-height: 1.65; margin: 8px 0; }
+.sc-card p b { color: var(--text); }
+.sc-card ul { margin: 8px 0 0; padding-left: 18px; }
+.sc-card li { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 6px; }
+.sc-card li b { color: var(--text); }
+@media (max-width: 900px){ .sc-grid { grid-template-columns: 1fr; } }
+
+/* ---- time attack ---- */
+.challenge-btn { background: linear-gradient(120deg, var(--purple), var(--accent)); border-color: transparent; color: #08122b; }
+.challenge-btn:hover { filter: brightness(1.08); border-color: transparent; }
+.ta-banner { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 18px; border-radius: 12px;
+  background: linear-gradient(180deg, rgba(191,140,255,0.12), rgba(91,158,255,0.05)); border: 1px solid rgba(191,140,255,0.4); }
+.ta-banner .ta-clock { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--gold); letter-spacing: 1px; min-width: 86px; }
+.ta-banner .ta-clock.warn { color: var(--red); }
+.ta-stat { display: flex; flex-direction: column; }
+.ta-stat .l { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.ta-stat .v { font-family: "SF Mono", Menlo, monospace; font-size: 20px; font-weight: 700; }
+.ta-flash { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 20px; min-width: 24px; opacity: 0; transition: opacity .12s; }
+.ta-flash.ok { color: var(--green); opacity: 1; } .ta-flash.no { color: var(--red); opacity: 1; }
+.ta-banner .spacer { margin-left: auto; }
+body.ta-on #modeSeg, body.ta-on #diffSeg, body.ta-on #hintBtn, body.ta-on #revealBtn, body.ta-on .toggle-row, body.ta-on #newBtn, body.ta-on #challengeBtn, body.ta-on .stats-row { display: none !important; }
+body.ta-on .tabs { pointer-events: none; opacity: .4; }
+
+/* modal */
+.modal-bg { position: fixed; inset: 0; background: rgba(5,8,16,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal { width: 100%; max-width: 430px; background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.modal h2 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.modal h3 { margin: 0 0 18px; font-size: 22px; color: var(--text); }
+.res-grid { display: flex; gap: 10px; margin-bottom: 16px; }
+.res-cell { flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.res-cell .l { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.res-cell .v { font-family: "SF Mono", Menlo, monospace; font-size: 26px; font-weight: 700; color: var(--text); }
+.res-cell .v.big { color: var(--gold); }
+.pb-line { font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+.pb-line b { color: var(--gold); font-family: "SF Mono", Menlo, monospace; }
+.pb-line .newpb { color: var(--green); font-weight: 700; }
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions .btn { flex: 1; text-align: center; }
+
+/* countdown overlay */
+.cd-overlay { position: fixed; inset: 0; background: rgba(5,8,16,0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 60; }
+.cd-inner { text-align: center; }
+.cd-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+.cd-num { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 150px; line-height: 1; color: var(--gold);
+  text-shadow: 0 0 50px rgba(255,213,74,0.35); }
+.cd-num.go { color: var(--green); font-size: 120px; text-shadow: 0 0 50px rgba(63,223,142,0.5); }
+.cd-num.pop { animation: cdpop .55s cubic-bezier(.2,.8,.2,1); }
+@keyframes cdpop { 0% { transform: scale(.3); opacity: 0; } 45% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Pot &amp; Stack Drill</h1>
+    <span class="sub">Pot tracking · stack in chips · stack in big blinds · bet size vs pot</span>
+    <a class="home" href="/">← home</a>
+  </div>
+  <nav class="tabs">
+    <button data-view="drill" class="active">Drill</button>
+    <button data-view="sc">Shortcuts</button>
+  </nav>
+</header>
+
+<main>
+ <div id="drillView">
+  <div class="controls">
+    <div class="seg" id="modeSeg"></div>
+    <div class="seg" id="diffSeg"></div>
+    <div class="stats-row">
+      <div class="stat"><div class="lab">Streak</div><div class="val gold" id="stStreak">0</div></div>
+      <div class="stat"><div class="lab">Best</div><div class="val" id="stBest">0</div></div>
+      <div class="stat"><div class="lab">Accuracy</div><div class="val green" id="stAcc">—</div></div>
+      <div class="stat"><div class="lab">Hands</div><div class="val" id="stHands">0</div></div>
+    </div>
+  </div>
+
+  <div class="ta-banner hidden" id="taBanner">
+    <div class="ta-clock" id="taTime">3:00</div>
+    <div class="ta-stat"><span class="l">Correct</span><span class="v" id="taScore">0</span></div>
+    <div class="ta-stat"><span class="l">Attempts</span><span class="v" id="taAttempt">0</span></div>
+    <div class="ta-flash" id="taFlash"></div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="taGiveUp">End now</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="spot-head">
+        <span class="mode-badge" id="modeBadge">—</span>
+        <span class="street-tag" id="streetTag"></span>
+      </div>
+      <h3 id="spotTitle">Press “New spot”</h3>
+
+      <div class="info-strip" id="infoStrip"></div>
+      <div class="action-list hidden" id="actionList"></div>
+
+      <div class="question">
+        <div class="q" id="questionText">Choose a skill above, then deal a spot.</div>
+        <div class="ctx" id="contextText"></div>
+      </div>
+
+      <div class="hint-box hidden" id="hintBox"></div>
+
+      <div class="answer">
+        <div class="answer-row">
+          <input type="text" id="answerInput" placeholder="0" inputmode="decimal" autocomplete="off">
+          <span class="unit-tag" id="unitTag"></span>
+          <button class="btn primary" id="submitBtn">Submit</button>
+          <button class="btn ghost" id="hintBtn">Hint</button>
+          <button class="btn ghost" id="revealBtn">Reveal</button>
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" id="autoNext"><label for="autoNext">Auto-deal next spot after a correct answer</label>
+        </div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Session</h2>
+      <h3>Per-skill accuracy</h3>
+      <div id="modeStats"></div>
+      <div style="margin-top:18px">
+        <div class="kv"><span class="k">Average response</span><span class="v" id="avgTime">—</span></div>
+        <div class="kv"><span class="k">Total correct</span><span class="v" id="totCorrect">0</span></div>
+        <div class="kv"><span class="k">Total seen</span><span class="v" id="totSeen">0</span></div>
+        <div class="kv"><span class="k">Time-attack best (<span id="pbDiffLabel">Standard</span>)</span><span class="v" id="pbVal">—</span></div>
+      </div>
+      <button class="btn ghost" id="resetStats" style="margin-top:16px;width:100%">Reset session stats</button>
+      <p class="muted-note" style="margin-top:16px">
+        Chip answers must be <b>exact</b> — folded blinds and abandoned cold-calls stay in the pot.
+        BB answers accept halves (e.g. <span class="mono">27.5</span>). Percent answers allow ±1 around
+        thirds (33/67). You can type <span class="mono">12k</span> for 12,000 and commas are fine.
+        Press <span class="mono">Enter</span> to submit, <span class="mono">n</span> for the next spot.
+      </p>
+    </section>
+  </div>
+ </div><!-- /drillView -->
+
+ <div id="scView" class="hidden">
+  <section class="panel" style="margin-bottom:16px">
+    <h2>Reference</h2>
+    <h3>Mental shortcuts — think in structures, not in sums</h3>
+    <p class="muted-note" style="font-size:13.5px">
+      Fast players don’t add faster — they recognize pot <b>shapes</b>. A single-raised heads-up pot,
+      a 3-bet pot with a dead cold-call, a pot-limit raise: each has a fixed formula. Learn the
+      formula once, then the table math is one multiplication.
+    </p>
+  </section>
+
+  <div class="sc-grid">
+    <section class="panel sc-card">
+      <h2>Skill 1 · Pot tracking</h2>
+      <h3>Pots are built from blocks</h3>
+      <div class="formula">HU single-raised pot = 2R + dead blinds</div>
+      <ul>
+        <li><b>Raise to R, one caller:</b> pot = 2R plus whatever the folded blinds left behind. Open to 3bb, BB calls → 6.5bb (SB’s 0.5 is dead).</li>
+        <li><b>Folded money never leaves.</b> Blinds, antes, and abandoned cold-calls all stay in. A cold-caller who folds to a 3-bet leaves a full R behind — the classic miscount.</li>
+        <li><b>3-bet pot, HU:</b> pot = 2 × (3-bet size) + dead money. Recount once when the flop comes, then track deltas.</li>
+        <li><b>Re-anchor each street:</b> memorize the pot going to the flop as one number; from there it’s pot + bet + call.</li>
+      </ul>
+    </section>
+
+    <section class="panel sc-card">
+      <h2>Skill 4 · Bet vs pot</h2>
+      <h3>Anchor on half pot</h3>
+      <div class="formula">half pot first → adjust from there</div>
+      <ul>
+        <li>Compute <b>½ pot</b> instantly (halving is easy). Then: ⅓ ≈ two-thirds of that, ¾ = half + half-of-half, full = double it.</li>
+        <li><b>Reading a bet:</b> compare it to your half-pot anchor. Bet 700 into 2,000 → half is 1,000 → it’s a bit over ⅓.</li>
+        <li><b>Pot-limit max raise</b> (PLO, big-bet 2-7): <span class="mono">raise to = pot + 3 × bet</span>. “Call, then bet the new pot.”</li>
+        <li>First to act in a pot-limit game, your max bet is simply <b>the pot</b>.</li>
+      </ul>
+    </section>
+
+    <section class="panel sc-card">
+      <h2>Skill 2 · Stack in chips</h2>
+      <h3>Subtract as you act</h3>
+      <div class="formula">behind = start − everything you put in</div>
+      <ul>
+        <li>Update your stack <b>the moment chips leave it</b>, not at showdown. One subtraction per action is easy; reconstructing four actions later is not.</li>
+        <li>When you call a raise, you only add the <b>difference</b> — if you opened 300 and call a 3-bet to 900, that call costs 600 more, not 900.</li>
+        <li>At the end of each street, glance once: “I started 12,000, I’m at 9,500.” That habit is the whole skill.</li>
+      </ul>
+    </section>
+
+    <section class="panel sc-card">
+      <h2>Skill 3 · Stack in big blinds</h2>
+      <h3>Divide by the big blind — fast</h3>
+      <div class="formula">bb = stack ÷ BB &nbsp;·&nbsp; drop zeros first</div>
+      <ul>
+        <li>At 100/200: cut two zeros, halve. 13,400 → 134 → <b>67 bb</b>.</li>
+        <li>At 300/600: cut two zeros, divide by 6. 27,000 → 270 ÷ 6 = <b>45 bb</b>.</li>
+        <li>At 200/400: cut two zeros, divide by 4 (halve twice). 18,000 → 180 → 90 → <b>45 bb</b>.</li>
+        <li>Re-convert at every <b>blind change</b> — in mixed games the limits rotate constantly and your bb depth silently jumps.</li>
+      </ul>
+    </section>
+  </div>
+ </div><!-- /scView -->
+</main>
+
+<div class="cd-overlay hidden" id="countdownOverlay">
+  <div class="cd-inner">
+    <div class="cd-label">Get ready</div>
+    <div class="cd-num" id="countdownNum">3</div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="resultModal">
+  <div class="modal">
+    <h2>Time’s up</h2>
+    <h3>3-minute run complete</h3>
+    <div class="res-grid">
+      <div class="res-cell"><div class="l">Correct</div><div class="v big" id="resCorrect">0</div></div>
+      <div class="res-cell"><div class="l">Attempts</div><div class="v" id="resAttempt">0</div></div>
+      <div class="res-cell"><div class="l">Accuracy</div><div class="v" id="resAcc">—</div></div>
+    </div>
+    <p class="pb-line" id="pbResult"></p>
+    <div class="modal-actions">
+      <button class="btn primary" id="closeResultBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const RNG = {
+  int:(n)=>Math.floor(Math.random()*n),
+  pick:(a)=>a[Math.floor(Math.random()*a.length)],
+};
+const fmt = n => n.toLocaleString('en-US');
+const fmtBB = n => (Math.round(n*2)/2).toLocaleString('en-US');
+
+const POS = ['UTG','HJ','CO','BTN','SB','BB'];
+const POSTFLOP_ORDER = ['SB','BB','UTG','HJ','CO','BTN'];
+
+const LEVELS = {
+  easy: [ {sb:1,bb:2}, {sb:2,bb:5}, {sb:5,bb:10} ],
+  std:  [ {sb:25,bb:50}, {sb:50,bb:100}, {sb:100,bb:200} ],
+  hard: [ {sb:200,bb:400}, {sb:300,bb:600}, {sb:500,bb:1000} ],
+};
+const blindsStr = lv => `${fmt(lv.sb)}/${fmt(lv.bb)}`;
+
+/* ============================================================
+   HAND BUILDER — shared by Pot Tracking & Stack(Chips)
+   Builds a realistic preflop (+ optional flop) action sequence
+   with exact chip accounting.
+   ============================================================ */
+function buildHand(diff, opts={}){
+  const lv = RNG.pick(LEVELS[diff]);
+  const {sb,bb} = lv;
+  const ante = (diff==='hard' && Math.random()<0.5) ? bb : 0;   // modern BB ante
+  let pot = sb + bb + ante;
+
+  const rows = [];          // displayed action rows
+  const ledger = [];        // explanation: running pot
+  ledger.push({t:`SB posts ${fmt(sb)}`, pot:sb});
+  ledger.push({t:`BB posts ${fmt(bb)}`, pot:sb+bb});
+  if(ante) ledger.push({t:`BB ante ${fmt(ante)}`, pot:sb+bb+ante});
+
+  const cur = {SB:sb, BB:bb};   // current-street commitment
+  const total = {SB:sb, BB:bb}; // whole-hand commitment (ante excluded: dead)
+  const folded = new Set();
+  const hero = opts.hero || null;
+  const heroLines = [];
+
+  function act(pos, to, label, street){
+    const prev = cur[pos]||0;
+    const d = to - prev;
+    cur[pos] = to; total[pos] = (total[pos]||0) + d; pot += d;
+    rows.push({tag:pos, txt:label, amt:to, street, hero:pos===hero});
+    ledger.push({t:`${pos}${pos===hero?' (you)':''} ${label} (+${fmt(d)})`, pot});
+    if(pos===hero) heroLines.push(`${label} — costs ${fmt(d)}`);
+    return d;
+  }
+  function fold(pos, street){
+    folded.add(pos);
+    rows.push({tag:pos, txt:'folds', street, fold:true, hero:false});
+    const left = cur[pos]||0;
+    ledger.push({t: left>0 ? `${pos} folds — ${fmt(left)} stays in the pot` : `${pos} folds`, pot});
+  }
+
+  /* ---- preflop ---- */
+  const mults = [2,2.5,3,3.5,4].filter(m=>Number.isInteger(bb*m));
+  const R = bb * RNG.pick(mults);
+  const ri = (hero!==null) ? POS.indexOf(hero) : RNG.int(4);   // raiser in UTG..BTN
+  const raiser = POS[ri];
+  act(raiser, R, `raises to ${fmt(R)}`, 'pre');
+
+  const want3bet = diff!=='easy' && Math.random() < (diff==='hard'?0.55:0.32);
+  let finalTo = R;
+
+  if(want3bet){
+    const cands = [];
+    for(let i=ri+1;i<6;i++) cands.push(POS[i]);
+    const threeBetter = RNG.pick(cands);
+    const tbIdx = POS.indexOf(threeBetter);
+
+    // maybe a cold-caller between raiser and 3-better (their call dies in the pot)
+    let cold = null;
+    if(tbIdx > ri+1 && tbIdx <= 3 && Math.random()<0.5){
+      cold = POS[ri+1+RNG.int(tbIdx-ri-1)];
+      act(cold, R, `calls ${fmt(R)}`, 'pre');
+    }
+
+    // SB acts before a BB 3-bet
+    if(threeBetter==='BB') fold('SB','pre');
+
+    const R3 = R * RNG.pick([3,4]);
+    act(threeBetter, R3, `3-bets to ${fmt(R3)}`, 'pre');
+    finalTo = R3;
+
+    // remaining blinds fold, then action returns to the raiser, then the cold-caller
+    if(threeBetter!=='BB') for(const b of ['SB','BB']) if(b!==threeBetter) fold(b,'pre');
+    if(hero===raiser || Math.random()<0.65) act(raiser, R3, `calls ${fmt(R3)}`, 'pre');
+    else fold(raiser,'pre');
+    if(cold) fold(cold,'pre');
+  } else {
+    // flat-call pot: 1–2 callers among later non-blind seats, blinds decide
+    let ncall = 0;
+    for(let i=ri+1;i<4 && ncall<2;i++){
+      if(Math.random()<0.45){ act(POS[i], R, `calls ${fmt(R)}`, 'pre'); ncall++; }
+    }
+    if(Math.random()<0.3){ act('SB', R, `calls ${fmt(R)}`, 'pre'); ncall++; } else fold('SB','pre');
+    if(ncall===0 || Math.random()<0.5){ act('BB', R, `calls ${fmt(R)}`, 'pre'); } else fold('BB','pre');
+  }
+
+  /* who sees the flop */
+  const actives = POSTFLOP_ORDER.filter(p => !folded.has(p) && (cur[p]||0)===finalTo);
+  const potPre = pot;
+
+  /* ---- optional flop action ---- */
+  let hasFlop = false;
+  const wantFlop = (diff==='easy') ? Math.random()<0.4 : true;
+  if(wantFlop && actives.length>=2){
+    hasFlop = true;
+    for(const p of Object.keys(cur)) cur[p]=0;   // new street
+    const fr = [[1,3],[1,2],[2,3],[3,4],[1,1]].filter(([n,d])=>(pot*n)%d===0);
+    const B = fr.length ? (()=>{ const [n,d]=RNG.pick(fr); return pot*n/d; })()
+                        : bb*RNG.pick([3,4,5]);
+    const bettor = actives[0];
+    act(bettor, B, `bets ${fmt(B)}`, 'flop');
+    for(let i=1;i<actives.length;i++){
+      const p = actives[i];
+      // in stack mode the hero never folds; otherwise a 3rd player may fold
+      if(p!==hero && actives.length>2 && i===actives.length-1 && Math.random()<0.35) fold(p,'flop');
+      else act(p, B, `calls ${fmt(B)}`, 'flop');
+    }
+  }
+
+  return { lv, ante, rows, ledger, pot, potPre, total, folded, actives, hasFlop, raiser, heroLines };
+}
+
+/* ============================================================
+   SPOT GENERATORS — one per skill
+   Spot shape: { modeId, badge, title, street, info, rows,
+                 questionHTML, ctx, hint, unit, answer, tol,
+                 answerText, explainHTML }
+   ============================================================ */
+
+/* ---- 1. POT TRACKING ---- */
+function genPot(diff){
+  const h = buildHand(diff);
+  const lv = h.lv;
+  const info = [`Blinds <b>${blindsStr(lv)}</b>`];
+  if(h.ante) info.push(`BB ante <b>${fmt(h.ante)}</b>`);
+  const q = h.hasFlop
+    ? `After this flop action, <b>how many chips are in the pot?</b>`
+    : `<b>How many chips are in the pot</b> going to the flop?`;
+  const led = h.ledger.map(l=>`<div class="lrow"><span class="lt">${l.t}</span><span class="lp">${fmt(l.pot)}</span></div>`).join('');
+  return {
+    modeId:'pot', badge:'pot', badgeText:'Pot Tracking',
+    title: h.hasFlop ? 'Track the pot through the flop' : 'Track the preflop pot',
+    street: h.hasFlop ? 'Preflop + flop' : 'Preflop',
+    info, rows: h.rows,
+    questionHTML: q,
+    ctx: 'Folded blinds, antes, and abandoned cold-calls all stay in the pot. No rake.',
+    hint: h.hasFlop
+      ? 'Lock in the pot going to the flop as one number, then add the flop bets and calls on top.'
+      : 'Add each player’s final total, then the dead money: folded blinds (and any fold after a cold-call) stay in.',
+    unit:'chips', answer: h.pot, tol: 0,
+    answerText: fmt(h.pot),
+    explainHTML: `<div class="ledger">${led}<div class="lrow final"><span class="lt">Pot</span><span class="lp">${fmt(h.pot)}</span></div></div>`
+  };
+}
+
+/* ---- 2. STACK IN CHIPS ---- */
+function genChips(diff){
+  for(let t=0;t<30;t++){
+    const heroPos = POS[RNG.int(4)];                 // never a blind: clean accounting
+    const h = buildHand(diff, {hero:heroPos});
+    const bb = h.lv.bb, sb = h.lv.sb;
+    let S = bb * RNG.pick(diff==='easy' ? [50,60,80,100] : [40,50,60,75,90,100,120]);
+    if(diff==='hard' && Math.random()<0.5) S += RNG.pick([sb*5, sb*15, sb*25]);
+    const spent = h.total[heroPos]||0;
+    if(S - spent < bb*5) continue;                   // keep the spot sane
+    const behind = S - spent;
+    const info = [`Blinds <b>${blindsStr(h.lv)}</b>`];
+    if(h.ante) info.push(`BB ante <b>${fmt(h.ante)}</b>`);
+    info.push(`<span class="hero-chip">You are ${heroPos} — starting stack <b>${fmt(S)}</b></span>`);
+    const hl = h.heroLines.map(l=>`<div class="lrow"><span class="lt">${l}</span></div>`).join('');
+    return {
+      modeId:'chips', badge:'chips', badgeText:'Stack · Chips',
+      title:'Where is your stack now?',
+      street: h.hasFlop ? 'Preflop + flop' : 'Preflop',
+      info, rows: h.rows,
+      questionHTML:`<b>How many chips do you have behind</b> after this action?`,
+      ctx:'Count only what left YOUR stack. A call after your own raise only costs the difference.',
+      hint:`Subtract each of your actions as it happens. Calling a 3-bet after opening costs the 3-bet size minus your open.`,
+      unit:'chips', answer: behind, tol: 0,
+      answerText: fmt(behind),
+      explainHTML:
+        `<div class="ledger">${hl}` +
+        `<div class="lrow"><span class="lt">Total invested</span><span class="lp">${fmt(spent)}</span></div>` +
+        `<div class="lrow final"><span class="lt">${fmt(S)} − ${fmt(spent)} = behind</span><span class="lp">${fmt(behind)}</span></div></div>`
+    };
+  }
+  return genPot(diff);
+}
+
+/* ---- 3. STACK IN BIG BLINDS ---- */
+function bbCount(diff){
+  // a bb amount that is whole (easy) or may be a half (std/hard)
+  const base = diff==='easy' ? 10+RNG.int(91) : 12+RNG.int(139);
+  const half = diff!=='easy' && Math.random()<0.4;
+  return base + (half?0.5:0);
+}
+function genBBs(diff){
+  for(let t=0;t<40;t++){
+    const lv = RNG.pick(LEVELS[diff]);
+    const {sb,bb} = lv;
+    const variant = RNG.pick(diff==='easy'
+      ? ['toBB','toBB','toChips','shove']
+      : ['toBB','toBB','toChips','shove','ledger','ledger']);
+
+    if(variant==='ledger'){
+      // pure bb arithmetic: start k bb, commit r + f (+ maybe g)
+      const k = 20 + RNG.int(81);
+      const r = RNG.pick([2,2.5,3,3.5]);
+      const f = RNG.pick([3,4,5,6,7.5,10]);
+      const deep = diff==='hard' && Math.random()<0.6;
+      const g = deep ? RNG.pick([10,12,15,20]) : 0;
+      const ans = k - r - f - g;
+      if(ans < 5) continue;
+      const rows = [
+        {tag:'YOU', txt:`start the hand with ${fmtBB(k)} bb`, street:'pre', hero:true},
+        {tag:'YOU', txt:`raise to ${fmtBB(r)} bb`, street:'pre', hero:true},
+        {tag:'YOU', txt:`bet ${fmtBB(f)} bb on the flop (called)`, street:'flop', hero:true},
+      ];
+      if(deep) rows.push({tag:'YOU', txt:`bet ${fmtBB(g)} bb on the turn (called)`, street:'turn', hero:true});
+      return {
+        modeId:'bbs', badge:'bbs', badgeText:'Stack · BB',
+        title:'Track your stack in big blinds', street:'Whole hand',
+        info:[`Blinds <b>${blindsStr(lv)}</b>`], rows,
+        questionHTML:`<b>How many big blinds do you have behind?</b>`,
+        ctx:'Pros track depth in bb because strategy thresholds (shove ranges, SPR) live in bb, not chips.',
+        hint:'Just subtract in bb: start − raise − flop bet' + (deep?' − turn bet':'') + '.',
+        unit:'BB', answer: ans, tol: 0.05,
+        answerText:`${fmtBB(ans)} bb`,
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${fmtBB(k)} − ${fmtBB(r)} − ${fmtBB(f)}${deep?' − '+fmtBB(g):''}</span><span class="lp">${fmtBB(ans)} bb</span></div></div>`
+      };
+    }
+
+    const k = bbCount(diff);
+    const S = bb * k;
+    if(!Number.isInteger(S)) continue;
+
+    if(variant==='toBB'){
+      return {
+        modeId:'bbs', badge:'bbs', badgeText:'Stack · BB',
+        title:'Convert chips to big blinds', street:'Blind change',
+        info:[`Blinds <b>${blindsStr(lv)}</b>`],
+        rows:[{tag:'YOU', txt:`your stack is ${fmt(S)}`, street:'pre', hero:true}],
+        questionHTML:`The limit just changed to <b>${blindsStr(lv)}</b>. <b>How many big blinds is ${fmt(S)}?</b>`,
+        ctx:'Mixed games rotate limits constantly — re-convert your depth at every blind change.',
+        hint:`Drop the zeros first, then divide: ${fmt(S)} ÷ ${fmt(bb)}.`,
+        unit:'BB', answer: k, tol: 0.05,
+        answerText:`${fmtBB(k)} bb`,
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${fmt(S)} ÷ ${fmt(bb)}</span><span class="lp">${fmtBB(k)} bb</span></div></div>`
+      };
+    }
+    if(variant==='toChips'){
+      const kk = Math.round(k);   // whole bb targets read more naturally
+      return {
+        modeId:'bbs', badge:'bbs', badgeText:'Stack · BB',
+        title:'Convert big blinds to chips', street:'Buying in',
+        info:[`Blinds <b>${blindsStr(lv)}</b>`],
+        rows:[{tag:'YOU', txt:`you want exactly ${kk} bb behind`, street:'pre', hero:true}],
+        questionHTML:`At <b>${blindsStr(lv)}</b>, <b>how many chips is ${kk} bb?</b>`,
+        ctx:'The reverse conversion — sizing a top-up or a buy-in.',
+        hint:`${kk} × ${fmt(bb)} — multiply, then sanity-check the zeros.`,
+        unit:'chips', answer: bb*kk, tol: 0,
+        answerText: fmt(bb*kk),
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${kk} × ${fmt(bb)}</span><span class="lp">${fmt(bb*kk)}</span></div></div>`
+      };
+    }
+    // shove: read an all-in in bb
+    const vpos = RNG.pick(['CO','BTN','SB']);
+    return {
+      modeId:'bbs', badge:'bbs', badgeText:'Stack · BB',
+      title:'Read the shove in big blinds', street:'Facing all-in',
+      info:[`Blinds <b>${blindsStr(lv)}</b>`],
+      rows:[{tag:vpos, txt:`moves all-in for ${fmt(S)}`, street:'pre', hero:false}],
+      questionHTML:`<b>How many big blinds is the shove?</b>`,
+      ctx:'Calling ranges against shoves are defined in bb — convert before you think.',
+      hint:`${fmt(S)} ÷ ${fmt(bb)} — drop zeros, then divide.`,
+      unit:'BB', answer: k, tol: 0.05,
+      answerText:`${fmtBB(k)} bb`,
+      explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${fmt(S)} ÷ ${fmt(bb)}</span><span class="lp">${fmtBB(k)} bb</span></div></div>`
+    };
+  }
+  return genPot(diff);
+}
+
+/* ---- 4. BET SIZE vs POT ---- */
+const FRAC_LABEL = [['1/4',1,4],['1/3',1,3],['1/2',1,2],['2/3',2,3],['3/4',3,4],['full-pot',1,1],['1.5×-pot',3,2]];
+function genBetPot(diff){
+  for(let t=0;t<40;t++){
+    const lv = RNG.pick(LEVELS[diff]);
+    const bb = lv.bb;
+    const P = bb * RNG.pick(diff==='easy' ? [4,6,8,9,10,12] : diff==='std' ? [8,9,10,12,15,16,18,20,24] : [12,15,18,21,24,30,36,45]);
+    const variant = RNG.pick(['pct','pct','size','size','plmax','plmax','plopen']);
+
+    if(variant==='pct'){
+      const fr = [[1,4],[1,3],[1,2],[2,3],[3,4],[1,1],[5,4],[3,2],[2,1]].filter(([n,d])=>(P*n)%d===0);
+      if(!fr.length) continue;
+      const [n,d] = RNG.pick(fr);
+      const B = P*n/d;
+      const exact = 100*n/d;
+      const tol = (d===3) ? 1.0 : 0.25;
+      const ansTxt = Number.isInteger(exact) ? exact+'%' : '≈'+Math.round(exact)+'%';
+      return {
+        modeId:'betpot', badge:'betpot', badgeText:'Bet vs Pot',
+        title:'Read the bet as a fraction of pot', street:'Facing a bet',
+        info:[`Pot <b>${fmt(P)}</b>`],
+        rows:[{tag:'VILLAIN', txt:`bets ${fmt(B)} into ${fmt(P)}`, street:'flop', hero:false}],
+        questionHTML:`<b>What percent of the pot</b> is the bet?`,
+        ctx:'Pot odds and defense frequencies key off this fraction — read it before anything else.',
+        hint:`Anchor on half pot: ½ × ${fmt(P)} = ${fmt(P/2)}. Is ${fmt(B)} above or below that, and by how much?`,
+        unit:'%', answer: exact, tol,
+        answerText: ansTxt,
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${fmt(B)} ÷ ${fmt(P)}</span><span class="lp">${ansTxt}</span></div></div>`
+      };
+    }
+    if(variant==='size'){
+      const fr = FRAC_LABEL.filter(([,n,d])=>(P*n)%d===0);
+      if(!fr.length) continue;
+      const [lab,n,d] = RNG.pick(fr);
+      const B = P*n/d;
+      return {
+        modeId:'betpot', badge:'betpot', badgeText:'Bet vs Pot',
+        title:'Size your bet from the pot', street:'Your turn to bet',
+        info:[`Pot <b>${fmt(P)}</b>`],
+        rows:[{tag:'YOU', txt:`want to bet ${lab.replace('-pot','')} pot`, street:'flop', hero:true}],
+        questionHTML:`Pot is <b>${fmt(P)}</b>. <b>How many chips is a ${lab.replace('-',' ')} bet?</b>`,
+        ctx:'Big-bet streets in the mix (NLHE, PLO, NL 2-7 Single Draw) are sized in pot fractions.',
+        hint:`Half of ${fmt(P)} is ${fmt(P/2)} — build ${lab.replace('-',' ')} from that anchor.`,
+        unit:'chips', answer: B, tol: 0,
+        answerText: fmt(B),
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">${lab.replace('-',' ')} × ${fmt(P)}</span><span class="lp">${fmt(B)}</span></div></div>`
+      };
+    }
+    if(variant==='plopen'){
+      return {
+        modeId:'betpot', badge:'betpot', badgeText:'Bet vs Pot',
+        title:'Pot-limit: first to act', street:'Pot-Limit Omaha',
+        info:[`Pot <b>${fmt(P)}</b>`],
+        rows:[{tag:'YOU', txt:'are first to act on the flop', street:'flop', hero:true}],
+        questionHTML:`Pot-limit game, pot is <b>${fmt(P)}</b>, no bet yet. <b>What is your maximum bet?</b>`,
+        ctx:'With no bet in front of you, “pot” is just the pot.',
+        hint:'No call to make — the max bet equals the current pot.',
+        unit:'chips', answer: P, tol: 0,
+        answerText: fmt(P),
+        explainHTML:`<div class="ledger"><div class="lrow"><span class="lt">Max bet = pot</span><span class="lp">${fmt(P)}</span></div></div>`
+      };
+    }
+    // plmax — facing a bet, compute the max pot raise
+    const fr = [[1,2],[2,3],[3,4],[1,1]].filter(([n,d])=>(P*n)%d===0);
+    if(!fr.length) continue;
+    const [n,d] = RNG.pick(fr);
+    const B = P*n/d;
+    const ans = P + 3*B;
+    return {
+      modeId:'betpot', badge:'betpot', badgeText:'Bet vs Pot',
+      title:'Pot-limit: max raise facing a bet', street:'Pot-Limit Omaha',
+      info:[`Pot before the bet <b>${fmt(P)}</b>`],
+      rows:[{tag:'VILLAIN', txt:`bets ${fmt(B)}`, street:'flop', hero:false}],
+      questionHTML:`Pot-limit game. Pot was <b>${fmt(P)}</b>, villain bets <b>${fmt(B)}</b>. <b>What is your maximum raise TO?</b>`,
+      ctx:'“Pot” = call the bet, then raise by the new pot. Every PLO player must do this instantly.',
+      hint:`Shortcut: max raise to = pot + 3 × bet = ${fmt(P)} + 3 × ${fmt(B)}.`,
+      unit:'chips', answer: ans, tol: 0,
+      answerText: fmt(ans),
+      explainHTML:
+        `<div class="ledger">`+
+        `<div class="lrow"><span class="lt">Pot before bet</span><span class="lp">${fmt(P)}</span></div>`+
+        `<div class="lrow"><span class="lt">Villain bets ${fmt(B)}</span><span class="lp">${fmt(P+B)}</span></div>`+
+        `<div class="lrow"><span class="lt">Your call ${fmt(B)}</span><span class="lp">${fmt(P+2*B)}</span></div>`+
+        `<div class="lrow"><span class="lt">Raise by the new pot (${fmt(P+2*B)})</span><span class="lp">—</span></div>`+
+        `<div class="lrow final"><span class="lt">Raise to = ${fmt(B)} + ${fmt(P+2*B)} = pot + 3×bet</span><span class="lp">${fmt(ans)}</span></div></div>`
+    };
+  }
+  return genPot(diff);
+}
+
+/* dispatch */
+const MODES = [
+  { id:'pot',    name:'Pot Tracking',     short:'Pot',       gen:genPot },
+  { id:'chips',  name:'Stack — Chips',    short:'Stack chips', gen:genChips },
+  { id:'bbs',    name:'Stack — Big Blinds', short:'Stack BB', gen:genBBs },
+  { id:'betpot', name:'Bet vs Pot',       short:'Bet vs Pot', gen:genBetPot },
+];
+function generate(modeId, diff){
+  const m = MODES.find(x=>x.id===modeId);
+  return m.gen(diff);
+}
+
+/* ============================================================
+   UI STATE
+   ============================================================ */
+let mode = 'mix';
+let diff = localStorage.getItem('potStackDiff') || 'std';
+let current = null;
+let answered = false;
+const STORE_KEY = 'potStackStats_v1';
+
+const stats = loadStats();
+function loadStats(){
+  try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)); if(s&&s.perMode) return s; }catch(e){}
+  return { seen:0, correct:0, streak:0, best:0, times:[], perMode:{} };
+}
+function saveStats(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(stats)); }catch(e){} }
+
+const el = id => document.getElementById(id);
+
+/* segmented controls */
+const modeSeg = el('modeSeg');
+function buildModeSeg(){
+  modeSeg.innerHTML='';
+  const mix=document.createElement('button');
+  mix.textContent='All Mix (random)'; mix.dataset.id='mix'; mix.className='mix';
+  modeSeg.appendChild(mix);
+  for(const m of MODES){
+    const b=document.createElement('button'); b.textContent=m.short; b.dataset.id=m.id; b.title=m.name;
+    modeSeg.appendChild(b);
+  }
+  modeSeg.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    mode=b.dataset.id; updateSegs(); newSpot();
+  });
+}
+const DIFFS = [ {id:'easy',label:'Easy'}, {id:'std',label:'Standard'}, {id:'hard',label:'Hard'} ];
+const diffSeg = el('diffSeg');
+function buildDiffSeg(){
+  diffSeg.innerHTML='';
+  for(const d of DIFFS){
+    const b=document.createElement('button'); b.textContent=d.label; b.dataset.id=d.id;
+    diffSeg.appendChild(b);
+  }
+  diffSeg.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    diff=b.dataset.id; localStorage.setItem('potStackDiff', diff);
+    updateSegs(); renderPB(); newSpot();
+  });
+}
+function updateSegs(){
+  [...modeSeg.children].forEach(b=>b.classList.toggle('active', b.dataset.id===mode));
+  [...diffSeg.children].forEach(b=>b.classList.toggle('active', b.dataset.id===diff));
+}
+
+/* ============================================================
+   RENDER A SPOT
+   ============================================================ */
+function renderRows(rows){
+  const list = el('actionList');
+  if(!rows || !rows.length){ list.classList.add('hidden'); list.innerHTML=''; return; }
+  list.classList.remove('hidden');
+  list.innerHTML='';
+  let lastStreet = 'pre';
+  for(const r of rows){
+    if(r.street!==lastStreet && r.street!=='pre'){
+      const d=document.createElement('div'); d.className='street-div'; d.textContent=r.street.toUpperCase();
+      list.appendChild(d);
+    }
+    lastStreet=r.street;
+    const row=document.createElement('div');
+    row.className='action-row'+(r.hero?' hero':'')+(r.fold?' foldrow':'');
+    const youTag = (r.hero && r.tag!=='YOU') ? ' ·YOU' : '';
+    row.innerHTML=`<span class="ptag">${r.tag}${youTag}</span><span class="atxt">${styleAmts(r.txt)}</span>`;
+    list.appendChild(row);
+  }
+}
+function styleAmts(t){
+  // wrap chip/bb amounts in gold — skip the "3" in "3-bets"
+  return t.replace(/(\d[\d,]*(?:\.5)?(?: ?bb)?)(?!-)/g, '<span class="amt">$1</span>');
+}
+
+function newSpot(){
+  const id = (mode==='mix') ? RNG.pick(MODES).id : mode;
+  const spot = generate(id, diff);
+  if(!spot){ el('questionText').textContent='Could not generate a spot — try again.'; return; }
+  current=spot; answered=false;
+
+  el('modeBadge').textContent=spot.badgeText;
+  el('modeBadge').className='mode-badge '+spot.badge;
+  el('streetTag').textContent=spot.street;
+  el('spotTitle').textContent=spot.title;
+  el('infoStrip').innerHTML=(spot.info||[]).join('<span style="color:var(--dim)">·</span>');
+  renderRows(spot.rows);
+  el('questionText').innerHTML=spot.questionHTML;
+  el('contextText').textContent=spot.ctx||'';
+  el('unitTag').textContent=spot.unit;
+  el('hintBox').classList.add('hidden'); el('hintBox').textContent='';
+  el('feedback').innerHTML='';
+  el('answerInput').value=''; el('answerInput').focus();
+  startTime=performance.now();
+}
+
+/* ============================================================
+   ANSWER HANDLING
+   ============================================================ */
+function parseAnswer(raw){
+  if(raw==null) return NaN;
+  let s=String(raw).trim().toLowerCase().replace(/,/g,'').replace(/\s+/g,'');
+  if(!s) return NaN;
+  let mult=1;
+  if(s.endsWith('k')){ mult=1000; s=s.slice(0,-1); }
+  if(s.endsWith('%')) s=s.slice(0,-1);
+  if(s.endsWith('bb')) s=s.slice(0,-2);
+  const v=parseFloat(s);
+  return isNaN(v) ? NaN : v*mult;
+}
+
+let startTime=0;
+function submit(){
+  if(!current || answered) return;
+  const val=parseAnswer(el('answerInput').value);
+  if(isNaN(val)){ el('answerInput').focus(); return; }
+  const ok = Math.abs(val - current.answer) <= (current.tol || 0.001);
+
+  if(TA.active){
+    TA.attempted++; if(ok) TA.correct++;
+    flashTA(ok);
+    if(Date.now()>=TA.endAt) endChallenge(); else newSpot();
+    return;
+  }
+
+  answered=true;
+  const dt=(performance.now()-startTime)/1000;
+
+  stats.seen++; stats.times.push(dt); if(stats.times.length>50) stats.times.shift();
+  const pm = stats.perMode[current.modeId] || (stats.perMode[current.modeId]={seen:0,correct:0});
+  pm.seen++;
+  if(ok){ stats.correct++; pm.correct++; stats.streak++; stats.best=Math.max(stats.best,stats.streak); }
+  else { stats.streak=0; }
+  saveStats(); renderStats();
+
+  const fb=el('feedback');
+  fb.innerHTML = `
+    <div class="verdict ${ok?'ok':'no'}">
+      ${ok?'✓ Correct':'✗ Not quite'} <span class="pill">your answer: ${el('answerInput').value}</span>
+      <span class="pill">actual: ${current.answerText}</span>
+    </div>
+    <div class="explain">${current.hint||''}</div>
+    ${current.explainHTML||''}`;
+
+  if(ok && el('autoNext').checked){ setTimeout(newSpot, 1100); }
+}
+
+function reveal(){
+  if(!current) return;
+  answered=true;
+  el('feedback').innerHTML = `
+    <div class="verdict"><span class="pill">answer: ${current.answerText}</span></div>
+    <div class="explain">${current.hint||''}</div>
+    ${current.explainHTML||''}`;
+}
+function showHint(){
+  if(!current) return;
+  el('hintBox').classList.remove('hidden');
+  el('hintBox').textContent=current.hint||'';
+}
+
+/* ============================================================
+   STATS RENDER
+   ============================================================ */
+function renderStats(){
+  el('stStreak').textContent=stats.streak;
+  el('stBest').textContent=stats.best;
+  el('stHands').textContent=stats.seen;
+  el('stAcc').textContent = stats.seen ? Math.round(100*stats.correct/stats.seen)+'%' : '—';
+  el('totCorrect').textContent=stats.correct;
+  el('totSeen').textContent=stats.seen;
+  el('avgTime').textContent = stats.times.length ? (stats.times.reduce((a,b)=>a+b,0)/stats.times.length).toFixed(1)+'s' : '—';
+
+  const ms=el('modeStats'); ms.innerHTML='';
+  for(const m of MODES){
+    const pm=stats.perMode[m.id];
+    const pct = pm&&pm.seen ? Math.round(100*pm.correct/pm.seen) : 0;
+    const wrap=document.createElement('div'); wrap.className='gamestat';
+    wrap.innerHTML=`<div class="gname"><b>${m.name}</b><span>${pm?pm.correct+'/'+pm.seen:'—'}</span></div>
+      <div class="track"><span style="width:${pm&&pm.seen?pct:0}%"></span></div>`;
+    ms.appendChild(wrap);
+  }
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+el('submitBtn').onclick=submit;
+el('revealBtn').onclick=reveal;
+el('hintBtn').onclick=showHint;
+el('answerInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') submit();
+  else if(answered && e.key.toLowerCase()==='n'){ e.preventDefault(); newSpot(); }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='n' && answered && document.activeElement!==el('answerInput')) newSpot();
+});
+el('resetStats').onclick=()=>{
+  if(!confirm('Reset all session stats?')) return;
+  Object.assign(stats,{seen:0,correct:0,streak:0,best:0,times:[],perMode:{}});
+  saveStats(); renderStats();
+};
+
+const newBtn=document.createElement('button');
+newBtn.id='newBtn'; newBtn.className='btn primary'; newBtn.textContent='New spot';
+newBtn.onclick=newSpot;
+const challengeBtn=document.createElement('button');
+challengeBtn.id='challengeBtn'; challengeBtn.className='btn challenge-btn'; challengeBtn.textContent='▶ 3-min Challenge';
+challengeBtn.onclick=startChallenge;
+document.querySelector('.controls').insertBefore(newBtn, modeSeg);
+document.querySelector('.controls').insertBefore(challengeBtn, modeSeg);
+
+/* ============================================================
+   TIME ATTACK (local personal best per difficulty)
+   ============================================================ */
+const TA = { active:false, counting:false, endAt:0, correct:0, attempted:0, timer:null, cd:null, DURATION:180 };
+const pbKey = ()=>'potStackPB_'+diff;
+function loadPB(){ try{ return JSON.parse(localStorage.getItem(pbKey()))||null; }catch(e){ return null; } }
+function renderPB(){
+  const pb=loadPB();
+  el('pbDiffLabel').textContent = DIFFS.find(d=>d.id===diff).label;
+  el('pbVal').textContent = pb ? pb.correct+' correct' : '—';
+}
+function fmtTime(s){ const m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0'); }
+function flashTA(ok){
+  const f=el('taFlash'); f.textContent=ok?'✓':'✗'; f.className='ta-flash '+(ok?'ok':'no');
+  clearTimeout(flashTA._t); flashTA._t=setTimeout(()=>{ f.className='ta-flash'; }, 350);
+}
+function startChallenge(){
+  if(TA.active || TA.counting) return;
+  showTab('drill');
+  TA.counting=true;
+  document.body.classList.add('ta-on');
+  runCountdown(beginChallenge);
+}
+function runCountdown(done){
+  const ov=el('countdownOverlay'), num=el('countdownNum');
+  const seq=['3','2','1','Go!'];
+  let i=0;
+  ov.classList.remove('hidden');
+  const show=()=>{
+    const isGo = seq[i]==='Go!';
+    num.textContent=seq[i];
+    num.className='cd-num'+(isGo?' go':'');
+    void num.offsetWidth;
+    num.classList.add('pop');
+    i++;
+    if(i<seq.length) TA.cd=setTimeout(show, 1000);
+    else TA.cd=setTimeout(()=>{ ov.classList.add('hidden'); done(); }, 650);
+  };
+  show();
+}
+function beginChallenge(){
+  TA.counting=false;
+  TA.active=true; TA.correct=0; TA.attempted=0; TA.endAt=Date.now()+TA.DURATION*1000;
+  mode='mix'; updateSegs();
+  el('taBanner').classList.remove('hidden');
+  tickTimer();
+  TA.timer=setInterval(tickTimer, 250);
+  newSpot();
+}
+function tickTimer(){
+  const left=Math.max(0, Math.round((TA.endAt-Date.now())/1000));
+  const clock=el('taTime'); clock.textContent=fmtTime(left);
+  clock.classList.toggle('warn', left<=15);
+  el('taScore').textContent=TA.correct;
+  el('taAttempt').textContent=TA.attempted;
+  if(Date.now()>=TA.endAt) endChallenge();
+}
+function endChallenge(){
+  if(!TA.active) return;
+  TA.active=false; clearInterval(TA.timer);
+  document.body.classList.remove('ta-on');
+  el('taBanner').classList.add('hidden');
+  el('resCorrect').textContent=TA.correct;
+  el('resAttempt').textContent=TA.attempted;
+  el('resAcc').textContent = TA.attempted ? Math.round(100*TA.correct/TA.attempted)+'%' : '—';
+
+  const pb=loadPB();
+  let line;
+  if(!pb || TA.correct>pb.correct){
+    try{ localStorage.setItem(pbKey(), JSON.stringify({correct:TA.correct, attempted:TA.attempted, ts:Date.now()})); }catch(e){}
+    line = pb ? `<span class="newpb">New personal best!</span> Previous: <b>${pb.correct}</b>`
+              : `<span class="newpb">First run logged — that’s your benchmark.</span>`;
+  } else {
+    line = `Personal best at this difficulty: <b>${pb.correct}</b>`;
+  }
+  el('pbResult').innerHTML=line;
+  renderPB();
+  el('resultModal').classList.remove('hidden');
+}
+el('taGiveUp').onclick=endChallenge;
+el('closeResultBtn').onclick=()=>{ el('resultModal').classList.add('hidden'); newSpot(); };
+
+/* ============================================================
+   TABS
+   ============================================================ */
+const VIEWS={drill:'drillView', sc:'scView'};
+function showTab(view){
+  if(TA.active || TA.counting) return;
+  for(const [k,id] of Object.entries(VIEWS)) el(id).classList.toggle('hidden', k!==view);
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+}
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(b) showTab(b.dataset.view);
+});
+
+buildModeSeg();
+buildDiffSeg();
+updateSegs();
+renderStats();
+renderPB();
+newSpot();
+</script>
+</body>
+</html>
