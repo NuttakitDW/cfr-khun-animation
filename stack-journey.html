@@ -231,7 +231,6 @@ footer a:hover { color: var(--accent); }
  <div id="playView">
   <div class="controls">
     <div class="seg" id="modeSeg"></div>
-    <div class="seg" id="diffSeg"></div>
     <button class="btn ghost" id="restartBtn" style="margin-left:auto">Restart run</button>
   </div>
 
@@ -474,11 +473,9 @@ const REBUY_AT = 15;
 const CAP_AT = 260;            // bank the win and re-sit so the number stays trackable
 const CHIP_LEVELS = [ {sb:25,bb:50}, {sb:50,bb:100}, {sb:75,bb:150}, {sb:100,bb:200} ];
 const MODES = [ {id:'chips',label:'Chips'}, {id:'bb',label:'Big Blinds'} ];
-const DIFFS = [ {id:'easy',label:'Easy'}, {id:'std',label:'Standard'}, {id:'hard',label:'Hard'} ];
 
 const el = id => document.getElementById(id);
 let mode = localStorage.getItem('sjMode') || 'chips';
-let diff = localStorage.getItem('sjDiff') || 'std';
 let bbLevel = 100, sbLevel = 50;
 
 let queue = [];
@@ -548,7 +545,7 @@ function ensureQueue(){
       running = snap(running + b.d);
       out.push(b);
       // occasional mid-hand "how much do you have behind?" checkpoint
-      if(diff!=='easy' && b.t==='me' && b.d!==0 && i < beats.length-1 && Math.random()<0.10){
+      if(b.t==='me' && b.d!==0 && i < beats.length-1 && Math.random()<0.10){
         out.push({ t:'checkpoint', mid:true, expectBB:running });
         handsSinceCheck = 0;
       }
@@ -556,8 +553,8 @@ function ensureQueue(){
     genTruth = running;
     handsSinceCheck++;
 
-    const endProb = diff==='easy' ? 1 : diff==='std' ? 0.85 : 0.6;
-    if(handsSinceCheck >= 3 || Math.random() < endProb){
+    // checkpoint after most hands; never let more than 3 hands pass uncounted
+    if(handsSinceCheck >= 3 || Math.random() < 0.85){
       out.push({ t:'checkpoint', expectBB:genTruth });
       handsSinceCheck = 0;
     }
@@ -687,7 +684,7 @@ function updateStats(){
   el('stSeen').textContent=sess.seen;
   el('stHands').textContent=sess.hands;
 }
-function bestKey(){ return `sjBest_${mode}_${diff}`; }
+function bestKey(){ return `sjBest_${mode}`; }
 function loadBest(){ const v=parseInt(localStorage.getItem(bestKey()),10); best=isNaN(v)?0:v; }
 function persistBest(){ try{ localStorage.setItem(bestKey(), String(best)); }catch(e){} }
 
@@ -734,7 +731,6 @@ card.addEventListener('pointerup', e=>{
 
 /* ---- boot ---- */
 buildSeg(el('modeSeg'), MODES, ()=>mode, id=>{ if(id===mode) return; mode=id; localStorage.setItem('sjMode',mode); syncSeg(el('modeSeg'),()=>mode); restart(); }, 'mode');
-buildSeg(el('diffSeg'), DIFFS, ()=>diff, id=>{ if(id===diff) return; diff=id; localStorage.setItem('sjDiff',diff); syncSeg(el('diffSeg'),()=>diff); restart(); });
 el('restartBtn').onclick=restart;
 document.querySelector('.tabs').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
