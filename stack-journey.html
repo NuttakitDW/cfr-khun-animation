@@ -612,7 +612,7 @@ function render(beat){
 
   if(isCp){
     const inp=el('cpInput'); inp.focus();
-    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitCp(); } });
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); submitCp(); } });
     el('cpSubmit').onclick=submitCp;
   } else {
     el('nextBtn').onclick=()=>advance(-1);
