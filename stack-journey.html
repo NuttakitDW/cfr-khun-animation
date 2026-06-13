@@ -82,15 +82,6 @@ main { padding: 22px 28px 8px; max-width: 760px; margin: 0 auto; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.ghost { background: transparent; }
-.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
-.seg button {
-  font: inherit; font-size: 11.5px; font-weight: 600;
-  border: 1px solid transparent; background: transparent; color: var(--muted);
-  border-radius: 7px; padding: 5px 11px; cursor: pointer; white-space: nowrap;
-}
-.seg button:hover { color: var(--text); }
-.seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
-.seg button.active.mode { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
 
 /* anchor + stats HUD */
 .hud { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -159,6 +150,7 @@ main { padding: 22px 28px 8px; max-width: 760px; margin: 0 auto; }
 .delta.minus { color: var(--red); background: rgba(255,94,122,0.08); border-color: rgba(255,94,122,0.3); }
 .delta.plus  { color: var(--green); background: rgba(63,223,142,0.08); border-color: rgba(63,223,142,0.3); }
 .delta.zero  { color: var(--muted); background: transparent; font-size: 15px; font-weight: 600; }
+.delta .du { font-size: 13px; color: var(--muted); font-weight: 600; }
 
 .card-foot { margin-top: 14px; display: flex; align-items: center; gap: 10px; min-height: 22px; }
 .swipe-hint { font-size: 11.5px; color: var(--dim); font-family: "SF Mono", Menlo, monospace; }
@@ -191,6 +183,7 @@ main { padding: 22px 28px 8px; max-width: 760px; margin: 0 auto; }
 .cp-ledger .lr .t { color: var(--muted); }
 .cp-ledger .lr .d.minus { color: #ff8aa0; } .cp-ledger .lr .d.plus { color: var(--green); }
 .cp-ledger .lr .run { color: var(--gold); font-weight: 700; }
+.cp-ledger .lr .cnv { color: var(--dim); margin-left: 6px; font-weight: 600; }
 .cp-ledger .lr.anchor { background: var(--panel-2); } .cp-ledger .lr.anchor .t { color: var(--text); }
 .cp-ledger .lr.final { background: rgba(255,213,74,0.07); } .cp-ledger .lr.final .t { color: var(--text); font-weight: 700; }
 
@@ -218,7 +211,7 @@ footer a:hover { color: var(--accent); }
 <header>
   <div class="title-row">
     <h1>Stack Journey</h1>
-    <span class="sub">Track your stack the way you do at the table — one action at a time, no rewinding</span>
+    <span class="sub">Track your stack the way you do at the table — the dealer calls chips, you count big blinds</span>
     <a class="home" href="/">← home</a>
   </div>
   <nav class="tabs">
@@ -230,7 +223,6 @@ footer a:hover { color: var(--accent); }
 <main>
  <div id="playView">
   <div class="controls">
-    <div class="seg" id="modeSeg"></div>
     <button class="btn ghost" id="restartBtn" style="margin-left:auto">Restart run</button>
   </div>
 
@@ -256,11 +248,12 @@ footer a:hover { color: var(--accent); }
   </div>
 
   <p class="muted-note">
-    Each card is one beat of the hand, shown once — like swiping a feed, you can’t scroll back. Keep a running
-    count from your <b>last-checkpoint stack</b> (top-left). Your own bets and calls move it; villain’s actions
-    don’t. When you <b>win</b>, the card hands you the whole pot to add. At a gold <b>checkpoint</b>, type the
-    stack you’ve been tracking. Swipe, press <span class="mono">→</span> / <span class="mono">Enter</span>, or
-    tap <b>Next</b> to advance.
+    Each card is one beat of the hand, shown once — like swiping a feed, you can’t scroll back. The dealer calls
+    every bet in <b>chips</b>; convert it to <b>big blinds</b> on the fly (the blind level is your key, top-left)
+    and keep a running <b>bb</b> count from your <b>last-checkpoint stack</b>. Your own bets and calls move it;
+    villain’s actions don’t. When you <b>win</b>, the card hands you the whole pot in chips to convert and add. At
+    a gold <b>checkpoint</b>, type the <b>bb</b> stack you’ve been tracking. Swipe, press
+    <span class="mono">→</span> / <span class="mono">Enter</span>, or tap <b>Next</b> to advance.
   </p>
  </div>
 
@@ -275,13 +268,16 @@ footer a:hover { color: var(--accent); }
   </div>
   <div class="hiw">
     <h2>How to count fast</h2>
-    <h3>Subtract as the chips leave — never reconstruct later</h3>
-    <div class="formula">new stack = last-checkpoint stack − your money in + pot you win</div>
+    <h3>Convert chips to bb as they leave — never reconstruct later</h3>
+    <div class="formula">new stack (bb) = last-checkpoint stack − (chips in ÷ bb) + (pot won ÷ bb)</div>
     <ul>
+      <li><b>The dealer talks chips; you think in bb.</b> Every bet is announced as a raw chip amount. Divide by the
+        big blind (shown top-left) the moment you see it, then move your bb count — that on-the-fly conversion is
+        the whole drill.</li>
       <li><b>Only your chips move your stack.</b> A villain bet, raise, or fold changes the pot, not you. The card
         shows <span class="mono">no change</span> on purpose — resist nudging your number.</li>
       <li><b>Calls cost the difference.</b> If you open and then call a 3-bet, the card shows only the <i>extra</i>
-        you put in, not the total — that’s the number to subtract.</li>
+        chips you put in, not the total — convert that and subtract.</li>
       <li><b>Winning is one addition.</b> When you take the pot, the card gives you the full amount (your own
         chips included) — just add it to your running count.</li>
       <li><b>Re-anchor every checkpoint.</b> Each checkpoint reveals the truth and becomes your new base, so a
@@ -290,11 +286,13 @@ footer a:hover { color: var(--accent); }
     </ul>
   </div>
   <div class="hiw">
-    <h2>Two modes</h2>
-    <h3>Chips and Big Blinds</h3>
-    <p><b>Chips</b> trains raw table arithmetic at a real limit (e.g. 75/150), where bets aren’t round multiples of
-      ten. <b>Big blinds</b> trains the depth count pros actually use for decisions — everything denominated in bb,
-      halves and all. Same journey, same hands; only the unit changes.</p>
+    <h2>Why chips in, bb out</h2>
+    <h3>Train the conversion you actually do at the table</h3>
+    <p>At a live table the dealer never says “three big blinds” — they push out a stack and call <b>chips</b>. But
+      every decision you make is in <b>bb</b> of depth. The gap between those two is a conversion you have to do in
+      real time, hand after hand. This drill drills exactly that gap: bets arrive in chips at a real limit (e.g.
+      75/150, where amounts aren’t round multiples of ten), and you keep your stack in big blinds. Same journey,
+      same hands — the dealer just speaks chips and you answer in bb.</p>
   </div>
  </div>
 </main>
@@ -472,10 +470,8 @@ const START_BB = 100;
 const REBUY_AT = 15;
 const CAP_AT = 260;            // bank the win and re-sit so the number stays trackable
 const CHIP_LEVELS = [ {sb:25,bb:50}, {sb:50,bb:100}, {sb:75,bb:150}, {sb:100,bb:200} ];
-const MODES = [ {id:'chips',label:'Chips'}, {id:'bb',label:'Big Blinds'} ];
 
 const el = id => document.getElementById(id);
-let mode = localStorage.getItem('sjMode') || 'chips';
 let bbLevel = 100, sbLevel = 50;
 
 let queue = [];
@@ -489,38 +485,22 @@ let current = null;
 const sess = { seen:0, correct:0, run:0, hands:0 };
 let best = 0;
 
-/* ---- unit helpers ---- */
-const scale = () => mode==='chips' ? bbLevel : 1;
-const unitLabel = () => mode==='chips' ? '' : 'bb';
+/* ---- unit helpers ----
+   Action is announced in CHIPS (what the dealer says); the stack the player
+   tracks and answers is in BIG BLINDS. fmtChips(bb) renders a bb-denominated
+   amount as its raw chip value; fmtBB(bb) renders it in big blinds. */
 const fmtInt = n => Math.round(n).toLocaleString('en-US');
 const fmtHalf = n => (Math.round(n*2)/2).toLocaleString('en-US');
-function fmtVal(bb){ return mode==='chips' ? fmtInt(bb*bbLevel) : fmtHalf(bb); }
-function expectIn(bb){ return mode==='chips' ? Math.round(bb*bbLevel) : snap(bb); }
+function fmtChips(bb){ return fmtInt(bb*bbLevel); }
+function fmtBB(bb){ return fmtHalf(bb); }
+function expectIn(bb){ return snap(bb); }                 // checkpoints answered in bb
 function parseAnswer(raw){
   if(raw==null) return NaN;
   let s=String(raw).trim().toLowerCase().replace(/,/g,'').replace(/\s+/g,'');
   if(!s) return NaN;
-  let mult=1;
-  if(s.endsWith('k')){ mult=1000; s=s.slice(0,-1); }
   if(s.endsWith('bb')) s=s.slice(0,-2);
   const v=parseFloat(s);
-  return isNaN(v) ? NaN : v*mult;
-}
-
-/* ---- segmented controls ---- */
-function buildSeg(container, items, getActive, onPick, cls){
-  container.innerHTML='';
-  for(const it of items){
-    const b=document.createElement('button'); b.textContent=it.label; b.dataset.id=it.id; if(cls) b.classList.add(cls);
-    container.appendChild(b);
-  }
-  container.addEventListener('click', e=>{
-    const b=e.target.closest('button'); if(!b) return; onPick(b.dataset.id);
-  });
-  syncSeg(container, getActive);
-}
-function syncSeg(container, getActive){
-  [...container.children].forEach(b=>b.classList.toggle('active', b.dataset.id===getActive()));
+  return isNaN(v) ? NaN : v;
 }
 
 /* ---- queue generation ---- */
@@ -530,8 +510,8 @@ function ensureQueue(){
       const top=snap(START_BB - genTruth);
       const up = top>0;
       queue.push({ t:'rebuy', street:'',
-        text: up ? `You re-buy to ${fmtVal(START_BB)}${unitLabel()?' '+unitLabel():''}.`
-                 : `You bank the win and re-sit with ${fmtVal(START_BB)}${unitLabel()?' '+unitLabel():''}.`,
+        text: up ? `You re-buy for ${fmtChips(START_BB)} chips — back to ${fmtBB(START_BB)} bb.`
+                 : `You bank the win and re-sit for ${fmtChips(START_BB)} chips — back to ${fmtBB(START_BB)} bb.`,
         d:top, toBB:START_BB });
       genTruth = START_BB;
     }
@@ -568,7 +548,7 @@ const card = el('card');
 function deltaHTML(d){
   if(d===0) return `<div class="delta zero">↳ your stack: no change</div>`;
   const plus = d>0;
-  return `<div class="delta ${plus?'plus':'minus'}">${plus?'+':'−'}${fmtVal(Math.abs(d))}${unitLabel()?' '+unitLabel():''}</div>`;
+  return `<div class="delta ${plus?'plus':'minus'}">${plus?'+':'−'}${fmtChips(Math.abs(d))} <span class="du">chips</span></div>`;
 }
 const KIND = {
   deal:['deal','New hand'], me:['me','Your action'], opp:['opp','Villain'],
@@ -587,7 +567,7 @@ function render(beat){
     bodyHTML = `<div class="cp-q">${q}</div>
       <div class="cp-row">
         <input id="cpInput" inputmode="decimal" autocomplete="off" placeholder="0">
-        <span class="u">${mode==='chips'?'chips':'bb'}</span>
+        <span class="u">bb</span>
         <button class="next-btn" id="cpSubmit">Check</button>
       </div>`;
     footHTML = `<span class="swipe-hint">Type the stack you’ve been tracking · Enter to check</span>`;
@@ -634,7 +614,7 @@ function submitCp(){
   const inp=el('cpInput'); const val=parseAnswer(inp.value);
   if(isNaN(val)){ inp.focus(); return; }
   const exp = expectIn(current.expectBB);
-  const ok = Math.abs(val - exp) <= (mode==='chips' ? 0.5 : 0.01);
+  const ok = Math.abs(val - exp) <= 0.01;
 
   sess.seen++;
   if(ok){ sess.correct++; sess.run++; best=Math.max(best, sess.run); persistBest(); }
@@ -643,13 +623,14 @@ function submitCp(){
 
   // build recap ledger from the anchor through this segment
   let r = anchorBB;
-  const rows = [`<div class="lr anchor"><span class="t">Stack at last check</span><span class="run">${fmtVal(anchorBB)}</span></div>`];
+  const rows = [`<div class="lr anchor"><span class="t">Stack at last check</span><span class="run">${fmtBB(anchorBB)} bb</span></div>`];
   for(const e of segmentLog){
     r = snap(r + e.d);
     const cls = e.d>0?'plus':'minus';
-    rows.push(`<div class="lr"><span class="t">${e.text}</span><span class="d ${cls}">${e.d>0?'+':'−'}${fmtVal(Math.abs(e.d))}</span><span class="run">${fmtVal(r)}</span></div>`);
+    const sign = e.d>0?'+':'−';
+    rows.push(`<div class="lr"><span class="t">${e.text}</span><span class="d ${cls}">${sign}${fmtChips(Math.abs(e.d))}<span class="cnv">${sign}${fmtBB(Math.abs(e.d))} bb</span></span><span class="run">${fmtBB(r)} bb</span></div>`);
   }
-  rows.push(`<div class="lr final"><span class="t">Actual stack</span><span class="run">${fmtVal(current.expectBB)}</span></div>`);
+  rows.push(`<div class="lr final"><span class="t">Actual stack</span><span class="run">${fmtBB(current.expectBB)} bb</span></div>`);
 
   current.resolved = true;
   anchorBB = current.expectBB;
@@ -660,8 +641,8 @@ function submitCp(){
     `<div class="card-top"><span class="card-kind cp">Checkpoint</span><span class="card-street">${ok?'CORRECT':'OFF'}</span></div>
      <div class="card-body cp-result">
        <div class="verdict ${ok?'ok':'no'}">${ok?'✓ Spot on':'✗ Not quite'}
-         <span class="pill">you said ${val.toLocaleString('en-US')}</span>
-         <span class="pill">actual ${fmtVal(current.expectBB)}${unitLabel()?' '+unitLabel():''}</span>
+         <span class="pill">you said ${val.toLocaleString('en-US')} bb</span>
+         <span class="pill">actual ${fmtBB(current.expectBB)} bb</span>
        </div>
        <div class="cp-ledger">${rows.join('')}</div>
      </div>
@@ -672,10 +653,8 @@ function submitCp(){
 
 /* ---- HUD ---- */
 function setAnchorUI(){
-  el('anchorVal').innerHTML = `${fmtVal(anchorBB)} <span class="vu">${mode==='chips'?'chips':'bb'}</span>`;
-  el('blindsLine').textContent = mode==='chips'
-    ? `Blinds ${fmtInt(sbLevel)}/${fmtInt(bbLevel)} · buy-in ${START_BB} bb`
-    : `Blinds 0.5 / 1 bb · buy-in ${START_BB} bb`;
+  el('anchorVal').innerHTML = `${fmtBB(anchorBB)} <span class="vu">bb</span>`;
+  el('blindsLine').textContent = `Blinds ${fmtInt(sbLevel)} / ${fmtInt(bbLevel)} chips · 1 bb = ${fmtInt(bbLevel)} chips`;
 }
 function updateStats(){
   el('stRun').textContent=sess.run;
@@ -684,21 +663,20 @@ function updateStats(){
   el('stSeen').textContent=sess.seen;
   el('stHands').textContent=sess.hands;
 }
-function bestKey(){ return `sjBest_${mode}`; }
+function bestKey(){ return `sjBest_bb`; }
 function loadBest(){ const v=parseInt(localStorage.getItem(bestKey()),10); best=isNaN(v)?0:v; }
 function persistBest(){ try{ localStorage.setItem(bestKey(), String(best)); }catch(e){} }
 
 /* ---- run control ---- */
 function restart(){
-  if(mode==='chips'){ const lv=RNG.pick(CHIP_LEVELS); sbLevel=lv.sb; bbLevel=lv.bb; }
-  else { sbLevel=0.5; bbLevel=1; }
+  const lv=RNG.pick(CHIP_LEVELS); sbLevel=lv.sb; bbLevel=lv.bb;
   queue=[]; handIdx=0; genTruth=START_BB; handsSinceCheck=0;
   anchorBB=START_BB; segmentLog=[]; current=null;
   sess.seen=0; sess.correct=0; sess.run=0; sess.hands=0;
   loadBest();
   setAnchorUI(); updateStats();
   // opening "sit down" card
-  current={ t:'deal', street:'Preflop', text:`You sit down with <span class="hl">${fmtVal(START_BB)}</span> ${mode==='chips'?'chips':'big blinds'}.`, sub:'Track it from here. The journey doesn’t stop.', opening:true, d:0 };
+  current={ t:'deal', street:'Preflop', text:`You sit down with <span class="hl">${fmtBB(START_BB)}</span> big blinds — that’s ${fmtChips(START_BB)} chips.`, sub:`Blinds ${fmtInt(sbLevel)}/${fmtInt(bbLevel)}. The dealer calls every bet in chips — you track your stack in big blinds.`, opening:true, d:0 };
   render(current);
 }
 
@@ -730,7 +708,6 @@ card.addEventListener('pointerup', e=>{
 });
 
 /* ---- boot ---- */
-buildSeg(el('modeSeg'), MODES, ()=>mode, id=>{ if(id===mode) return; mode=id; localStorage.setItem('sjMode',mode); syncSeg(el('modeSeg'),()=>mode); restart(); }, 'mode');
 el('restartBtn').onclick=restart;
 document.querySelector('.tabs').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
