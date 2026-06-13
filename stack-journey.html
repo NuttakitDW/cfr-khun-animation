@@ -359,10 +359,10 @@ function generateHand(pos, stackBB){
   let blindSub;
   if(pos==='SB'){
     heroIn=0.5; heroSt=0.5; pot=0.5; villSt=1; villIn=1; pot=snap(pot+1);   // BB is the live villain
-    villName='the big blind'; blindSub='You post the small blind (0.5).';
+    villName='the big blind'; blindSub='You post the small blind.';
   } else if(pos==='BB'){
     heroIn=1; heroSt=1; pot=1; villSt=0; deadMoney(0.5);                    // SB dead; an opener acts behind
-    villName=RNG.pick(['the cutoff','the button','the hijack']); blindSub='You post the big blind (1).';
+    villName=RNG.pick(['the cutoff','the button','the hijack']); blindSub='You post the big blind.';
   } else {
     villSt=1; villIn=1; pot=1; deadMoney(0.5);                              // BB live, SB dead
     villName='the big blind'; blindSub='No blind to post this hand.';
@@ -373,7 +373,7 @@ function generateHand(pos, stackBB){
 
   /* ---- short stack: a clean all-in hand ---- */
   if(stackBB < 22){
-    me(stackBB, `You move all-in for your last ${snap(stackBB)}.`, 'Preflop');
+    me(stackBB, 'You move all-in.', 'Preflop');
     if(Math.random()<0.6){
       vill(stackBB, `${cap(villName)} calls the all-in.`, 'Preflop');
       if(Math.random()<0.5) win('Preflop','All-in showdown — you scoop the pot.');
@@ -387,7 +387,7 @@ function generateHand(pos, stackBB){
   /* ---- preflop ---- */
   const O = RNG.pick([2,2.5,3]);
   if(pos==='BB'){
-    vill(O, `${cap(villName)} opens to ${num(O)}.`, 'Preflop');
+    vill(O, `${cap(villName)} opens.`, 'Preflop');
     const act = pickWeighted({ defend:0.50, threebet:0.20, fold:0.30 });
     if(act==='fold'){ fold('Preflop','You let your big blind go.'); return finish(); }
     if(act==='threebet'){
@@ -403,12 +403,12 @@ function generateHand(pos, stackBB){
 
   // hero is UTG / HJ / CO / BTN / SB
   if(pos!=='SB' && Math.random()<0.18){ fold('Preflop','Trash hand — you fold and wait.'); return finish(); }
-  me(O, pos==='SB' ? 'You complete and raise from the small blind.' : `You open to ${num(O)}.`, 'Preflop');
+  me(O, pos==='SB' ? 'You complete and raise from the small blind.' : 'You open the pot.', 'Preflop');
   const resp = pickWeighted({ villCall:0.46, villFold:0.31, vill3bet:0.23 });
   if(resp==='villFold'){ win('Preflop',`${cap(villName)} folds — you win it preflop.`); return finish(); }
   if(resp==='vill3bet'){
     const T=snap(O*RNG.pick([3,3.5]));
-    vill(T, `${cap(villName)} 3-bets to ${num(T)}.`, 'Preflop');
+    vill(T, `${cap(villName)} 3-bets.`, 'Preflop');
     if(Math.random()<0.45){ fold('Preflop','You fold to the 3-bet.'); return finish(); }
     me(T, 'You call the 3-bet.', 'Preflop');
     postflop(false); return finish();
@@ -463,7 +463,6 @@ function generateHand(pos, stackBB){
   }
   function finish(){ return { beats, heroIn:snap(heroIn), villIn:snap(villIn), pot:snap(pot), won }; }
   function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-  function num(x){ return snap(x).toString(); }   // raw bb label (only used in villain/open context text)
 }
 /* ===== PURE GEN END ===== */
 
