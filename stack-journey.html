@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stack Journey — Live Stack-Tracking Drill</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+header .home { margin-left: auto; color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+.tabs { display: flex; gap: 6px; width: 100%; margin-top: 14px; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 8px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+main { padding: 22px 28px 8px; max-width: 760px; margin: 0 auto; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.seg button {
+  font: inherit; font-size: 11.5px; font-weight: 600;
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 7px; padding: 5px 11px; cursor: pointer; white-space: nowrap;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+.seg button.active.mode { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
+
+/* anchor + stats HUD */
+.hud { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.anchor-card {
+  flex: 1 1 220px; background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--border); border-radius: 12px; padding: 13px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.anchor-card .l { font-size: 9px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+.anchor-card .v { font-family: "SF Mono", Menlo, monospace; font-size: 28px; font-weight: 700; color: var(--gold); line-height: 1.15; }
+.anchor-card .vu { font-size: 13px; color: var(--muted); font-weight: 600; }
+.anchor-card .blinds { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.statbox { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.stat { text-align: center; min-width: 52px; }
+.stat .lab { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.stat .val { font-family: "SF Mono", Menlo, monospace; font-size: 19px; font-weight: 700; color: var(--text); }
+.stat .val.gold { color: var(--gold); }
+.stat .val.green { color: var(--green); }
+
+/* deck */
+.deck-wrap { position: relative; min-height: 340px; display: flex; align-items: flex-start; justify-content: center; padding-top: 6px; }
+.deck-wrap::before, .deck-wrap::after {
+  content: ""; position: absolute; top: 14px; left: 50%; width: min(92%, 520px); height: 300px;
+  transform: translateX(-50%) scale(.96); border-radius: 16px;
+  background: var(--panel-2); border: 1px solid var(--border); opacity: .5; z-index: 0;
+}
+.deck-wrap::after { top: 8px; transform: translateX(-50%) scale(.98); opacity: .8; }
+
+.swipe-card {
+  position: relative; z-index: 2; width: min(92%, 520px); min-height: 300px;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  display: flex; flex-direction: column;
+  transition: transform .22s cubic-bezier(.3,.7,.3,1), opacity .22s;
+  touch-action: pan-y; user-select: none;
+}
+.swipe-card.enter { transform: translateY(26px) scale(.94); opacity: 0; }
+.swipe-card.leave-l { transform: translateX(-130%) rotate(-9deg); opacity: 0; }
+.swipe-card.leave-r { transform: translateX(130%) rotate(9deg); opacity: 0; }
+
+.card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.card-kind {
+  font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: .6px; text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+  background: var(--panel-3); color: var(--muted);
+}
+.card-kind.me   { background: rgba(91,158,255,0.16); color: var(--accent); }
+.card-kind.opp  { background: rgba(122,132,153,0.14); color: var(--muted); }
+.card-kind.win  { background: rgba(63,223,142,0.16); color: var(--green); }
+.card-kind.lose { background: rgba(255,94,122,0.14); color: #ff8aa0; }
+.card-kind.rebuy{ background: rgba(255,213,74,0.16); color: var(--gold); }
+.card-kind.cp   { background: rgba(255,213,74,0.18); color: var(--gold); }
+.card-kind.deal { background: rgba(191,140,255,0.15); color: var(--purple); }
+.card-street { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--dim); margin-left: auto; }
+
+.card-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.card-text { font-size: 21px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.card-text .hl { color: var(--gold); }
+.card-sub { font-size: 13.5px; color: var(--muted); }
+
+.delta {
+  align-self: flex-start; font-family: "SF Mono", Menlo, monospace; font-weight: 700;
+  font-size: 26px; padding: 6px 16px; border-radius: 10px; border: 1px solid var(--border);
+}
+.delta.minus { color: var(--red); background: rgba(255,94,122,0.08); border-color: rgba(255,94,122,0.3); }
+.delta.plus  { color: var(--green); background: rgba(63,223,142,0.08); border-color: rgba(63,223,142,0.3); }
+.delta.zero  { color: var(--muted); background: transparent; font-size: 15px; font-weight: 600; }
+
+.card-foot { margin-top: 14px; display: flex; align-items: center; gap: 10px; min-height: 22px; }
+.swipe-hint { font-size: 11.5px; color: var(--dim); font-family: "SF Mono", Menlo, monospace; }
+.card-foot .spacer { margin-left: auto; }
+.next-btn {
+  font: inherit; font-size: 13px; font-weight: 700; border-radius: 9px; padding: 9px 20px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: #06122b;
+}
+.next-btn:hover { filter: brightness(1.08); }
+
+/* checkpoint */
+.cp-q { font-size: 20px; font-weight: 700; color: var(--text); }
+.cp-q .hl { color: var(--gold); }
+.cp-row { display: flex; gap: 8px; align-items: center; }
+.cp-row input {
+  font: inherit; font-family: "SF Mono", Menlo, monospace; font-size: 22px; font-weight: 700;
+  width: 170px; padding: 9px 12px; border-radius: 9px; text-align: right;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+.cp-row input:focus { outline: none; border-color: var(--gold); }
+.cp-row .u { font-family: "SF Mono", Menlo, monospace; font-size: 14px; color: var(--muted); }
+
+.cp-result .verdict { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cp-result .verdict.ok { color: var(--green); }
+.cp-result .verdict.no { color: var(--red); }
+.cp-result .pill { font-family: "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
+.cp-ledger { margin-top: 4px; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.cp-ledger .lr { display: flex; justify-content: space-between; gap: 12px; padding: 5px 12px; font-family: "SF Mono", Menlo, monospace; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.cp-ledger .lr:last-child { border-bottom: none; }
+.cp-ledger .lr .t { color: var(--muted); }
+.cp-ledger .lr .d.minus { color: #ff8aa0; } .cp-ledger .lr .d.plus { color: var(--green); }
+.cp-ledger .lr .run { color: var(--gold); font-weight: 700; }
+.cp-ledger .lr.anchor { background: var(--panel-2); } .cp-ledger .lr.anchor .t { color: var(--text); }
+.cp-ledger .lr.final { background: rgba(255,213,74,0.07); } .cp-ledger .lr.final .t { color: var(--text); font-weight: 700; }
+
+.muted-note { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 14px; }
+footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+/* how it works */
+.hiw { background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+.hiw h2 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.hiw h3 { margin: 0 0 12px; font-size: 18px; color: var(--text); }
+.hiw p { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+.hiw p b { color: var(--text); }
+.hiw ul { margin: 8px 0 0; padding-left: 18px; }
+.hiw li { font-size: 13.5px; color: var(--muted); line-height: 1.75; margin-bottom: 7px; }
+.hiw li b { color: var(--text); }
+.hiw .formula { font-family: "SF Mono", Menlo, monospace; font-size: 14px; font-weight: 700; color: var(--gold);
+  background: rgba(255,213,74,0.07); border: 1px solid rgba(255,213,74,0.25); border-radius: 8px; padding: 9px 13px; margin: 10px 0; }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Stack Journey</h1>
+    <span class="sub">Track your stack the way you do at the table — one action at a time, no rewinding</span>
+    <a class="home" href="/">← home</a>
+  </div>
+  <nav class="tabs">
+    <button data-view="play" class="active">Journey</button>
+    <button data-view="hiw">How it works</button>
+  </nav>
+</header>
+
+<main>
+ <div id="playView">
+  <div class="controls">
+    <div class="seg" id="modeSeg"></div>
+    <div class="seg" id="diffSeg"></div>
+    <button class="btn ghost" id="restartBtn" style="margin-left:auto">Restart run</button>
+  </div>
+
+  <div class="hud">
+    <div class="anchor-card">
+      <div class="l">Stack at last checkpoint</div>
+      <div class="v" id="anchorVal">—</div>
+      <div class="blinds" id="blindsLine"></div>
+    </div>
+    <div class="anchor-card" style="flex:2 1 320px">
+      <div class="statbox">
+        <div class="stat"><div class="lab">Run</div><div class="val gold" id="stRun">0</div></div>
+        <div class="stat"><div class="lab">Best</div><div class="val" id="stBest">0</div></div>
+        <div class="stat"><div class="lab">Accuracy</div><div class="val green" id="stAcc">—</div></div>
+        <div class="stat"><div class="lab">Checks</div><div class="val" id="stSeen">0</div></div>
+        <div class="stat"><div class="lab">Hands</div><div class="val" id="stHands">0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deck-wrap">
+    <div class="swipe-card" id="card"></div>
+  </div>
+
+  <p class="muted-note">
+    Each card is one beat of the hand, shown once — like swiping a feed, you can’t scroll back. Keep a running
+    count from your <b>last-checkpoint stack</b> (top-left). Your own bets and calls move it; villain’s actions
+    don’t. When you <b>win</b>, the card hands you the whole pot to add. At a gold <b>checkpoint</b>, type the
+    stack you’ve been tracking. Swipe, press <span class="mono">→</span> / <span class="mono">Enter</span>, or
+    tap <b>Next</b> to advance.
+  </p>
+ </div>
+
+ <div id="hiwView" style="display:none">
+  <div class="hiw">
+    <h2>The idea</h2>
+    <h3>Why this is different from an action summary</h3>
+    <p>At a real table nobody hands you a tidy list of every bet. Action arrives <b>one beat at a time</b> and is
+      gone the moment the next player acts. The only way to know your stack is to have been counting the whole
+      time. This drill recreates that: a never-ending stream of hands, each action on its own card, no rewind.
+      You carry one number in your head and the game keeps moving.</p>
+  </div>
+  <div class="hiw">
+    <h2>How to count fast</h2>
+    <h3>Subtract as the chips leave — never reconstruct later</h3>
+    <div class="formula">new stack = last-checkpoint stack − your money in + pot you win</div>
+    <ul>
+      <li><b>Only your chips move your stack.</b> A villain bet, raise, or fold changes the pot, not you. The card
+        shows <span class="mono">no change</span> on purpose — resist nudging your number.</li>
+      <li><b>Calls cost the difference.</b> If you open and then call a 3-bet, the card shows only the <i>extra</i>
+        you put in, not the total — that’s the number to subtract.</li>
+      <li><b>Winning is one addition.</b> When you take the pot, the card gives you the full amount (your own
+        chips included) — just add it to your running count.</li>
+      <li><b>Re-anchor every checkpoint.</b> Each checkpoint reveals the truth and becomes your new base, so a
+        miss never snowballs — but it breaks your <b>run</b>.</li>
+      <li><b>Re-buys reset you to the buy-in</b> — the card tells you the new stack, so just adopt it.</li>
+    </ul>
+  </div>
+  <div class="hiw">
+    <h2>Two modes</h2>
+    <h3>Chips and Big Blinds</h3>
+    <p><b>Chips</b> trains raw table arithmetic at a real limit (e.g. 75/150), where bets aren’t round multiples of
+      ten. <b>Big blinds</b> trains the depth count pros actually use for decisions — everything denominated in bb,
+      halves and all. Same journey, same hands; only the unit changes.</p>
+  </div>
+ </div>
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+/* ===== PURE GEN START ===== */
+const RNG = {
+  int:(n)=>Math.floor(Math.random()*n),
+  pick:(a)=>a[Math.floor(Math.random()*a.length)],
+};
+const snap = n => Math.round(n*2)/2;             // values live on a 0.5-bb grid
+function pickWeighted(obj){
+  const e=Object.entries(obj); let s=0; for(const [,w] of e) s+=w;
+  let r=Math.random()*s;
+  for(const [k,w] of e){ if((r-=w)<0) return k; }
+  return e[e.length-1][0];
+}
+const POS_CYCLE = ['UTG','HJ','CO','BTN','SB','BB'];
+const POSL = { UTG:'under the gun', HJ:'in the hijack', CO:'in the cutoff', BTN:'on the button', SB:'in the small blind', BB:'in the big blind' };
+function betBB(potBB){ const f=RNG.pick([0.5,0.66,0.75,1]); return Math.max(1, Math.round(potBB*f)); }
+
+/* Build one hand from the hero's seat. All amounts in big blinds.
+   Returns { beats, heroIn, villIn, pot, won }. Each beat: { t, street, text, sub?, d, pos? }.
+   d is the change to the HERO's stack in bb (negative = chips out, +pot = win, 0 = villain/no-op). */
+function generateHand(pos, stackBB){
+  const beats=[];
+  let pot=0, heroIn=0, villIn=0, heroSt=0, villSt=0;
+  let heroAllIn=false, ended=false, won=false;
+  let villName='Villain';
+
+  // Highest street-level the hero can still match (his current street commit + remaining stack).
+  // Capping every betting level to this keeps pots matched: the villain can never put in more
+  // than the hero is able to call, so uncalled chips never inflate a winnable pot.
+  function maxLvl(){ return snap(heroSt + (stackBB - heroIn)); }
+  function me(L, text, street){
+    L = Math.min(L, maxLvl());
+    let extra=snap(Math.max(0, L-heroSt));
+    if(extra===0){ beats.push({t:'me',street,text: heroAllIn?'You are already all-in.':text, d:0}); return; }
+    const room=snap(stackBB-heroIn);
+    if(extra>=room){ extra=room; heroAllIn=true; text+=' — all-in'; }
+    heroIn=snap(heroIn+extra); heroSt=snap(heroSt+extra); pot=snap(pot+extra);
+    beats.push({t:'me',street,text,d:-extra});
+  }
+  function vill(L, text, street){
+    L = Math.min(L, maxLvl());                 // villain can't out-bet the hero's stack
+    const extra=snap(Math.max(0, L-villSt));
+    if(extra>0){ villSt=snap(villSt+extra); villIn=snap(villIn+extra); pot=snap(pot+extra); }
+    beats.push({t:'opp',street,text,d:0});
+  }
+  function deadMoney(x){ villIn=snap(villIn+x); pot=snap(pot+x); }
+  function newStreet(){ heroSt=0; villSt=0; }
+  function win(street,text){ beats.push({t:'win',street,text,d:snap(pot)}); ended=true; won=true; }
+  function lose(street,text){ beats.push({t:'lose',street,text,d:0}); ended=true; won=false; }
+  function fold(street,text){ beats.push({t:'lose',street,text,d:0}); ended=true; won=false; }
+
+  /* ---- blinds + deal ---- */
+  let blindSub;
+  if(pos==='SB'){
+    heroIn=0.5; heroSt=0.5; pot=0.5; villSt=1; villIn=1; pot=snap(pot+1);   // BB is the live villain
+    villName='the big blind'; blindSub='You post the small blind (0.5).';
+  } else if(pos==='BB'){
+    heroIn=1; heroSt=1; pot=1; villSt=0; deadMoney(0.5);                    // SB dead; an opener acts behind
+    villName=RNG.pick(['the cutoff','the button','the hijack']); blindSub='You post the big blind (1).';
+  } else {
+    villSt=1; villIn=1; pot=1; deadMoney(0.5);                              // BB live, SB dead
+    villName='the big blind'; blindSub='No blind to post this hand.';
+  }
+  beats.push({t:'deal',street:'Preflop',text:`You're ${POSL[pos]}.`, sub:blindSub, pos, d:0});
+  if(pos==='SB') beats.push({t:'me',street:'Preflop',text:'Post the small blind.',d:-0.5});
+  if(pos==='BB') beats.push({t:'me',street:'Preflop',text:'Post the big blind.',d:-1});
+
+  /* ---- short stack: a clean all-in hand ---- */
+  if(stackBB < 22){
+    me(stackBB, `You move all-in for your last ${snap(stackBB)}.`, 'Preflop');
+    if(Math.random()<0.6){
+      vill(stackBB, `${cap(villName)} calls the all-in.`, 'Preflop');
+      if(Math.random()<0.5) win('Preflop','All-in showdown — you scoop the pot.');
+      else lose('Preflop',`All-in showdown — ${villName} wins. You’re felted.`);
+    } else {
+      win('Preflop',`${cap(villName)} folds. You take it down.`);
+    }
+    return finish();
+  }
+
+  /* ---- preflop ---- */
+  const O = RNG.pick([2,2.5,3]);
+  if(pos==='BB'){
+    vill(O, `${cap(villName)} opens to ${num(O)}.`, 'Preflop');
+    const act = pickWeighted({ defend:0.50, threebet:0.20, fold:0.30 });
+    if(act==='fold'){ fold('Preflop','You let your big blind go.'); return finish(); }
+    if(act==='threebet'){
+      const T=snap(O*RNG.pick([3,3.5]));
+      me(T, 'You 3-bet from the big blind.', 'Preflop');
+      if(Math.random()<0.5){ vill(T, `${cap(villName)} calls.`, 'Preflop'); postflop(true); }
+      else { win('Preflop',`${cap(villName)} folds to your 3-bet.`); }
+      return finish();
+    }
+    me(O, 'You defend the big blind and call.', 'Preflop');
+    postflop(false); return finish();
+  }
+
+  // hero is UTG / HJ / CO / BTN / SB
+  if(pos!=='SB' && Math.random()<0.18){ fold('Preflop','Trash hand — you fold and wait.'); return finish(); }
+  me(O, pos==='SB' ? 'You complete and raise from the small blind.' : `You open to ${num(O)}.`, 'Preflop');
+  const resp = pickWeighted({ villCall:0.46, villFold:0.31, vill3bet:0.23 });
+  if(resp==='villFold'){ win('Preflop',`${cap(villName)} folds — you win it preflop.`); return finish(); }
+  if(resp==='vill3bet'){
+    const T=snap(O*RNG.pick([3,3.5]));
+    vill(T, `${cap(villName)} 3-bets to ${num(T)}.`, 'Preflop');
+    if(Math.random()<0.45){ fold('Preflop','You fold to the 3-bet.'); return finish(); }
+    me(T, 'You call the 3-bet.', 'Preflop');
+    postflop(false); return finish();
+  }
+  vill(O, `${cap(villName)} calls.`, 'Preflop');
+  postflop(true); return finish();
+
+  /* ---- postflop ---- */
+  function postflop(heroAgg){
+    let lastAgg = heroAgg ? 'me' : 'vill';
+    for(const st of ['Flop','Turn','River']){
+      if(ended) return;
+      newStreet();
+      if(heroAllIn){
+        if(st==='River') showdown(st);
+        else beats.push({t:'opp',street:st,text:`The ${st.toLowerCase()} runs out.`,d:0});
+        continue;
+      }
+      if(Math.random()<0.28){
+        beats.push({t:'opp',street:st,text:`The ${st.toLowerCase()} checks through.`,d:0});
+        if(st==='River') showdown(st);
+        continue;
+      }
+      const bettor = (Math.random()<0.62) ? lastAgg : (lastAgg==='me'?'vill':'me');
+      const B = betBB(pot);
+      if(bettor==='me') me(B, `You bet the ${st.toLowerCase()}.`, st);
+      else vill(B, `${cap(villName)} bets the ${st.toLowerCase()}.`, st);
+      lastAgg = bettor;
+      if(ended) return;
+      const other = bettor==='me' ? 'vill' : 'me';
+      const rr = Math.random();
+      if(rr<0.24 && !heroAllIn){
+        if(other==='me'){ fold(st, 'You fold to the bet.'); return; }
+        win(st, `${cap(villName)} folds. You take the pot.`); return;
+      } else if(rr<0.84 || heroAllIn){
+        if(other==='me') me(B, 'You call.', st);
+        else vill(B, `${cap(villName)} calls.`, st);
+        if(st==='River' && !ended) showdown(st);
+      } else {
+        const Rr=snap(B*RNG.pick([2.5,3]));
+        if(other==='me'){ me(Rr, 'You raise.', st); if(!ended) vill(Rr, `${cap(villName)} calls.`, st); lastAgg='me'; }
+        else { vill(Rr, `${cap(villName)} raises.`, st); if(!ended && !heroAllIn) me(Rr, 'You call.', st); lastAgg='vill'; }
+        if(st==='River' && !ended) showdown(st);
+      }
+    }
+    if(!ended) showdown('River');
+  }
+  function showdown(st){
+    if(ended) return;
+    if(Math.random()<0.5) win(st, 'Showdown — your hand is good. You win the pot.');
+    else lose(st, `Showdown — ${villName} wins. You lose what you put in.`);
+  }
+  function finish(){ return { beats, heroIn:snap(heroIn), villIn:snap(villIn), pot:snap(pot), won }; }
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+  function num(x){ return snap(x).toString(); }   // raw bb label (only used in villain/open context text)
+}
+/* ===== PURE GEN END ===== */
+
+/* ============================================================
+   UI / JOURNEY STATE
+   ============================================================ */
+const START_BB = 100;
+const REBUY_AT = 15;
+const CAP_AT = 260;            // bank the win and re-sit so the number stays trackable
+const CHIP_LEVELS = [ {sb:25,bb:50}, {sb:50,bb:100}, {sb:75,bb:150}, {sb:100,bb:200} ];
+const MODES = [ {id:'chips',label:'Chips'}, {id:'bb',label:'Big Blinds'} ];
+const DIFFS = [ {id:'easy',label:'Easy'}, {id:'std',label:'Standard'}, {id:'hard',label:'Hard'} ];
+
+const el = id => document.getElementById(id);
+let mode = localStorage.getItem('sjMode') || 'chips';
+let diff = localStorage.getItem('sjDiff') || 'std';
+let bbLevel = 100, sbLevel = 50;
+
+let queue = [];
+let handIdx = 0;
+let genTruth = START_BB;        // authoritative stack during generation (bb)
+let handsSinceCheck = 0;
+let anchorBB = START_BB;        // last confirmed stack (bb)
+let segmentLog = [];            // beats since last checkpoint (for the recap)
+let current = null;
+
+const sess = { seen:0, correct:0, run:0, hands:0 };
+let best = 0;
+
+/* ---- unit helpers ---- */
+const scale = () => mode==='chips' ? bbLevel : 1;
+const unitLabel = () => mode==='chips' ? '' : 'bb';
+const fmtInt = n => Math.round(n).toLocaleString('en-US');
+const fmtHalf = n => (Math.round(n*2)/2).toLocaleString('en-US');
+function fmtVal(bb){ return mode==='chips' ? fmtInt(bb*bbLevel) : fmtHalf(bb); }
+function expectIn(bb){ return mode==='chips' ? Math.round(bb*bbLevel) : snap(bb); }
+function parseAnswer(raw){
+  if(raw==null) return NaN;
+  let s=String(raw).trim().toLowerCase().replace(/,/g,'').replace(/\s+/g,'');
+  if(!s) return NaN;
+  let mult=1;
+  if(s.endsWith('k')){ mult=1000; s=s.slice(0,-1); }
+  if(s.endsWith('bb')) s=s.slice(0,-2);
+  const v=parseFloat(s);
+  return isNaN(v) ? NaN : v*mult;
+}
+
+/* ---- segmented controls ---- */
+function buildSeg(container, items, getActive, onPick, cls){
+  container.innerHTML='';
+  for(const it of items){
+    const b=document.createElement('button'); b.textContent=it.label; b.dataset.id=it.id; if(cls) b.classList.add(cls);
+    container.appendChild(b);
+  }
+  container.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return; onPick(b.dataset.id);
+  });
+  syncSeg(container, getActive);
+}
+function syncSeg(container, getActive){
+  [...container.children].forEach(b=>b.classList.toggle('active', b.dataset.id===getActive()));
+}
+
+/* ---- queue generation ---- */
+function ensureQueue(){
+  while(queue.length < 1){
+    if(genTruth < REBUY_AT || genTruth > CAP_AT){
+      const top=snap(START_BB - genTruth);
+      const up = top>0;
+      queue.push({ t:'rebuy', street:'',
+        text: up ? `You re-buy to ${fmtVal(START_BB)}${unitLabel()?' '+unitLabel():''}.`
+                 : `You bank the win and re-sit with ${fmtVal(START_BB)}${unitLabel()?' '+unitLabel():''}.`,
+        d:top, toBB:START_BB });
+      genTruth = START_BB;
+    }
+    const pos = POS_CYCLE[handIdx % 6]; handIdx++;
+    const { beats } = generateHand(pos, genTruth);
+
+    let running = genTruth;
+    const out = [];
+    for(let i=0;i<beats.length;i++){
+      const b = beats[i];
+      running = snap(running + b.d);
+      out.push(b);
+      // occasional mid-hand "how much do you have behind?" checkpoint
+      if(diff!=='easy' && b.t==='me' && b.d!==0 && i < beats.length-1 && Math.random()<0.10){
+        out.push({ t:'checkpoint', mid:true, expectBB:running });
+        handsSinceCheck = 0;
+      }
+    }
+    genTruth = running;
+    handsSinceCheck++;
+
+    const endProb = diff==='easy' ? 1 : diff==='std' ? 0.85 : 0.6;
+    if(handsSinceCheck >= 3 || Math.random() < endProb){
+      out.push({ t:'checkpoint', expectBB:genTruth });
+      handsSinceCheck = 0;
+    }
+    for(const b of out) queue.push(b);
+  }
+}
+function pull(){ ensureQueue(); return queue.shift(); }
+
+/* ---- rendering ---- */
+const card = el('card');
+function deltaHTML(d){
+  if(d===0) return `<div class="delta zero">↳ your stack: no change</div>`;
+  const plus = d>0;
+  return `<div class="delta ${plus?'plus':'minus'}">${plus?'+':'−'}${fmtVal(Math.abs(d))}${unitLabel()?' '+unitLabel():''}</div>`;
+}
+const KIND = {
+  deal:['deal','New hand'], me:['me','Your action'], opp:['opp','Villain'],
+  win:['win','Result'], lose:['lose','Result'], rebuy:['rebuy','Re-buy'], checkpoint:['cp','Checkpoint']
+};
+function render(beat){
+  current = beat;
+  if(beat.t==='deal' && !beat.opening) sess.hands++, updateStats();
+  const isCp = beat.t==='checkpoint';
+  const [kc,kl] = KIND[beat.t] || ['opp','—'];
+  let bodyHTML, footHTML;
+
+  if(isCp){
+    const q = beat.mid ? `Action’s on you. <span class="hl">How much do you have behind</span> right now?`
+                       : `Hand’s done. <span class="hl">What’s your stack</span> now?`;
+    bodyHTML = `<div class="cp-q">${q}</div>
+      <div class="cp-row">
+        <input id="cpInput" inputmode="decimal" autocomplete="off" placeholder="0">
+        <span class="u">${mode==='chips'?'chips':'bb'}</span>
+        <button class="next-btn" id="cpSubmit">Check</button>
+      </div>`;
+    footHTML = `<span class="swipe-hint">Type the stack you’ve been tracking · Enter to check</span>`;
+  } else {
+    const hand = beat.t==='deal' ? `<span class="card-street">HAND #${handIdx}</span>` : `<span class="card-street">${beat.street||''}</span>`;
+    const sub = beat.sub ? `<div class="card-sub">${beat.sub}</div>` : '';
+    bodyHTML = `<div class="card-text">${beat.text}</div>${sub}${beat.t==='deal'?'':deltaHTML(beat.d)}`;
+    footHTML = `<span class="swipe-hint">swipe · → · Enter</span><span class="spacer"></span><button class="next-btn" id="nextBtn">Next ›</button>`;
+  }
+
+  const topRight = isCp ? '' : (beat.t==='deal' ? '' : `<span class="card-street">${beat.street||''}</span>`);
+  card.innerHTML =
+    `<div class="card-top"><span class="card-kind ${kc}">${kl}</span>${beat.t==='deal'?`<span class="card-street">HAND #${handIdx}</span>`:topRight}</div>
+     <div class="card-body">${bodyHTML}</div>
+     <div class="card-foot">${footHTML}</div>`;
+  card.classList.remove('leave-l','leave-r');
+  card.classList.add('enter');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.remove('enter')));
+
+  if(isCp){
+    const inp=el('cpInput'); inp.focus();
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitCp(); } });
+    el('cpSubmit').onclick=submitCp;
+  } else {
+    el('nextBtn').onclick=()=>advance(-1);
+    if(beat.d!==0 || beat.t==='deal' || beat.t==='lose' || beat.t==='opp'){
+      // record for the segment recap (skip pure villain noise with d===0 except keep concise)
+    }
+  }
+}
+
+function advance(dir){
+  if(!current) return;
+  if(current.t==='checkpoint' && !current.resolved) return;   // must answer first
+  // log the leaving beat into the segment recap (only stack-moving beats)
+  if(current.t!=='checkpoint' && current.d!==0){
+    segmentLog.push({ text:current.text, d:current.d });
+  }
+  card.classList.add(dir<0 ? 'leave-l' : 'leave-r');
+  setTimeout(()=>{ render(pull()); }, 190);
+}
+
+function submitCp(){
+  const inp=el('cpInput'); const val=parseAnswer(inp.value);
+  if(isNaN(val)){ inp.focus(); return; }
+  const exp = expectIn(current.expectBB);
+  const ok = Math.abs(val - exp) <= (mode==='chips' ? 0.5 : 0.01);
+
+  sess.seen++;
+  if(ok){ sess.correct++; sess.run++; best=Math.max(best, sess.run); persistBest(); }
+  else { sess.run=0; }
+  updateStats();
+
+  // build recap ledger from the anchor through this segment
+  let r = anchorBB;
+  const rows = [`<div class="lr anchor"><span class="t">Stack at last check</span><span class="run">${fmtVal(anchorBB)}</span></div>`];
+  for(const e of segmentLog){
+    r = snap(r + e.d);
+    const cls = e.d>0?'plus':'minus';
+    rows.push(`<div class="lr"><span class="t">${e.text}</span><span class="d ${cls}">${e.d>0?'+':'−'}${fmtVal(Math.abs(e.d))}</span><span class="run">${fmtVal(r)}</span></div>`);
+  }
+  rows.push(`<div class="lr final"><span class="t">Actual stack</span><span class="run">${fmtVal(current.expectBB)}</span></div>`);
+
+  current.resolved = true;
+  anchorBB = current.expectBB;
+  segmentLog = [];
+  setAnchorUI();
+
+  card.innerHTML =
+    `<div class="card-top"><span class="card-kind cp">Checkpoint</span><span class="card-street">${ok?'CORRECT':'OFF'}</span></div>
+     <div class="card-body cp-result">
+       <div class="verdict ${ok?'ok':'no'}">${ok?'✓ Spot on':'✗ Not quite'}
+         <span class="pill">you said ${val.toLocaleString('en-US')}</span>
+         <span class="pill">actual ${fmtVal(current.expectBB)}${unitLabel()?' '+unitLabel():''}</span>
+       </div>
+       <div class="cp-ledger">${rows.join('')}</div>
+     </div>
+     <div class="card-foot"><span class="swipe-hint">${ok?'Run continues':'Run reset — keep going'}</span><span class="spacer"></span><button class="next-btn" id="contBtn">Continue ›</button></div>`;
+  el('contBtn').onclick=()=>advance(ok?1:-1);
+  el('contBtn').focus();
+}
+
+/* ---- HUD ---- */
+function setAnchorUI(){
+  el('anchorVal').innerHTML = `${fmtVal(anchorBB)} <span class="vu">${mode==='chips'?'chips':'bb'}</span>`;
+  el('blindsLine').textContent = mode==='chips'
+    ? `Blinds ${fmtInt(sbLevel)}/${fmtInt(bbLevel)} · buy-in ${START_BB} bb`
+    : `Blinds 0.5 / 1 bb · buy-in ${START_BB} bb`;
+}
+function updateStats(){
+  el('stRun').textContent=sess.run;
+  el('stBest').textContent=best;
+  el('stAcc').textContent= sess.seen ? Math.round(100*sess.correct/sess.seen)+'%' : '—';
+  el('stSeen').textContent=sess.seen;
+  el('stHands').textContent=sess.hands;
+}
+function bestKey(){ return `sjBest_${mode}_${diff}`; }
+function loadBest(){ const v=parseInt(localStorage.getItem(bestKey()),10); best=isNaN(v)?0:v; }
+function persistBest(){ try{ localStorage.setItem(bestKey(), String(best)); }catch(e){} }
+
+/* ---- run control ---- */
+function restart(){
+  if(mode==='chips'){ const lv=RNG.pick(CHIP_LEVELS); sbLevel=lv.sb; bbLevel=lv.bb; }
+  else { sbLevel=0.5; bbLevel=1; }
+  queue=[]; handIdx=0; genTruth=START_BB; handsSinceCheck=0;
+  anchorBB=START_BB; segmentLog=[]; current=null;
+  sess.seen=0; sess.correct=0; sess.run=0; sess.hands=0;
+  loadBest();
+  setAnchorUI(); updateStats();
+  // opening "sit down" card
+  current={ t:'deal', street:'Preflop', text:`You sit down with <span class="hl">${fmtVal(START_BB)}</span> ${mode==='chips'?'chips':'big blinds'}.`, sub:'Track it from here. The journey doesn’t stop.', opening:true, d:0 };
+  render(current);
+}
+
+/* ---- input: keyboard + swipe ---- */
+document.addEventListener('keydown', e=>{
+  if(el('hiwView').style.display!=='none') return;
+  if(current && current.t==='checkpoint' && !current.resolved) return;  // let the input handle Enter
+  if(e.key==='ArrowRight' || e.key==='Enter' || e.key===' '){
+    if(current && current.t==='checkpoint' && current.resolved){ e.preventDefault(); advance(sess.run>0?1:-1); return; }
+    if(current && current.t!=='checkpoint'){ e.preventDefault(); advance(-1); }
+  }
+});
+let dragX=0, dragging=false;
+card.addEventListener('pointerdown', e=>{
+  if(!current || current.t==='checkpoint') return;
+  dragging=true; dragX=e.clientX; card.setPointerCapture(e.pointerId); card.style.transition='none';
+});
+card.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  const dx=e.clientX-dragX;
+  card.style.transform=`translateX(${dx}px) rotate(${dx*0.03}deg)`;
+  card.style.opacity = String(Math.max(0.4, 1 - Math.abs(dx)/420));
+});
+card.addEventListener('pointerup', e=>{
+  if(!dragging) return; dragging=false;
+  const dx=e.clientX-dragX;
+  card.style.transition=''; card.style.transform=''; card.style.opacity='';
+  if(Math.abs(dx)>70) advance(dx<0?-1:1);
+});
+
+/* ---- boot ---- */
+buildSeg(el('modeSeg'), MODES, ()=>mode, id=>{ if(id===mode) return; mode=id; localStorage.setItem('sjMode',mode); syncSeg(el('modeSeg'),()=>mode); restart(); }, 'mode');
+buildSeg(el('diffSeg'), DIFFS, ()=>diff, id=>{ if(id===diff) return; diff=id; localStorage.setItem('sjDiff',diff); syncSeg(el('diffSeg'),()=>diff); restart(); });
+el('restartBtn').onclick=restart;
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const v=b.dataset.view;
+  el('playView').style.display = v==='play'?'':'none';
+  el('hiwView').style.display = v==='hiw'?'':'none';
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active', x.dataset.view===v));
+});
+restart();
+</script>
+</body>
+</html>
