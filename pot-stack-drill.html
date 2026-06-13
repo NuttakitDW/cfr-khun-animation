@@ -600,22 +600,34 @@ function buildHand(diff, opts={}){
 function genPot(diff){
   const h = buildHand(diff);
   const lv = h.lv;
+  const wonPre = !h.hasFlop && h.actives.length < 2;   // everyone folded — pot won preflop
+  const winner = h.actives[0];
   const info = [`Blinds <b>${blindsStr(lv)}</b>`];
   if(h.ante) info.push(`BB ante <b>${fmt(h.ante)}</b>`);
-  const q = h.hasFlop
-    ? `After this flop action, <b>how many chips are in the pot?</b>`
-    : `<b>How many chips are in the pot</b> going to the flop?`;
+  let q, title, street, hint;
+  if(h.hasFlop){
+    q = `After this flop action, <b>how many chips are in the pot?</b>`;
+    title = 'Track the pot through the flop';
+    street = 'Preflop + flop';
+    hint = 'Lock in the pot going to the flop as one number, then add the flop bets and calls on top.';
+  } else if(wonPre){
+    q = `Everyone folds to <b>${winner}</b>. <b>How big is the pot ${winner} wins?</b>`;
+    title = 'Pot won before the flop';
+    street = 'Preflop — uncontested';
+    hint = `Add ${winner}’s own chips to the dead money everyone left behind: blinds, antes, and any cold-call that folded.`;
+  } else {
+    q = `<b>How many chips are in the pot</b> going to the flop?`;
+    title = 'Track the preflop pot';
+    street = 'Preflop';
+    hint = 'Add each player’s final total, then the dead money: folded blinds (and any fold after a cold-call) stay in.';
+  }
   const led = h.ledger.map(l=>`<div class="lrow"><span class="lt">${l.t}</span><span class="lp">${fmt(l.pot)}</span></div>`).join('');
   return {
     modeId:'pot', badge:'pot', badgeText:'Pot Tracking',
-    title: h.hasFlop ? 'Track the pot through the flop' : 'Track the preflop pot',
-    street: h.hasFlop ? 'Preflop + flop' : 'Preflop',
-    info, rows: h.rows,
+    title, street, info, rows: h.rows,
     questionHTML: q,
     ctx: 'Folded blinds, antes, and abandoned cold-calls all stay in the pot. No rake.',
-    hint: h.hasFlop
-      ? 'Lock in the pot going to the flop as one number, then add the flop bets and calls on top.'
-      : 'Add each player’s final total, then the dead money: folded blinds (and any fold after a cold-call) stay in.',
+    hint,
     unit:'chips', answer: h.pot, tol: 0,
     answerText: fmt(h.pot),
     explainHTML: `<div class="ledger">${led}<div class="lrow final"><span class="lt">Pot</span><span class="lp">${fmt(h.pot)}</span></div></div>`
