@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poker Trainer — Tutorials & Quizzes</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --purple: #bf8cff;
+  --gold: #ffd54a;
+  --orange: #ff8c42;
+  --cyan: #3fc8d4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ---------- header ---------- */
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+header .home { margin-left: auto; color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+
+/* ---------- layout ---------- */
+main {
+  padding: 26px 28px 40px;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---------- game nav ---------- */
+.nav-panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+}
+.nav-panel h2 {
+  margin: 0 0 12px;
+  font-size: 11px; font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.nav-group { margin-bottom: 16px; }
+.nav-group:last-child { margin-bottom: 0; }
+.nav-group .grp-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
+  color: var(--dim); font-family: "SF Mono", Menlo, monospace;
+  margin: 0 0 6px; padding-left: 2px;
+}
+.game-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; text-align: left;
+  font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: color .14s, background .14s, border-color .14s;
+}
+.game-btn:hover { color: var(--text); background: var(--panel-2); }
+.game-btn.active {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(255,213,74,0.15), 0 4px 14px rgba(255,213,74,0.10);
+}
+.game-btn .dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent);
+}
+.game-btn .mq { margin-left: auto; font-family: "SF Mono", Menlo, monospace; font-size: 10px; color: var(--dim); }
+
+/* ---------- content panel ---------- */
+.content-panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+.content-head {
+  padding: 22px 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+.content-head .eyebrow {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  font-family: "SF Mono", Menlo, monospace;
+  padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
+  background: rgba(255,140,66,0.15); color: var(--orange);
+}
+.content-head h3 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text); }
+.content-head p.lead { margin: 0 0 16px; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+
+/* tabs */
+.tabs { display: flex; gap: 6px; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 9px 20px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+.content-body { padding: 24px; }
+
+/* ---------- tutorial ---------- */
+.tut-section { margin-bottom: 22px; }
+.tut-section:last-child { margin-bottom: 0; }
+.tut-section h4 {
+  margin: 0 0 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--accent);
+}
+.tut-section p { margin: 0 0 8px; font-size: 14px; color: var(--text); line-height: 1.65; }
+.tut-section ul { margin: 6px 0 0; padding-left: 18px; }
+.tut-section li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 5px; }
+.tut-section li b { color: var(--text); }
+.tut-section p b { color: var(--text); }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.k {
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  color: var(--gold); background: rgba(255,213,74,0.08);
+  border: 1px solid rgba(255,213,74,0.22); border-radius: 5px; padding: 1px 6px;
+}
+
+.callout {
+  display: flex; gap: 11px; align-items: flex-start;
+  background: rgba(91,158,255,0.06);
+  border: 1px solid rgba(91,158,255,0.28);
+  border-radius: 9px; padding: 11px 13px; margin: 10px 0 0;
+}
+.callout.warn { background: rgba(255,94,122,0.06); border-color: rgba(255,94,122,0.30); }
+.callout.good { background: rgba(63,223,142,0.06); border-color: rgba(63,223,142,0.30); }
+.callout .tag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 7px; border-radius: 4px;
+  flex-shrink: 0; margin-top: 1px;
+  background: rgba(91,158,255,0.18); color: var(--accent);
+}
+.callout.warn .tag { background: rgba(255,94,122,0.18); color: #ff7a91; }
+.callout.good .tag { background: rgba(63,223,142,0.18); color: var(--green); }
+.callout .text { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.callout .text b { color: var(--text); }
+
+/* fact table */
+table.facts { border-collapse: collapse; width: 100%; margin-top: 4px; font-size: 13px; }
+table.facts th, table.facts td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+table.facts th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+table.facts td { color: var(--text); }
+table.facts td.mono, table.facts td .mono { font-family: "SF Mono", Menlo, monospace; color: var(--gold); }
+table.facts tr:last-child td { border-bottom: none; }
+
+/* ---------- quiz ---------- */
+.quiz-wrap { max-width: 720px; }
+.quiz-top {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.quiz-top .qprog b { color: var(--text); }
+.score-pill {
+  margin-left: auto;
+  font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+  padding: 5px 11px; border-radius: 6px;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+}
+.bar-track { height: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; flex-basis: 100%; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+
+.q-card { }
+.q-num { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+.q-text { margin: 6px 0 16px; font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.5; }
+.q-text .mono { color: var(--gold); }
+
+.opt {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; text-align: left;
+  font: inherit; font-size: 14px; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px;
+  padding: 13px 15px; margin-bottom: 9px; cursor: pointer;
+  transition: border-color .14s, background .14s, transform .08s;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.opt:disabled { cursor: default; }
+.opt .key {
+  width: 22px; height: 22px; flex-shrink: 0;
+  display: grid; place-items: center;
+  font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700;
+  border-radius: 5px; background: var(--panel-3); color: var(--muted);
+}
+.opt.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.opt.correct .key { background: var(--green); color: #06210f; }
+.opt.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.opt.wrong .key { background: var(--red); color: #2a0510; }
+.opt.dim { opacity: 0.5; }
+
+.explain {
+  margin: 4px 0 0; padding: 12px 14px;
+  background: var(--panel-2); border: 1px solid var(--border); border-left-width: 3px;
+  border-radius: 8px; font-size: 13px; color: var(--muted); line-height: 1.6;
+}
+.explain.ok { border-left-color: var(--green); }
+.explain.no { border-left-color: var(--red); }
+.explain b { color: var(--text); }
+.explain .verdict { font-weight: 700; }
+.explain.ok .verdict { color: var(--green); }
+.explain.no .verdict { color: var(--red); }
+
+.quiz-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 10px 20px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .14s, background .14s, opacity .14s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #04122e; }
+.btn.primary:hover { background: #74adff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* results */
+.results { text-align: center; padding: 14px 0; }
+.results .ring {
+  width: 132px; height: 132px; margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  position: relative;
+}
+.results .ring .pct { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--text); }
+.results h4 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
+.results p { margin: 0 auto 18px; font-size: 13.5px; color: var(--muted); max-width: 46ch; }
+.results .verdict-pass { color: var(--green); }
+.results .verdict-near { color: var(--gold); }
+.results .verdict-fail { color: var(--red); }
+.review-line {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  font-size: 12.5px; color: var(--muted); padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 7px; background: var(--panel-2);
+}
+.review-line .ic { font-family: "SF Mono", Menlo, monospace; font-weight: 700; flex-shrink: 0; }
+.review-line .ic.ok { color: var(--green); }
+.review-line .ic.no { color: var(--red); }
+.review-list { max-width: 560px; margin: 18px auto 0; }
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 1000px) {
+  main { grid-template-columns: 1fr; }
+  .nav-panel { position: static; max-height: none; }
+  .nav-grid-mobile { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 4px; }
+}
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Poker Trainer</h1>
+    <span class="sub">Learn every game in the mix — then quiz yourself tournament-ready</span>
+    <a class="home" href="/">← home</a>
+  </div>
+</header>
+
+<main>
+  <aside class="nav-panel">
+    <h2>Games</h2>
+    <div id="gameNav"></div>
+  </aside>
+
+  <section class="content-panel">
+    <div class="content-head">
+      <span class="eyebrow" id="gameEyebrow">Community</span>
+      <h3 id="gameTitle">—</h3>
+      <p class="lead" id="gameLead">—</p>
+      <nav class="tabs">
+        <button data-tab="tutorial" class="active">Tutorial</button>
+        <button data-tab="quiz">Quiz</button>
+      </nav>
+    </div>
+    <div class="content-body" id="contentBody"></div>
+  </section>
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+/* ============================================================
+   DATA — every game's tutorial + quiz
+   ============================================================ */
+const GROUPS = [
+  { label: "Community card", ids: ["nlhe","lhe","plo","plo8","bigo"] },
+  { label: "Stud",           ids: ["stud","stud8","razz"] },
+  { label: "Draw",           ids: ["nl27sd","limit27sd","triple27","limit-triple27","a5","badugi","double5"] },
+  { label: "Reference",      ids: ["rankings"] },
+];
+
+const GAMES = {
+/* ---------------------------------------------------------- */
+nlhe: {
+  name: "No-Limit Hold'em", eyebrow: "Community", dot: "var(--orange)",
+  lead: "The most popular poker variant in the world. Two private cards, five shared, and you can bet your whole stack at any time.",
+  tutorial: [
+    { h: "Overview", p: ["Each player gets <b>2 private hole cards</b> and shares <b>5 community cards</b> with the table. Your job is to make the best five-card hand using any combination of your hole cards and the board — you may even use all 5 board cards (\"play the board\")."] },
+    { h: "Card distribution", list: [
+      "<b>2 hole cards</b> dealt face-down to each player.",
+      "<b>5 community cards</b> revealed face-up in stages: the flop (3), the turn (1), the river (1).",
+      "Best five-card hand wins. You can use 0, 1, or 2 of your hole cards — whatever makes the strongest hand."
+    ]},
+    { h: "Betting streets", list: [
+      "<b>Preflop</b> — betting after hole cards are dealt.",
+      "<b>Flop</b> — first three community cards are revealed, then betting.",
+      "<b>Turn</b> — fourth community card, then betting.",
+      "<b>River</b> — fifth and final card, then the last betting round."
+    ]},
+    { h: "The 'No-Limit' structure", p: ["At any point a player may bet <b>any amount up to their entire stack</b> — that all-in move is what makes the game No-Limit. There is no cap on a single bet beyond the chips in front of you."],
+      callout: { kind:"", tag:"key", text:"The minimum raise must be at least the size of the previous bet or raise, but the maximum is always your whole stack." } },
+    { h: "Winning", p: ["At <b>showdown</b> the best five-card hand takes the pot. If everyone else folds first, the last player standing wins without showing their cards."] },
+    { h: "Resources", links: [
+      ["PokerNews — How to Play Texas Hold'em", "https://www.pokernews.com/poker-rules/texas-holdem.htm"],
+      ["Upswing Poker — Texas Hold'em Rules", "https://upswingpoker.com/poker-rules/texas-holdem-rules/"]
+    ]}
+  ],
+  quiz: [
+    { q: "How many hole cards does each player receive in No-Limit Hold'em?", o: ["2","4","5","7"], a:0, e:"Hold'em deals exactly two private hole cards per player; the other five cards are community cards." },
+    { q: "What is the maximum a player can bet on any street?", o: ["The size of the pot","A fixed limit set per street","Their entire stack (all-in)","Twice the big blind"], a:2, e:"'No-Limit' means you can move all-in — bet every chip you have — at any point." },
+    { q: "Which sequence correctly lists the community-card streets?", o: ["Turn, Flop, River","Flop, Turn, River","River, Turn, Flop","Flop, River, Turn"], a:1, e:"Three cards (flop), then one (turn), then one (river) — five board cards total." },
+    { q: "How many of your two hole cards MUST you use to make your hand?", o: ["Exactly 2","Exactly 1","At least 1","Any number, including zero"], a:3, e:"Unlike Omaha, Hold'em has no usage requirement — you can even 'play the board' using all five community cards." },
+    { q: "If all opponents fold before showdown, the remaining player...", o: ["Must show the winning hand","Wins the pot without showing","Splits the pot with the blinds","Only wins the blinds"], a:1, e:"When everyone folds, the last player wins the whole pot and is not required to reveal their cards." }
+  ]
+},
+/* ---------------------------------------------------------- */
+lhe: {
+  name: "Limit Hold'em", eyebrow: "Community", dot: "var(--orange)",
+  lead: "Texas Hold'em with the betting bolted down to fixed amounts. Same cards, but the math — pot odds and showdowns — takes center stage.",
+  tutorial: [
+    { h: "Overview", p: ["Identical to No-Limit Hold'em in dealing and structure, but bets and raises are restricted to <b>fixed amounts</b> on each street rather than any amount up to your stack."] },
+    { h: "How the betting differs", list: [
+      "Bets come in <b>fixed increments</b> — a 'small bet' on early streets and a 'big bet' (usually double) on later streets.",
+      "Each street is typically capped at <b>4 bets</b>: bet, raise, re-raise, cap.",
+      "All-in confrontations are far less common, so more hands reach <b>showdown</b>.",
+      "Because you can't blast opponents off hands with huge bets, <b>hand strength and pot odds</b> matter more."
+    ], callout: { kind:"", tag:"key", text:"With a capped bet size, you can rarely 'buy' the pot. Drawing hands get correct prices more often, so disciplined pot-odds play is essential." } },
+    { h: "Why people play it", p: ["Fixed limits cap your variance — you can't lose your whole stack in one hand. That makes Limit Hold'em a precise, grind-it-out game where small edges in pot-odds decisions compound over time."] },
+    { h: "Resources", links: [
+      ["PokerNews — Poker Rules", "https://www.pokernews.com/poker-rules/"],
+      ["Upswing Poker — Fixed Limit Betting", "https://upswingpoker.com/"]
+    ]}
+  ],
+  quiz: [
+    { q: "How does betting in Limit Hold'em differ from No-Limit?", o: ["You can never raise","Bets are fixed amounts per street","There are no blinds","Only the dealer may bet"], a:1, e:"Limit games restrict every bet and raise to a fixed size on each street." },
+    { q: "A street in Limit Hold'em is typically capped at how many bets?", o: ["2","4","Unlimited","6"], a:1, e:"The usual cap is four: an opening bet plus three raises, after which betting is 'capped'." },
+    { q: "Compared to No-Limit, Limit Hold'em tends to...", o: ["Reach showdown more often","End in folds more often","Have larger pots per hand always","Forbid bluffing entirely"], a:0, e:"Because you can't make pot-sized or all-in bets, more players see showdown, making hand strength critical." },
+    { q: "Why is pot-odds calculation especially important in Limit?", o: ["Because there are no community cards","Because the fixed bet size often gives draws a correct price to call","Because aces are low","Because you can only play premium hands"], a:1, e:"Capped bets frequently lay correct odds to chase draws — knowing the price is core skill." },
+    { q: "The later-street 'big bet' is usually what size relative to the early 'small bet'?", o: ["Half","The same","Double","Ten times"], a:2, e:"Limit structures typically double the bet size on the turn and river." }
+  ]
+},
+/* ---------------------------------------------------------- */
+plo: {
+  name: "Pot-Limit Omaha", eyebrow: "Community", dot: "var(--orange)",
+  lead: "Hold'em's bigger cousin: four hole cards, pot-capped betting, and one rule that trips up every beginner — you must use exactly two of your four cards.",
+  tutorial: [
+    { h: "Overview", p: ["Played like Hold'em but each player receives <b>four hole cards</b>. The betting is <b>pot-limit</b>: the most you can raise is the current size of the pot."] },
+    { h: "Card distribution", list: [
+      "<b>4 hole cards</b> dealt face-down to each player.",
+      "<b>5 community cards</b> dealt in the same flop / turn / river stages as Hold'em.",
+      "<b>CRITICAL RULE:</b> you must use <b>exactly 2</b> of your hole cards and <b>exactly 3</b> community cards — no more, no less."
+    ], callout: { kind:"warn", tag:"watch", text:"Four hearts in your hand is NOT a flush. You can only ever use two hole cards, so you need two suited cards in hand plus three of that suit on the board." } },
+    { h: "The pot-limit bet", p: ["The maximum raise equals the size of the pot <i>after</i> you call. Worked example: pot is <span class='k'>$100</span>, someone bets <span class='k'>$20</span>. You may raise to <span class='k'>$140</span> — that's the $100 pot, plus the $20 bet, plus your $20 call."] },
+    { h: "Hand strength", p: ["With four cards making six possible two-card combinations, strong hands appear far more often than in Hold'em. Pots are bigger and equities run closer, so <b>starting-hand selection and playing for the nuts</b> become crucial."] },
+    { h: "Resources", links: [
+      ["Upswing Poker — PLO Rules", "https://upswingpoker.com/poker-rules/pot-limit-omaha-rules/"],
+      ["PokerNews — How to Play Omaha", "https://www.pokernews.com/poker-rules/omaha-poker.htm"]
+    ]}
+  ],
+  quiz: [
+    { q: "How many hole cards must you use to form your hand in Omaha?", o: ["At least 2","Exactly 2","Any 2 or 3","Exactly 3"], a:1, e:"Omaha's defining rule: exactly two hole cards plus exactly three community cards — always." },
+    { q: "You hold A♥ K♥ Q♥ J♥ and the board shows three hearts. Do you have a flush?", o: ["Yes, four hearts plus the board","No — you can only use two hole cards","Only if you also have a pair","Yes, but only an ace-high flush"], a:1, e:"You may use exactly two hole cards. Four hearts in hand still only contributes two, so three board hearts give you a flush, but the extra hearts are dead." },
+    { q: "The pot is $100 and a player bets $20. What is the maximum you can raise TO?", o: ["$120","$140","$160","$200"], a:1, e:"Pot-limit max raise = pot + bet + your call = $100 + $20 + $20 = $140." },
+    { q: "How many hole cards are dealt to each player in PLO?", o: ["2","3","4","5"], a:2, e:"Each player receives four private hole cards." },
+    { q: "Why are made hands more common in PLO than Hold'em?", o: ["The deck is larger","Four hole cards make six two-card combinations","Aces count twice","There are extra community cards"], a:1, e:"Four cards yield six possible two-card pairings, so players connect with the board far more often." }
+  ]
+},
+/* ---------------------------------------------------------- */
+plo8: {
+  name: "Omaha Hi-Lo (8 or Better)", eyebrow: "Split pot", dot: "var(--orange)",
+  lead: "Pot-Limit Omaha where the pot splits two ways — best high hand and best qualifying low hand each take half. Win both and you 'scoop'.",
+  tutorial: [
+    { h: "Overview", p: ["Same four-card Omaha deal, but the pot is <b>split</b>: half to the best traditional <b>high</b> hand, half to the best <b>low</b> hand — provided a qualifying low exists."] },
+    { h: "Card distribution", list: [
+      "<b>4 hole cards</b> each; <b>5 community cards</b>.",
+      "You still must use <b>exactly 2 hole cards + 3 community cards</b> — and you can use a <i>different</i> two for your high hand than for your low."
+    ]},
+    { h: "Qualifying for the low", list: [
+      "You need <b>five different cards all ranked 8 or lower</b> (hence '8 or better').",
+      "<b>Aces play low</b> for the low hand (and high for the high hand).",
+      "The best possible low is <span class='k'>5-4-3-2-A</span> — the 'wheel'.",
+      "<b>Straights and flushes do NOT count against your low</b> — the wheel is both a low and a straight.",
+      "If <b>no one qualifies</b> for a low, the high hand scoops the entire pot."
+    ], callout: { kind:"good", tag:"scoop", text:"A 'scoop' is winning both halves with the best high AND the best low. The wheel (5-4-3-2-A) is a monster because it's the nut low and also a straight for the high." } },
+    { h: "How to read a low", p: ["Compare lows from the <b>highest card down</b>. <span class='mono'>8-6-4-2-A</span> beats <span class='mono'>8-7-3-2-A</span> because the second card (6 vs 7) is lower. Always name a low by its highest card: '8-low', '7-low', etc."] },
+    { h: "Resources", links: [
+      ["Upswing Poker — Omaha Hi-Lo Rules", "https://upswingpoker.com/poker-rules/omaha-hi-lo/"],
+      ["PokerNews — PLO8 Rules", "https://www.pokernews.com/poker-rules/omaha-hi-lo.htm"]
+    ]}
+  ],
+  quiz: [
+    { q: "What is the highest card allowed in a qualifying low hand?", o: ["A 5","An 8","A 9","A 10"], a:1, e:"'8 or better' means every card in the low must be ranked eight or lower." },
+    { q: "What is the best possible low hand?", o: ["6-4-3-2-A","7-5-4-3-2","5-4-3-2-A (the wheel)","8-7-6-5-4"], a:2, e:"5-4-3-2-A, the wheel, is the nut low — and because straights don't count against you, it's also a straight for the high." },
+    { q: "Do straights and flushes count against your LOW hand?", o: ["Yes, they disqualify it","No, they're ignored for the low","Only flushes count against it","Only straights count against it"], a:1, e:"In Hi-Lo, straights and flushes do not hurt the low — the wheel is simultaneously the best low and a straight." },
+    { q: "If no player makes a qualifying low, what happens to the pot?", o: ["It carries over to the next hand","The best high hand wins it all","It is split among everyone","The low half is forfeited to the house"], a:1, e:"With no qualifying low, the entire pot goes to the best high hand." },
+    { q: "Which low hand is better: 8-6-4-2-A or 8-7-3-2-A?", o: ["8-7-3-2-A","8-6-4-2-A","They tie","Neither qualifies"], a:1, e:"Compare from the top down. Both are 8-lows; the next card is 6 vs 7, so 8-6-4-2-A wins." }
+  ]
+},
+/* ---------------------------------------------------------- */
+bigo: {
+  name: "Big O", eyebrow: "Split pot", dot: "var(--orange)",
+  lead: "Omaha Hi-Lo with a fifth hole card. One extra card, vastly more combinations — and the same exactly-two-cards rule still applies.",
+  tutorial: [
+    { h: "Overview", p: ["Big O is <b>Five-Card Omaha Hi-Lo</b>: just like PLO8 but each player receives <b>five hole cards</b> instead of four. It's almost always played pot-limit, hi-lo split, 8-or-better."] },
+    { h: "Card distribution", list: [
+      "<b>5 hole cards</b> dealt to each player.",
+      "<b>5 community cards</b> on the board.",
+      "Still use <b>exactly 2 hole cards + 3 community cards</b> for each of your high and low hands."
+    ]},
+    { h: "Low requirements", p: ["Identical to Omaha Hi-Lo: you need <b>five cards ranked 8 or lower</b> to qualify for the low, aces play low, and the nut low is the <span class='k'>5-4-3-2-A</span> wheel."] },
+    { h: "Why the extra card matters", p: ["Five hole cards make <b>ten</b> possible two-card combinations (versus six in Omaha). That means stronger hands, more scoops, and much more frequent qualifying lows. <b>Starting-hand selection is even more critical</b> — and nut hands win, second-best hands lose big."],
+      callout: { kind:"warn", tag:"watch", text:"More combinations cut both ways: everyone connects more, so non-nut hands are far more dangerous than in four-card Omaha." } },
+    { h: "Resources", links: [
+      ["CardPlayer — Big O Poker", "https://www.cardplayer.com/rules-of-poker/glossary/big-o-poker"],
+      ["PokerNews — What is Big O", "https://www.pokernews.com/poker-rules/big-o.htm"]
+    ]}
+  ],
+  quiz: [
+    { q: "How many hole cards does each player get in Big O?", o: ["4","5","6","2"], a:1, e:"Big O is five-card Omaha — five hole cards per player." },
+    { q: "How many hole cards must you use to make a hand?", o: ["Exactly 2","Exactly 3","Any number","All 5"], a:0, e:"Like all Omaha variants, you use exactly two hole cards plus exactly three community cards." },
+    { q: "Big O is most commonly played as which structure?", o: ["High only, no-limit","Hi-Lo split, 8-or-better, pot-limit","Lowball single draw","Fixed-limit high only"], a:1, e:"Big O is typically a pot-limit hi-lo split game with the 8-or-better low qualifier." },
+    { q: "What is the qualifying requirement for the low in Big O?", o: ["Five cards 8 or lower","Four cards of different suits","Any pair","A 9-low or better"], a:0, e:"Same as Omaha Hi-Lo: five distinct cards ranked eight or below." },
+    { q: "Compared to four-card Omaha, the extra hole card means...", o: ["Fewer combinations","The same number of combinations","More combinations, so nut hands matter even more","Aces become high in the low"], a:2, e:"Five cards give ten two-card combos versus six, raising the premium on making the nuts." }
+  ]
+},
+/* ---------------------------------------------------------- */
+stud: {
+  name: "Seven Card Stud", eyebrow: "Stud", dot: "var(--cyan)",
+  lead: "The classic before Hold'em took over. No flop, no blinds — seven cards dealt across five streets, some face-up for the whole table to read.",
+  tutorial: [
+    { h: "Overview", p: ["Each player is dealt <b>seven cards total</b> over the course of the hand and makes their best <b>five-card</b> hand. There are no community cards — some of your cards are face-down (private) and some face-up (visible to everyone)."] },
+    { h: "Card distribution", list: [
+      "First <b>2 cards face-down</b> plus <b>1 card face-up</b> to start (3rd street).",
+      "Three more cards dealt <b>face-up</b> one at a time (4th, 5th, 6th street).",
+      "Final <b>7th card face-down</b>.",
+      "Layout: <b>3 down, 4 up</b> — seven cards in total."
+    ]},
+    { h: "Betting rounds", list: [
+      "<b>Antes</b> — everyone posts a small ante before cards are dealt.",
+      "<b>3rd street</b> — after the first three cards (the low up-card usually 'brings in' the betting).",
+      "<b>4th, 5th, 6th streets</b> — a bet after each new up-card.",
+      "<b>7th street (river)</b> — after the final down-card, then showdown."
+    ], callout: { kind:"", tag:"key", text:"Limits are smaller on 3rd and 4th street and double from 5th street onward. Reading opponents' up-cards — and remembering folded cards — is the core skill." } },
+    { h: "Strategy note", p: ["Because up to four of each opponent's cards are visible, <b>card-reading and memory</b> dominate. Track which cards are 'dead' (already folded or showing) — they change the odds of completing your hand."] },
+    { h: "Resources", links: [
+      ["PokerNews — Seven Card Stud Rules", "https://www.pokernews.com/poker-rules/seven-card-stud.htm"],
+      ["Upswing Poker — Seven Card Stud", "https://upswingpoker.com/poker-rules/seven-card-stud/"]
+    ]}
+  ],
+  quiz: [
+    { q: "In Seven Card Stud, how are the seven cards distributed?", o: ["All face-down","3 down, 4 up","4 down, 3 up","2 down, 5 up"], a:1, e:"Two down and one up to start, three more up, then a final down card: three down, four up." },
+    { q: "What replaces the blinds in Seven Card Stud?", o: ["Straddles","Antes (and a bring-in)","Nothing — it's free to play","A button charge"], a:1, e:"Players post antes, and the lowest up-card on 3rd street posts the forced 'bring-in' bet." },
+    { q: "On which streets do the betting limits double (in a fixed-limit game)?", o: ["From 3rd street","From 5th street onward","Only on 7th street","They never change"], a:1, e:"Limits are small on 3rd and 4th street, then double from 5th street through 7th." },
+    { q: "How many community cards are there in Seven Card Stud?", o: ["Three","Five","Zero","One"], a:2, e:"Stud has no community cards — every card belongs to an individual player." },
+    { q: "Why is memory a key skill in Stud?", o: ["You must memorize the betting order","Folded and exposed up-cards are 'dead' and change your odds","There is a time limit","Cards are dealt too fast to see"], a:1, e:"Tracking which cards are already dead tells you how live your draws really are." }
+  ]
+},
+/* ---------------------------------------------------------- */
+stud8: {
+  name: "Seven Card Stud Hi-Lo (8 or Better)", eyebrow: "Stud · Split", dot: "var(--cyan)",
+  lead: "Seven Card Stud with a split pot. Best high and best qualifying low each scoop half — and you make each from any five of your seven cards.",
+  tutorial: [
+    { h: "Overview", p: ["Played exactly like Seven Card Stud (3 down, 4 up), but the pot <b>splits</b> between the best high hand and the best qualifying <b>low</b> hand."] },
+    { h: "Low requirements", list: [
+      "Need <b>five different unpaired cards ranked 8 or lower</b>.",
+      "<b>Aces count as low</b> (and can also play high).",
+      "Best low is the <span class='k'>5-4-3-2-A</span> wheel.",
+      "<b>Straights and flushes don't count against</b> the low.",
+      "<b>No qualifying low → the high hand wins the whole pot.</b>"
+    ]},
+    { h: "Making two hands from seven cards", p: ["You have seven cards and only need five for each hand, so you can use a <b>different five</b> for high than for low. A holding like A-2-3-4-5 of mixed suits is a 5-high straight (high) <i>and</i> the wheel (low) at once."],
+      callout: { kind:"good", tag:"scoop", text:"Three low cards by 4th or 5th street with high potential is premium — you're drawing to scoop both halves." } },
+    { h: "Resources", links: [
+      ["PokerNews — Stud Hi-Lo 8-or-Better", "https://www.pokernews.com/poker-rules/seven-card-stud8better.htm"],
+      ["Upswing Poker — Stud Hi-Lo", "https://upswingpoker.com/poker-rules/stud-hi-lo/"]
+    ]}
+  ],
+  quiz: [
+    { q: "How is the pot awarded in Stud Hi-Lo?", o: ["All to the high hand","Split between best high and best qualifying low","All to the low hand","To whoever has the most cards showing"], a:1, e:"It's a split-pot game: half to the best high, half to the best qualifying low." },
+    { q: "What qualifies as a low?", o: ["Any five cards","Five unpaired cards 8 or lower","A pair of low cards","Three cards under 5"], a:1, e:"You need five different unpaired cards each ranked eight or lower." },
+    { q: "Does an ace count high or low in this game?", o: ["Only high","Only low","It can play both high and low","It's a dead card"], a:2, e:"The ace is versatile: it makes the nut low and can also play high in a straight or pair." },
+    { q: "How many of your seven cards do you use for the low hand?", o: ["All seven","The best five","Exactly three","Exactly two"], a:1, e:"You make your best five-card low from any five of your seven cards — and may use different cards for your high." },
+    { q: "If nobody makes a qualifying low, who wins?", o: ["The pot is chopped evenly","The best high hand takes it all","The bring-in keeps the antes","It rolls to next hand"], a:1, e:"With no qualifying low, the high hand scoops the entire pot." }
+  ]
+},
+/* ---------------------------------------------------------- */
+razz: {
+  name: "Razz", eyebrow: "Stud · Lowball", dot: "var(--cyan)",
+  lead: "Seven Card Stud turned upside-down. The worst traditional hand wins — you're chasing the lowest five cards you can make.",
+  tutorial: [
+    { h: "Overview", p: ["Razz is the <b>lowball</b> form of Seven Card Stud. Same deal (3 down, 4 up), but you're trying to make the <b>lowest possible five-card hand</b>. Pairs hurt you; high cards hurt you."] },
+    { h: "Hand rankings (reversed)", list: [
+      "Best hand is <span class='k'>5-4-3-2-A</span> — the wheel.",
+      "<b>Aces are always low.</b>",
+      "<b>Pairs are bad</b> — you want five unpaired ranks.",
+      "<b>Straights and flushes do NOT count</b> — they neither help nor hurt.",
+      "Only your <b>lowest five cards</b> out of seven count."
+    ], callout: { kind:"warn", tag:"watch", text:"Read lows from the top down. 7-6-4-2-A (a 'seven-low') beats 8-3-2-2... wait — any pair ruins a hand. An unpaired 8-low beats any paired hand." } },
+    { h: "Starting hands", p: ["The best starts are <b>three unpaired low cards</b> like A-2-3, A-2-4, or 2-3-4. Avoid being dealt high cards or pairs."] },
+    { h: "Strategy note", p: ["Unlike Hold'em, in Razz you <b>want to see opponents' high up-cards</b> (they're in trouble) and dislike showing your own low cards (it reveals your strength). Bricking — catching a high card or a pair on a later street — is the constant danger."] },
+    { h: "Resources", links: [
+      ["PokerNews — Razz Rules", "https://www.pokernews.com/poker-rules/razz-poker.htm"],
+      ["CountingOuts — Razz Basics", "https://www.countingouts.com/razz-rules-and-basic-strategy/"]
+    ]}
+  ],
+  quiz: [
+    { q: "What is the best possible hand in Razz?", o: ["7-5-4-3-2","A-A-2-3-4","5-4-3-2-A (the wheel)","Royal flush"], a:2, e:"Razz is a low game with aces low; 5-4-3-2-A is the unbeatable wheel." },
+    { q: "How do pairs affect your Razz hand?", o: ["They improve it","They hurt it badly","They have no effect","They count as a low card"], a:1, e:"You want five unpaired ranks. Any pair makes your hand much worse." },
+    { q: "Do straights and flushes count against you in Razz?", o: ["Yes, they ruin the hand","No, they're ignored entirely","Only flushes hurt","Only straights hurt"], a:1, e:"In Razz, straights and flushes don't count — so the wheel is a straight but still the best low." },
+    { q: "Which is the strongest Razz starting hand?", o: ["K-Q-J","A-2-3","9-9-2","7-7-7"], a:1, e:"Three low unpaired cards (A-2-3) is ideal; high cards and pairs are weak." },
+    { q: "Compared with Hold'em, in Razz you generally WANT your opponents to show...", o: ["Low cards","High cards","Pairs of aces","Suited connectors"], a:1, e:"An opponent showing high up-cards is in trouble in a low game — that's good for you." }
+  ]
+},
+/* ---------------------------------------------------------- */
+nl27sd: {
+  name: "No-Limit 2-7 Single Draw", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "Five cards, one draw, lowest hand wins — but here aces are HIGH and straights and flushes count against you. Also called Kansas City Lowball.",
+  tutorial: [
+    { h: "Overview", p: ["A draw game where you aim for the <b>lowest</b> hand under 2-7 (deuce-to-seven) rules. Each player gets five cards and has a single chance to swap some out."] },
+    { h: "Card distribution", list: [
+      "<b>5 cards face-down</b> to each player.",
+      "<b>One draw round</b>: discard 0–5 cards and receive replacements.",
+      "Two betting rounds — before the draw and after."
+    ]},
+    { h: "2-7 hand rankings", list: [
+      "Best hand is <span class='k'>7-5-4-3-2</span> (unsuited) — that's why it's called '2-7'.",
+      "<b>Aces are HIGH</b> (so A-2-3-4-5 is ace-high, a terrible hand here).",
+      "<b>Straights and flushes COUNT AGAINST you</b> — they make your hand worse.",
+      "Example: <span class='mono'>9-8-7-6-5</span> is a straight, so it loses to <span class='mono'>9-8-7-6-4</span>."
+    ], callout: { kind:"warn", tag:"watch", text:"The single most common mistake: treating the wheel (5-4-3-2-A) as the nuts. In 2-7 the ace is high AND that's a straight — it's a bad hand. The nuts is 7-5-4-3-2." } },
+    { h: "Betting", p: ["Usually played <b>no-limit</b>, so big bets are possible before and after the draw. Position and how many cards opponents draw give away enormous information."] },
+    { h: "Resources", links: [
+      ["PokerNews — 2-7 Single Draw", "https://www.pokernews.com/poker-rules/2-7-single-draw.htm"],
+      ["Upswing Poker — 2-7 Single Draw", "https://upswingpoker.com/how-to-play-2-7-single-draw/"]
+    ]}
+  ],
+  quiz: [
+    { q: "What is the best possible hand in 2-7 Lowball?", o: ["5-4-3-2-A","7-5-4-3-2","2-3-4-5-6","A-2-3-4-5"], a:1, e:"7-5-4-3-2 unsuited is the nuts. The ace is high in 2-7, and straights count against you." },
+    { q: "Are aces high or low in 2-7?", o: ["Low","High","Either","Wild"], a:1, e:"In deuce-to-seven, aces are always high — making them bad cards in a low game." },
+    { q: "How do straights and flushes affect a 2-7 hand?", o: ["They help","They count against you","They're ignored","They're only relevant on the draw"], a:1, e:"Unlike A-5 lowball, in 2-7 straights and flushes make your hand worse." },
+    { q: "Which hand wins: 9-8-7-6-5 or 9-8-7-6-4?", o: ["9-8-7-6-5","9-8-7-6-4","They tie","Neither qualifies"], a:1, e:"9-8-7-6-5 is a straight, which counts against you; 9-8-7-6-4 is just a nine-low and wins." },
+    { q: "How many draw rounds are there in single draw?", o: ["One","Two","Three","Zero"], a:0, e:"Single draw has exactly one drawing round, with a betting round before and after." }
+  ]
+},
+/* ---------------------------------------------------------- */
+limit27sd: {
+  name: "Limit 2-7 Lowball", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "The single-draw deuce-to-seven game with fixed-limit betting instead of no-limit. Same rankings, tighter, more pot-odds-driven play.",
+  tutorial: [
+    { h: "Overview", p: ["2-7 Single Draw played with <b>fixed-limit</b> betting. The hand structure is identical to No-Limit 2-7 Single Draw — only the betting changes."] },
+    { h: "Structure", list: [
+      "<b>5 cards face-down</b> per player.",
+      "<b>One draw round.</b>",
+      "Two betting rounds — before and after the draw — at <b>fixed limits</b>.",
+    ]},
+    { h: "Hand rankings", p: ["Same as all 2-7 games: the best hand is <span class='k'>7-5-4-3-2</span>, <b>aces are high</b>, and <b>straights and flushes count against you</b>."],
+      callout: { kind:"", tag:"key", text:"With capped bets you can't apply max pressure on the draw, so showdown value and reading how many cards opponents draw matter even more." } },
+    { h: "Resources", links: [
+      ["PokerNews — 2-7 Lowball Rules", "https://www.pokernews.com/poker-rules/"],
+      ["Flop Turn River — 2-7 Lowball", "https://flopturnriver.com/poker-strategy/2-7-lowball-rules-19003/"]
+    ]}
+  ],
+  quiz: [
+    { q: "How does Limit 2-7 Lowball differ from the No-Limit version?", o: ["Aces become low","Betting is fixed-limit","There are three draws","It uses community cards"], a:1, e:"Only the betting structure changes — fixed limits instead of no-limit. Rankings are identical." },
+    { q: "What is the nut hand?", o: ["5-4-3-2-A","7-5-4-3-2","2-2-3-4-5","9-8-7-6-5"], a:1, e:"As in every 2-7 game, 7-5-4-3-2 unsuited is the best hand." },
+    { q: "How many drawing rounds does this game have?", o: ["One","Two","Three","None"], a:0, e:"It's a single-draw game — one draw round only." },
+    { q: "In 2-7, a hand of A-2-3-4-5 is...", o: ["The best low (a wheel)","Ace-high and a straight — a bad hand","A flush","A qualifying 5-low"], a:1, e:"Aces are high and it's a straight, so A-2-3-4-5 is a weak ace-high hand here." },
+    { q: "Why does showdown value matter more in the Limit version?", o: ["Because draws are free","Because capped bets prevent bluffing opponents off hands","Because aces are low","Because there are more cards"], a:1, e:"You can't make pot-sized bets to force folds, so more hands get shown down." }
+  ]
+},
+/* ---------------------------------------------------------- */
+triple27: {
+  name: "2-7 Triple Draw (Pot-Limit)", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "The deuce-to-seven game with THREE drawing rounds. The most action-packed lowball draw variant — patience, position, and reading draws decide it.",
+  tutorial: [
+    { h: "Overview", p: ["2-7 lowball with <b>three</b> separate drawing rounds instead of one. The extra draws mean far more hand improvement and a longer, more strategic hand."] },
+    { h: "Betting rounds", list: [
+      "Opening betting after the initial 5 cards.",
+      "<b>First draw</b>, then betting.",
+      "<b>Second draw</b>, then betting.",
+      "<b>Third draw</b>, then final betting and showdown.",
+      "<b>Four betting rounds</b> in total — three draws plus the opening round."
+    ], callout: { kind:"", tag:"note", text:"In practice triple draw is most often spread as <b>fixed-limit</b> with a small-bet/big-bet structure (see Limit 2-7 Triple Draw). The pot-limit form shown here exists but is far less common." } },
+    { h: "Hand rankings", p: ["Same 2-7 rules: best hand <span class='k'>7-5-4-3-2</span>, <b>aces high</b>, <b>straights and flushes count against you</b>."] },
+    { h: "Strategy note", p: ["With three draws, you can start with a rough hand and refine it — but so can opponents. <b>Position is huge</b>: acting last, you see how many cards everyone draws before deciding. Standing pat (drawing zero) tells a powerful story.</b>"],
+      callout: { kind:"", tag:"key", text:"Watch the draw counts. An opponent who drew two, then one, then stood pat has likely made a strong low — proceed with caution." } },
+    { h: "Resources", links: [
+      ["PokerNews — 2-7 Triple Draw", "https://www.pokernews.com/poker-rules/deuce7triple-draw.htm"],
+      ["888poker — 2-7 Triple Draw Strategy", "https://www.888poker.com/magazine/strategy/2-7-triple-draw"]
+    ]}
+  ],
+  quiz: [
+    { q: "How many drawing rounds are there in 2-7 Triple Draw?", o: ["One","Two","Three","Four"], a:2, e:"As the name says, there are three drawing rounds — and four betting rounds in total." },
+    { q: "What is the best hand?", o: ["7-5-4-3-2","5-4-3-2-A","6-5-4-3-2","A-A-2-3-4"], a:0, e:"Same 2-7 rankings: 7-5-4-3-2 is the nuts; 6-5-4-3-2 is a straight and counts against you." },
+    { q: "Are aces high or low here?", o: ["Low","High","Either","They're wild"], a:1, e:"Deuce-to-seven means aces are high — true across all 2-7 draw variants." },
+    { q: "Why is position so valuable in Triple Draw?", o: ["You ante less","You see opponents' draw counts before acting","Aces become low in position","You get an extra draw"], a:1, e:"Acting last, you observe how many cards each opponent draws each round — huge information." },
+    { q: "An opponent 'stands pat'. This means they...", o: ["Folded","Drew five new cards","Drew zero cards, keeping their hand","Checked in the dark"], a:2, e:"Standing pat means drawing no cards — usually a signal of an already-made strong hand." }
+  ]
+},
+/* ---------------------------------------------------------- */
+"limit-triple27": {
+  name: "Limit 2-7 Triple Draw", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "The mixed-game staple: 2-7 Triple Draw with fixed-limit betting. Identical to the pot-limit version except the bets are capped.",
+  tutorial: [
+    { h: "Overview", p: ["Identical to Pot-Limit 2-7 Triple Draw in dealing, draws, and rankings — the only difference is <b>fixed-limit betting</b> instead of pot-limit. This is the form most common in mixed-game rotations like H.O.R.S.E. and the 'Dramaha' mixes."] },
+    { h: "Betting structure — small bet / big bet", list: [
+      "<b>Four betting rounds</b>: pre-draw, after the 1st draw, after the 2nd draw, and after the 3rd draw.",
+      "The first two rounds use the <b>small bet</b>; the last two rounds switch to the <b>big bet</b> — double the small bet.",
+      "Each round is capped at a fixed number of bets (typically four: bet, raise, re-raise, cap)."
+    ], callout: { kind:"", tag:"key", text:"Example at 200/400: bets and raises come in 200 chips before and after the first draw, then jump to 400 chips after the second and third draws." } },
+    { h: "What's the same as pot-limit", list: [
+      "Three draws, 2-7 rankings, <b>aces high</b>, and <b>straights/flushes count against you</b> — all unchanged.",
+      "Only the betting structure differs: fixed small/big bets instead of pot-sized."
+    ]},
+    { h: "Hand rankings", p: ["Best hand <span class='k'>7-5-4-3-2</span>; <b>aces high</b>; <b>straights and flushes count against you</b>.</b>"],
+      callout: { kind:"", tag:"key", text:"Because bets are capped, you can't price opponents out of draws. Drawing smooth (to low, non-straightening cards) and folding rough hands early is the winning recipe." } },
+    { h: "Resources", links: [
+      ["PokerNews — 2-7 Triple Draw", "https://www.pokernews.com/poker-rules/deuce7triple-draw.htm"],
+      ["888poker — 2-7 Triple Draw Strategy", "https://www.888poker.com/magazine/strategy/2-7-triple-draw"]
+    ]}
+  ],
+  quiz: [
+    { q: "What is the only real difference between Limit and Pot-Limit 2-7 Triple Draw?", o: ["The number of draws","The betting structure (fixed-limit vs pot-limit)","Aces are low in Limit","The number of hole cards"], a:1, e:"Rankings and draws are identical; only the betting structure differs." },
+    { q: "How many bets are typically allowed per round in the Limit version?", o: ["Two","Four","Unlimited","Six"], a:1, e:"Fixed-limit games usually cap each round at four bets." },
+    { q: "How many draws does Limit 2-7 Triple Draw have?", o: ["One","Two","Three","Four"], a:2, e:"Three draws — the 'triple draw' is unchanged from the pot-limit version." },
+    { q: "What is the best possible hand?", o: ["7-5-4-3-2","5-4-3-2-A","8-6-4-3-2","6-4-3-2-A"], a:0, e:"7-5-4-3-2 unsuited — the universal 2-7 nuts." },
+    { q: "Limit 2-7 Triple Draw frequently appears in...", o: ["Heads-up Hold'em only","Mixed-game rotations like H.O.R.S.E.-style mixes","Tournaments with no betting","Community-card games"], a:1, e:"It's a common component of mixed-game rotations played at fixed limits." }
+  ]
+},
+/* ---------------------------------------------------------- */
+a5: {
+  name: "Limit A-5 Triple Draw", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "Ace-to-five lowball played as a triple-draw, fixed-limit game — the mirror of 2-7 Triple Draw. Aces are LOW, straights and flushes don't count, and the wheel A-2-3-4-5 is the nuts.",
+  tutorial: [
+    { h: "Overview", p: ["A lowball draw game scored under <b>ace-to-five</b> rules — the opposite of 2-7. In mixed-game events it's spread as a <b>triple-draw</b>, fixed-limit game, sitting alongside 2-7 Triple Draw and Badugi. Each player gets five cards and three drawing rounds to refine their low."] },
+    { h: "Key differences from 2-7", list: [
+      "<b>Aces are LOW</b> (not high).",
+      "<b>Straights and flushes do NOT count against</b> your hand.",
+      "Best hand: <span class='k'>5-4-3-2-A</span> — the 'wheel' or 'bicycle'.",
+      "Second best: <span class='mono'>6-4-3-2-A</span>, then so on down."
+    ], callout: { kind:"good", tag:"note", text:"A-5 is the same low ranking used for the low half of Omaha Hi-Lo, Stud Hi-Lo, and Razz — handy to learn once and reuse." } },
+    { h: "Hand ranking order", p: ["Read lows from the top down. <span class='mono'>6-4-3-2-A</span> beats <span class='mono'>6-5-3-2-A</span> (4 beats 5 at the second card). <b>Pairs are terrible</b> — an unpaired high-card hand beats any pair."] },
+    { h: "Betting structure — small bet / big bet", list: [
+      "<b>Three draws</b>, so <b>four betting rounds</b>: pre-draw, after the 1st draw, after the 2nd draw, and after the 3rd draw.",
+      "The first two rounds use the <b>small bet</b>; the last two switch to the <b>big bet</b> (double).",
+      "Each round is capped at a fixed number of bets (typically four) — identical structure to 2-7 Triple Draw and Badugi."
+    ], callout: { kind:"", tag:"key", text:"Because it runs in the same triple-draw event as 2-7 and Badugi, the dealing rhythm and small/big-bet betting are the same — only the low ranking changes (aces low, straights/flushes ignored)." } },
+    { h: "Resources", links: [
+      ["PokerNews — Poker Rules", "https://www.pokernews.com/poker-rules/"],
+      ["Wikipedia — Lowball (poker)", "https://en.wikipedia.org/wiki/Lowball_(poker)"]
+    ]}
+  ],
+  quiz: [
+    { q: "Are aces high or low in A-5 Lowball?", o: ["High","Low","Either","Wild"], a:1, e:"Ace-to-five means aces are always low — the opposite of 2-7." },
+    { q: "What is the best possible hand?", o: ["7-5-4-3-2","5-4-3-2-A (the wheel)","A-2-3-4-5 straight","6-4-3-2-A"], a:1, e:"5-4-3-2-A, the wheel, is the nut low; straights don't count against you so it's unbeatable." },
+    { q: "How many drawing rounds and betting rounds does A-5 Triple Draw have?", o: ["1 draw, 2 betting rounds","3 draws, 4 betting rounds","2 draws, 3 betting rounds","3 draws, 3 betting rounds"], a:1, e:"Like 2-7 Triple Draw and Badugi, it has three draws and four betting rounds (small bet early, big bet late)." },
+    { q: "Do straights and flushes count against you in A-5?", o: ["Yes","No, they're ignored","Only flushes","Only straights"], a:1, e:"Unlike 2-7, straights and flushes do not hurt your hand in ace-to-five." },
+    { q: "Which hand is better: 6-4-3-2-A or 6-5-3-2-A?", o: ["6-5-3-2-A","6-4-3-2-A","They tie","Neither qualifies"], a:1, e:"Both are 6-lows; compare the next card — 4 beats 5 — so 6-4-3-2-A wins." }
+  ]
+},
+/* ---------------------------------------------------------- */
+badugi: {
+  name: "Badugi", eyebrow: "Draw · Lowball", dot: "var(--purple)",
+  lead: "A four-card draw game scored on something no other poker game uses: distinct SUITS and low ranks. Pairs and duplicate suits both kill your hand.",
+  tutorial: [
+    { h: "Overview", p: ["A unique lowball draw game where hand strength depends on having cards of <b>different suits</b> and <b>different (low) ranks</b>. Each player gets <b>four cards</b> and there are <b>three draw rounds</b>."] },
+    { h: "What makes a 'badugi'", list: [
+      "A <b>badugi</b> is four cards of <b>four different suits</b> with <b>no pairs</b>.",
+      "Best hand: <span class='k'>4-3-2-A</span>, all different suits (a four-card badugi).",
+      "Duplicate suits or ranks are <b>dead</b> — they drop out, leaving a 3-card, 2-card, or 1-card hand.",
+      "A <b>4-card hand always beats a 3-card hand</b>; a 3-card beats a 2-card, and so on."
+    ]},
+    { h: "How counting works", p: ["When you have a duplicate suit or a pair, you discard the higher duplicate and count the rest. Example:"],
+      table: { head:["Hand","Counts as","Why"], rows:[
+        ["4♠ 3♥ 2♦ A♣","4-card badugi","All four suits, no pair — the cards 4-3-2-A all count"],
+        ["7♠ 5♥ 2♦ 2♣","3-card (5-2-A... )","The paired 2 is dropped; only three cards count"],
+        ["K♠ Q♠ J♠ T♠","1-card badugi","All one suit — only the lowest single card counts"]
+      ]},
+      callout: { kind:"good", tag:"note", text:"Compare badugis by number of cards first, then by the ranks (lowest wins). 4♠3♥2♦A♣ beats 7♠5♥2♦2♣ because four cards beat three." } },
+    { h: "Structure", p: ["Usually played <b>pot-limit or fixed-limit</b> with three draws and four betting rounds. Drawing to improve a 3-card badugi into a 4-card one is the heart of the game."] },
+    { h: "Resources", links: [
+      ["PokerFuse — How to Play Badugi", "https://pokerfuse.com/learn-poker/how-to-play/badugi/"],
+      ["CardPlayer — How to Play Badugi", "https://www.cardplayer.com/online-poker/how-to-play-badugi-poker"]
+    ]}
+  ],
+  quiz: [
+    { q: "How many cards does each player receive in Badugi?", o: ["2","4","5","7"], a:1, e:"Badugi is a four-card game with three drawing rounds." },
+    { q: "What is the best possible Badugi hand?", o: ["A-2-3-4 all different suits","5-4-3-2-A","2-2-3-3","7-5-4-3-2"], a:0, e:"4-3-2-A of four different suits — a four-card badugi with the lowest ranks — is the nuts." },
+    { q: "What makes a valid four-card 'badugi'?", o: ["Four cards of the same suit","Four cards, all different suits, no pairs","Any four low cards","Four consecutive cards"], a:1, e:"A badugi needs four different suits and four different ranks (no pairs)." },
+    { q: "Which hand wins: 4♠ 3♥ 2♦ A♣ or 7♠ 5♥ 2♦ 2♣?", o: ["7♠ 5♥ 2♦ 2♣","4♠ 3♥ 2♦ A♣","They tie","Neither is valid"], a:1, e:"The first is a four-card badugi; the second has a paired deuce so it's only a three-card hand. Four cards always beat three." },
+    { q: "If your hand has two cards of the same suit, what happens?", o: ["It's an instant win","The higher duplicate is dropped, shrinking your hand","Both cards are doubled","The hand is dead"], a:1, e:"Duplicate suits (or ranks) don't count; you keep the lower one, leaving a smaller-card hand." }
+  ]
+},
+/* ---------------------------------------------------------- */
+double5: {
+  name: "Pot-Limit 5-Card Double Draw (High)", eyebrow: "Draw · High", dot: "var(--purple)",
+  lead: "A rare high-hand draw game with TWO drawing rounds. Standard poker rankings — the high hand wins — but you get two chances to improve.",
+  tutorial: [
+    { h: "Overview", p: ["A <b>high-hand</b> draw game (best traditional poker hand wins) with <b>two</b> drawing rounds, played pot-limit."] },
+    { h: "Card distribution", list: [
+      "<b>5 cards face-down</b> per player.",
+      "<b>First draw</b>: discard 0–5 and replace.",
+      "<b>Second draw</b>: another chance to improve.",
+      "Three betting rounds: before the first draw, after the first draw, and after the second (final) draw."
+    ]},
+    { h: "Hand rankings", p: ["<b>Standard high-hand rankings</b> apply — exactly like the high side of Hold'em. The royal flush is the best possible hand; high card is the worst."],
+      callout: { kind:"", tag:"key", text:"Two draws plus standard rankings means strong made hands (trips, straights, flushes) are common — and the pot-limit structure rewards betting them hard." } },
+    { h: "Resources", links: [
+      ["PokerNews — Draw Poker Variants", "https://www.pokernews.com/poker-rules/"],
+      ["Wikipedia — Draw poker", "https://en.wikipedia.org/wiki/Draw_poker"]
+    ]}
+  ],
+  quiz: [
+    { q: "Which hand wins in 5-Card Double Draw High?", o: ["The lowest hand","The highest (best traditional) hand","The hand with most cards drawn","A qualifying 8-low"], a:1, e:"It's a high game — standard poker rankings apply and the best high hand wins." },
+    { q: "How many drawing rounds are there?", o: ["One","Two","Three","Zero"], a:1, e:"'Double draw' means two drawing rounds." },
+    { q: "What is the best possible hand?", o: ["7-5-4-3-2","Royal flush","5-4-3-2-A","A four-card badugi"], a:1, e:"With standard high rankings, the royal flush is unbeatable." },
+    { q: "How many cards does each player start with?", o: ["Four","Five","Seven","Two"], a:1, e:"Each player is dealt five face-down cards." },
+    { q: "The betting structure is...", o: ["No-limit","Pot-limit","Fixed-limit only","Spread-limit"], a:1, e:"This variant is played pot-limit, with a betting round around each of the two draws." }
+  ]
+},
+/* ---------------------------------------------------------- */
+rankings: {
+  name: "Hand Rankings Reference", eyebrow: "Reference", dot: "var(--gold)",
+  lead: "The three ranking systems every mixed-game player must keep straight: standard high, ace-to-five low, and deuce-to-seven low.",
+  tutorial: [
+    { h: "Standard high rankings (high games)", p: ["From best to worst — used in Hold'em, Omaha highs, Stud, and 5-Card Draw High:"],
+      table: { head:["#","Hand","Example"], rows:[
+        ["1","Royal Flush","A-K-Q-J-10 one suit"],
+        ["2","Straight Flush","9-8-7-6-5 one suit"],
+        ["3","Four of a Kind","Q-Q-Q-Q-x"],
+        ["4","Full House","K-K-K-7-7"],
+        ["5","Flush","A-J-8-5-2 one suit"],
+        ["6","Straight","8-7-6-5-4 mixed"],
+        ["7","Three of a Kind","9-9-9-x-x"],
+        ["8","Two Pair","J-J-4-4-x"],
+        ["9","One Pair","A-A-x-x-x"],
+        ["10","High Card","A-Q-9-5-2"]
+      ]}
+    },
+    { h: "Ace-to-five low (A-5 / Hi-Lo / Razz)", list: [
+      "<b>Aces are LOW; straights and flushes do NOT count against you.</b>",
+      "Best: <span class='k'>5-4-3-2-A</span> (the wheel), then 6-low, 7-low, 8-low...",
+      "In hi-lo split games an <b>8-low is the minimum to qualify</b>.",
+      "Read every low from the highest card down; pairs are bad."
+    ]},
+    { h: "Deuce-to-seven low (2-7 games)", list: [
+      "<b>Aces are HIGH; straights and flushes COUNT AGAINST you.</b>",
+      "Best: <span class='k'>7-5-4-3-2</span> unsuited.",
+      "The 'wheel' 5-4-3-2-A is a <b>bad</b> hand here — it's ace-high and a straight."
+    ], callout: { kind:"warn", tag:"watch", text:"The #1 mixed-game trap: A-5 and 2-7 are mirror opposites. In A-5 the wheel is the nuts; in 2-7 the same five cards are nearly worthless. Always know which low system the current game uses." } },
+    { h: "Badugi ranking", p: ["A separate system entirely — four cards of different suits and ranks. Best is <span class='k'>4-3-2-A</span> rainbow; more cards beat fewer cards, then lower ranks win."] }
+  ],
+  quiz: [
+    { q: "Which is the highest-ranking hand in standard high poker?", o: ["Four of a kind","Straight flush","Royal flush","Full house"], a:2, e:"Royal flush (A-K-Q-J-10 suited) is the top of the standard high rankings, just above a straight flush." },
+    { q: "In ace-to-five low games, what is the best low?", o: ["7-5-4-3-2","5-4-3-2-A","A-2-3-4-5 straight","2-3-4-5-6"], a:1, e:"5-4-3-2-A is the wheel; straights don't count against the low so it's the nut low." },
+    { q: "In a hi-lo split game, what's the worst low card still allowed to qualify?", o: ["A 5","A 7","An 8","A 9"], a:2, e:"You need '8 or better' — an 8-low is the weakest qualifying low." },
+    { q: "In 2-7 games, the hand 5-4-3-2-A is...", o: ["The best low","A weak ace-high straight","A flush","A qualifying 5-low"], a:1, e:"Aces are high and it's a straight, so in 2-7 this 'wheel' is actually a poor hand." },
+    { q: "Which two low systems are mirror opposites of each other?", o: ["Standard high and Badugi","Ace-to-five and deuce-to-seven","Razz and Stud Hi-Lo","Badugi and Omaha"], a:1, e:"A-5 (aces low, straights ignored) and 2-7 (aces high, straights count) are opposites — the classic mixed-game trap." },
+    { q: "Which hand ranks higher: a flush or a full house?", o: ["Flush","Full house","They tie","Depends on suits"], a:1, e:"In standard high rankings a full house beats a flush." }
+  ]
+}
+};
+
+/* ============================================================
+   APP
+   ============================================================ */
+const navEl   = document.getElementById('gameNav');
+const bodyEl   = document.getElementById('contentBody');
+const titleEl  = document.getElementById('gameTitle');
+const leadEl   = document.getElementById('gameLead');
+const eyebrowEl= document.getElementById('gameEyebrow');
+const tabBtns  = [...document.querySelectorAll('.tabs button')];
+
+let currentId = null;
+let currentTab = 'tutorial';
+const quizState = {};   // id -> {answers:[], idx, done}
+
+function esc(s){ return s; } // content is trusted (authored inline)
+
+/* ---- build nav ---- */
+function buildNav(){
+  navEl.innerHTML = '';
+  GROUPS.forEach(g => {
+    const grp = document.createElement('div');
+    grp.className = 'nav-group';
+    grp.innerHTML = `<p class="grp-label">${g.label}</p>`;
+    g.ids.forEach(id => {
+      const game = GAMES[id];
+      if(!game) return;
+      const b = document.createElement('button');
+      b.className = 'game-btn';
+      b.dataset.id = id;
+      b.innerHTML = `<span class="dot" style="background:${game.dot}"></span><span>${game.name}</span><span class="mq">${game.quiz.length}Q</span>`;
+      b.addEventListener('click', () => selectGame(id));
+      grp.appendChild(b);
+    });
+    navEl.appendChild(grp);
+  });
+}
+
+function selectGame(id){
+  currentId = id;
+  const game = GAMES[id];
+  titleEl.textContent = game.name;
+  leadEl.textContent = game.lead;
+  eyebrowEl.textContent = game.eyebrow;
+  [...navEl.querySelectorAll('.game-btn')].forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  render();
+}
+
+function setTab(t){
+  currentTab = t;
+  tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  render();
+}
+tabBtns.forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+function render(){
+  if(currentTab === 'tutorial') renderTutorial();
+  else renderQuiz();
+}
+
+/* ---- tutorial ---- */
+function renderTutorial(){
+  const game = GAMES[currentId];
+  let html = '';
+  game.tutorial.forEach(sec => {
+    html += `<div class="tut-section"><h4>${sec.h}</h4>`;
+    if(sec.p) sec.p.forEach(p => html += `<p>${p}</p>`);
+    if(sec.list){
+      html += '<ul>';
+      sec.list.forEach(li => html += `<li>${li}</li>`);
+      html += '</ul>';
+    }
+    if(sec.table){
+      html += '<table class="facts"><thead><tr>';
+      sec.table.head.forEach(h => html += `<th>${h}</th>`);
+      html += '</tr></thead><tbody>';
+      sec.table.rows.forEach(r => {
+        html += '<tr>';
+        r.forEach((c,i) => html += `<td class="${i===0?'mono':''}">${c}</td>`);
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+    if(sec.links){
+      html += '<ul>';
+      sec.links.forEach(([t,u]) => html += `<li><a href="${u}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">${t} ↗</a></li>`);
+      html += '</ul>';
+    }
+    if(sec.callout){
+      const c = sec.callout;
+      html += `<div class="callout ${c.kind}"><span class="tag">${c.tag}</span><span class="text">${c.text}</span></div>`;
+    }
+    html += '</div>';
+  });
+  bodyEl.innerHTML = html;
+}
+
+/* ---- quiz ---- */
+function getQuiz(id){
+  if(!quizState[id]) quizState[id] = { idx:0, answers:[], done:false };
+  return quizState[id];
+}
+
+function renderQuiz(){
+  const game = GAMES[currentId];
+  const qs = game.quiz;
+  const st = getQuiz(currentId);
+
+  if(st.done){ renderResults(game, st); return; }
+
+  const q = qs[st.idx];
+  const answered = st.answers[st.idx] != null;
+  const score = st.answers.filter((a,i) => a === qs[i].a).length;
+  const pct = Math.round((st.idx) / qs.length * 100);
+
+  let html = `<div class="quiz-wrap">
+    <div class="quiz-top">
+      <span class="qprog">Question <b>${st.idx+1}</b> of ${qs.length}</span>
+      <span class="score-pill">Score ${score}/${st.answers.filter(a=>a!=null).length}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">Q${st.idx+1}</div>
+      <div class="q-text">${q.q}</div>`;
+
+  const keys = ['A','B','C','D','E'];
+  q.o.forEach((opt,i) => {
+    let cls = 'opt';
+    if(answered){
+      if(i === q.a) cls += ' correct';
+      else if(i === st.answers[st.idx]) cls += ' wrong';
+      else cls += ' dim';
+    }
+    html += `<button class="${cls}" data-opt="${i}" ${answered?'disabled':''}>
+      <span class="key">${keys[i]}</span><span>${opt}</span></button>`;
+  });
+
+  if(answered){
+    const ok = st.answers[st.idx] === q.a;
+    html += `<div class="explain ${ok?'ok':'no'}">
+      <span class="verdict">${ok?'Correct.':'Not quite.'}</span> ${q.e}</div>`;
+  }
+
+  html += `<div class="quiz-actions">`;
+  if(st.idx > 0) html += `<button class="btn" data-act="prev">← Previous</button>`;
+  if(answered){
+    if(st.idx < qs.length-1) html += `<button class="btn primary" data-act="next">Next →</button>`;
+    else html += `<button class="btn primary" data-act="finish">See results →</button>`;
+  }
+  html += `</div></div>`;
+  bodyEl.innerHTML = html;
+
+  bodyEl.querySelectorAll('.opt:not(:disabled)').forEach(b =>
+    b.addEventListener('click', () => { st.answers[st.idx] = +b.dataset.opt; renderQuiz(); }));
+  bodyEl.querySelectorAll('[data-act]').forEach(b =>
+    b.addEventListener('click', () => {
+      const a = b.dataset.act;
+      if(a==='next') st.idx++;
+      else if(a==='prev') st.idx--;
+      else if(a==='finish') st.done = true;
+      renderQuiz();
+    }));
+}
+
+function renderResults(game, st){
+  const qs = game.quiz;
+  const score = st.answers.filter((a,i) => a === qs[i].a).length;
+  const pct = Math.round(score / qs.length * 100);
+  let verdict, vclass, msg, ringColor;
+  if(pct >= 80){ verdict='Tournament ready'; vclass='verdict-pass'; ringColor='var(--green)';
+    msg='You have a solid grip on this game. You could sit down at a table without embarrassing yourself.'; }
+  else if(pct >= 60){ verdict='Almost there'; vclass='verdict-near'; ringColor='var(--gold)';
+    msg='Close — review the explanations on the ones you missed and run it back.'; }
+  else { verdict='Keep studying'; vclass='verdict-fail'; ringColor='var(--red)';
+    msg='Re-read the tutorial tab, then retake the quiz. The rankings are the part to nail first.'; }
+
+  let html = `<div class="results">
+    <div class="ring" style="background:conic-gradient(${ringColor} ${pct*3.6}deg, var(--panel-3) 0)">
+      <div style="position:absolute;inset:9px;border-radius:50%;background:var(--panel);display:grid;place-items:center">
+        <span class="pct">${pct}%</span>
+      </div>
+    </div>
+    <h4 class="${vclass}">${verdict}</h4>
+    <p>You scored <b style="color:var(--text)">${score} / ${qs.length}</b> on ${game.name}. ${msg}</p>
+    <div class="review-list">`;
+
+  qs.forEach((q,i) => {
+    const ok = st.answers[i] === q.a;
+    html += `<div class="review-line">
+      <span class="ic ${ok?'ok':'no'}">${ok?'✓':'✕'}</span>
+      <span>${q.q}</span></div>`;
+  });
+
+  html += `</div>
+    <div class="quiz-actions" style="justify-content:center;margin-top:20px">
+      <button class="btn primary" data-act="retake">Retake quiz</button>
+      <button class="btn" data-act="totut">Review tutorial</button>
+    </div></div>`;
+  bodyEl.innerHTML = html;
+
+  bodyEl.querySelector('[data-act="retake"]').addEventListener('click', () => {
+    quizState[currentId] = { idx:0, answers:[], done:false }; renderQuiz();
+  });
+  bodyEl.querySelector('[data-act="totut"]').addEventListener('click', () => setTab('tutorial'));
+}
+
+/* ---- init ---- */
+buildNav();
+selectGame('nlhe');
+</script>
+
+</body>
+</html>
