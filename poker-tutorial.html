@@ -360,7 +360,7 @@ footer a:hover { color: var(--accent); }
 const GROUPS = [
   { label: "Community card", ids: ["nlhe","lhe","plo","plo8","bigo"] },
   { label: "Stud",           ids: ["stud","stud8","razz"] },
-  { label: "Draw",           ids: ["nl27sd","limit27sd","triple27","limit-triple27","a5","badugi","double5"] },
+  { label: "Draw",           ids: ["nl27sd","triple27","limit-triple27","a5","badugi","double5"] },
   { label: "Reference",      ids: ["rankings"] },
 ];
 
@@ -625,32 +625,6 @@ nl27sd: {
     { q: "How do straights and flushes affect a 2-7 hand?", o: ["They help","They count against you","They're ignored","They're only relevant on the draw"], a:1, e:"Unlike A-5 lowball, in 2-7 straights and flushes make your hand worse." },
     { q: "Which hand wins: 9-8-7-6-5 or 9-8-7-6-4?", o: ["9-8-7-6-5","9-8-7-6-4","They tie","Neither qualifies"], a:1, e:"9-8-7-6-5 is a straight, which counts against you; 9-8-7-6-4 is just a nine-low and wins." },
     { q: "How many draw rounds are there in single draw?", o: ["One","Two","Three","Zero"], a:0, e:"Single draw has exactly one drawing round, with a betting round before and after." }
-  ]
-},
-/* ---------------------------------------------------------- */
-limit27sd: {
-  name: "Limit 2-7 Lowball", eyebrow: "Draw · Lowball", dot: "var(--purple)",
-  lead: "The single-draw deuce-to-seven game with fixed-limit betting instead of no-limit. Same rankings, tighter, more pot-odds-driven play.",
-  tutorial: [
-    { h: "Overview", p: ["2-7 Single Draw played with <b>fixed-limit</b> betting. The hand structure is identical to No-Limit 2-7 Single Draw — only the betting changes."] },
-    { h: "Structure", list: [
-      "<b>5 cards face-down</b> per player.",
-      "<b>One draw round.</b>",
-      "Two betting rounds — before and after the draw — at <b>fixed limits</b>.",
-    ]},
-    { h: "Hand rankings", p: ["Same as all 2-7 games: the best hand is <span class='k'>7-5-4-3-2</span>, <b>aces are high</b>, and <b>straights and flushes count against you</b>."],
-      callout: { kind:"", tag:"key", text:"With capped bets you can't apply max pressure on the draw, so showdown value and reading how many cards opponents draw matter even more." } },
-    { h: "Resources", links: [
-      ["PokerNews — 2-7 Lowball Rules", "https://www.pokernews.com/poker-rules/"],
-      ["Flop Turn River — 2-7 Lowball", "https://flopturnriver.com/poker-strategy/2-7-lowball-rules-19003/"]
-    ]}
-  ],
-  quiz: [
-    { q: "How does Limit 2-7 Lowball differ from the No-Limit version?", o: ["Aces become low","Betting is fixed-limit","There are three draws","It uses community cards"], a:1, e:"Only the betting structure changes — fixed limits instead of no-limit. Rankings are identical." },
-    { q: "What is the nut hand?", o: ["5-4-3-2-A","7-5-4-3-2","2-2-3-4-5","9-8-7-6-5"], a:1, e:"As in every 2-7 game, 7-5-4-3-2 unsuited is the best hand." },
-    { q: "How many drawing rounds does this game have?", o: ["One","Two","Three","None"], a:0, e:"It's a single-draw game — one draw round only." },
-    { q: "In 2-7, a hand of A-2-3-4-5 is...", o: ["The best low (a wheel)","Ace-high and a straight — a bad hand","A flush","A qualifying 5-low"], a:1, e:"Aces are high and it's a straight, so A-2-3-4-5 is a weak ace-high hand here." },
-    { q: "Why does showdown value matter more in the Limit version?", o: ["Because draws are free","Because capped bets prevent bluffing opponents off hands","Because aces are low","Because there are more cards"], a:1, e:"You can't make pot-sized bets to force folds, so more hands get shown down." }
   ]
 },
 /* ---------------------------------------------------------- */
