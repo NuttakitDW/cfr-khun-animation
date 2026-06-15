@@ -435,7 +435,7 @@ plo: {
       "<b>5 community cards</b> dealt in the same flop / turn / river stages as Hold'em.",
       "<b>CRITICAL RULE:</b> you must use <b>exactly 2</b> of your hole cards and <b>exactly 3</b> community cards — no more, no less."
     ], callout: { kind:"warn", tag:"watch", text:"Four hearts in your hand is NOT a flush. You can only ever use two hole cards, so you need two suited cards in hand plus three of that suit on the board." } },
-    { h: "The pot-limit bet", p: ["The maximum raise equals the size of the pot <i>after</i> you call. Worked example: pot is <span class='k'>$100</span>, someone bets <span class='k'>$20</span>. You may raise to <span class='k'>$140</span> — that's the $100 pot, plus the $20 bet, plus your $20 call."] },
+    { h: "The pot-limit bet", p: ["The maximum <i>raise</i> equals the size of the pot <b>after you call</b>. Worked example: pot is <span class='k'>$100</span>, someone bets <span class='k'>$20</span>. First you call the $20, making the pot <span class='k'>$140</span> ($100 + $20 + $20). You may then raise by that $140 — so your total goes <b>to <span class='k'>$160</span></b>. In short: you raise <i>by</i> $140, which is raising <i>to</i> $160."] },
     { h: "Hand strength", p: ["With four cards making six possible two-card combinations, strong hands appear far more often than in Hold'em. Pots are bigger and equities run closer, so <b>starting-hand selection and playing for the nuts</b> become crucial."] },
     { h: "Resources", links: [
       ["Upswing Poker — PLO Rules", "https://upswingpoker.com/poker-rules/pot-limit-omaha-rules/"],
@@ -445,7 +445,7 @@ plo: {
   quiz: [
     { q: "How many hole cards must you use to form your hand in Omaha?", o: ["At least 2","Exactly 2","Any 2 or 3","Exactly 3"], a:1, e:"Omaha's defining rule: exactly two hole cards plus exactly three community cards — always." },
     { q: "You hold A♥ K♥ Q♥ J♥ and the board shows exactly TWO hearts. Do you have a flush?", o: ["Yes — four hearts in hand plus two on the board","No — that's only four hearts; you'd need three hearts on the board","Yes, an ace-high flush","Only if you also hold a pair"], a:1, e:"You must use exactly two hole cards + three board cards. With only two hearts on the board, the best you can do is 2 hole hearts + 2 board hearts = four hearts — not a flush. You'd need three hearts on the board. (If the board had three hearts, you WOULD have a flush.)" },
-    { q: "The pot is $100 and a player bets $20. What is the maximum you can raise TO?", o: ["$120","$140","$160","$200"], a:1, e:"Pot-limit max raise = pot + bet + your call = $100 + $20 + $20 = $140." },
+    { q: "The pot is $100 and a player bets $20. What is the maximum you can raise TO?", o: ["$120","$140","$160","$200"], a:2, e:"First call the $20, making the pot $140 ($100 + $20 + $20). Your max raise is that $140 on top of the call, so you raise TO $160 (raising BY $140)." },
     { q: "How many hole cards are dealt to each player in PLO?", o: ["2","3","4","5"], a:2, e:"Each player receives four private hole cards." },
     { q: "Why are made hands more common in PLO than Hold'em?", o: ["The deck is larger","Four hole cards make six two-card combinations","Aces count twice","There are extra community cards"], a:1, e:"Four cards yield six possible two-card pairings, so players connect with the board far more often." }
   ]
