@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLO Starting Hands Quiz</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --purple: #bf8cff;
+  --gold: #ffd54a;
+  --orange: #ff8c42;
+  --cyan: #3fc8d4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ---------- header ---------- */
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.head-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.lang-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.lang-toggle button {
+  font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  background: var(--panel-2); color: var(--muted);
+  border: none; padding: 5px 11px; cursor: pointer;
+  transition: color .14s, background .14s;
+}
+.lang-toggle button + button { border-left: 1px solid var(--border); }
+.lang-toggle button:hover { color: var(--text); }
+.lang-toggle button.active { background: var(--accent); color: #04122e; }
+header .home { color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+
+/* ---------- layout ---------- */
+main {
+  padding: 26px 28px 40px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.content-panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+.content-head {
+  padding: 22px 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+.content-head .eyebrow {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  font-family: "SF Mono", Menlo, monospace;
+  padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
+  background: rgba(255,140,66,0.15); color: var(--orange);
+}
+.content-head h3 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text); }
+.content-head p.lead { margin: 0 0 16px; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+
+/* tabs */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 9px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+.content-body { padding: 24px; }
+
+/* ---------- primer ---------- */
+.tut-section { margin-bottom: 22px; }
+.tut-section:last-child { margin-bottom: 0; }
+.tut-section h4 {
+  margin: 0 0 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--accent);
+}
+.tut-section p { margin: 0 0 8px; font-size: 14px; color: var(--text); line-height: 1.65; }
+.tut-section ul { margin: 6px 0 0; padding-left: 18px; }
+.tut-section li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin-bottom: 5px; }
+.tut-section li b { color: var(--text); }
+.tut-section p b { color: var(--text); }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.k {
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  color: var(--gold); background: rgba(255,213,74,0.08);
+  border: 1px solid rgba(255,213,74,0.22); border-radius: 5px; padding: 1px 6px;
+}
+
+.callout {
+  display: flex; gap: 11px; align-items: flex-start;
+  background: rgba(91,158,255,0.06);
+  border: 1px solid rgba(91,158,255,0.28);
+  border-radius: 9px; padding: 11px 13px; margin: 10px 0 0;
+}
+.callout.warn { background: rgba(255,94,122,0.06); border-color: rgba(255,94,122,0.30); }
+.callout.good { background: rgba(63,223,142,0.06); border-color: rgba(63,223,142,0.30); }
+.callout .tag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 7px; border-radius: 4px;
+  flex-shrink: 0; margin-top: 1px;
+  background: rgba(91,158,255,0.18); color: var(--accent);
+}
+.callout.warn .tag { background: rgba(255,94,122,0.18); color: #ff7a91; }
+.callout.good .tag { background: rgba(63,223,142,0.18); color: var(--green); }
+.callout .text { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.callout .text b { color: var(--text); }
+
+/* tier table */
+table.facts { border-collapse: collapse; width: 100%; margin-top: 4px; font-size: 13px; }
+table.facts th, table.facts td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.facts th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+table.facts td { color: var(--muted); }
+table.facts td b { color: var(--text); }
+table.facts tr:last-child td { border-bottom: none; }
+.tier-tag {
+  display: inline-block; font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+}
+.tier-premium { background: rgba(63,223,142,0.15); color: var(--green); }
+.tier-speculative { background: rgba(91,158,255,0.15); color: var(--accent); }
+.tier-marginal { background: rgba(255,213,74,0.15); color: var(--gold); }
+.tier-trash { background: rgba(255,94,122,0.15); color: #ff7a91; }
+
+/* ---------- playing cards ---------- */
+.hand { display: flex; gap: 7px; margin: 2px 0 14px; flex-wrap: wrap; }
+.card {
+  width: 46px; height: 62px;
+  background: linear-gradient(180deg, #f7f9fd 0%, #e9edf6 100%);
+  border: 1px solid #c4ccdb;
+  border-radius: 7px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  position: relative; flex-shrink: 0;
+}
+.card .rank { font-size: 20px; font-weight: 700; line-height: 1; color: #11151f; }
+.card .suit { font-size: 17px; line-height: 1.1; margin-top: 2px; }
+.card.red .rank { color: #c8203a; }
+.card.red .suit { color: #c8203a; }
+.card.black .rank { color: #11151f; }
+.card.black .suit { color: #11151f; }
+.card .corner { position: absolute; top: 3px; left: 4px; font-size: 9px; font-weight: 700; line-height: 1; }
+.card.red .corner { color: #c8203a; }
+.card.black .corner { color: #11151f; }
+
+/* situation context */
+.situation {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px; padding: 11px 13px; margin: 0 0 14px;
+}
+.situation .stag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 7px; border-radius: 4px;
+  flex-shrink: 0; margin-top: 1px; background: rgba(255,140,66,0.18); color: var(--orange);
+}
+.situation .stext { font-size: 13px; color: var(--text); line-height: 1.55; }
+.situation .stext b { color: var(--gold); font-family: "SF Mono", Menlo, monospace; }
+
+/* ---------- quiz ---------- */
+.quiz-wrap { max-width: 720px; }
+.quiz-top {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.quiz-top .qprog b { color: var(--text); }
+.score-pill {
+  margin-left: auto;
+  font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+  padding: 5px 11px; border-radius: 6px;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+}
+.bar-track { height: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; flex-basis: 100%; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+
+.q-num { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+.q-text { margin: 6px 0 12px; font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.5; }
+
+.opt {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; text-align: left;
+  font: inherit; font-size: 14px; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px;
+  padding: 13px 15px; margin-bottom: 9px; cursor: pointer;
+  transition: border-color .14s, background .14s, transform .08s;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.opt:disabled { cursor: default; }
+.opt .key {
+  width: 22px; height: 22px; flex-shrink: 0;
+  display: grid; place-items: center;
+  font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700;
+  border-radius: 5px; background: var(--panel-3); color: var(--muted);
+}
+.opt.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.opt.correct .key { background: var(--green); color: #06210f; }
+.opt.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.opt.wrong .key { background: var(--red); color: #2a0510; }
+.opt.dim { opacity: 0.5; }
+
+.explain {
+  margin: 4px 0 0; padding: 12px 14px;
+  background: var(--panel-2); border: 1px solid var(--border); border-left-width: 3px;
+  border-radius: 8px; font-size: 13px; color: var(--muted); line-height: 1.6;
+}
+.explain.ok { border-left-color: var(--green); }
+.explain.no { border-left-color: var(--red); }
+.explain b { color: var(--text); }
+.explain .verdict { font-weight: 700; }
+.explain.ok .verdict { color: var(--green); }
+.explain.no .verdict { color: var(--red); }
+
+.quiz-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 10px 20px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .14s, background .14s, opacity .14s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #04122e; }
+.btn.primary:hover { background: #74adff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* results */
+.results { text-align: center; padding: 14px 0; }
+.results .ring {
+  width: 132px; height: 132px; margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  position: relative;
+}
+.results .ring .pct { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--text); }
+.results h4 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
+.results p { margin: 0 auto 18px; font-size: 13.5px; color: var(--muted); max-width: 50ch; }
+.results .verdict-pass { color: var(--green); }
+.results .verdict-near { color: var(--gold); }
+.results .verdict-fail { color: var(--red); }
+.review-line {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  font-size: 12.5px; color: var(--muted); padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 7px; background: var(--panel-2);
+}
+.review-line .ic { font-family: "SF Mono", Menlo, monospace; font-weight: 700; flex-shrink: 0; }
+.review-line .ic.ok { color: var(--green); }
+.review-line .ic.no { color: var(--red); }
+.review-line .mini-hand { display: flex; gap: 3px; flex-shrink: 0; }
+.review-line .mini-hand .mc {
+  font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700;
+  background: #eef1f8; border-radius: 3px; padding: 1px 3px; color: #11151f;
+}
+.review-line .mini-hand .mc.red { color: #c8203a; }
+.review-list { max-width: 600px; margin: 18px auto 0; }
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.7;
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 560px) {
+  .card { width: 40px; height: 55px; }
+  .card .rank { font-size: 17px; }
+  .head-right { width: 100%; margin-left: 0; }
+}
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>PLO Starting Hands</h1>
+    <span class="sub" id="subEl"></span>
+    <div class="head-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="th">ไทย</button>
+      </div>
+      <a class="home" id="homeEl" href="/"></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="content-panel">
+    <div class="content-head">
+      <span class="eyebrow">Pot-Limit Omaha</span>
+      <h3 id="modeTitle"></h3>
+      <p class="lead" id="modeLead"></p>
+      <nav class="tabs" id="tabNav">
+        <button data-tab="primer" class="active"></button>
+        <button data-tab="classify"></button>
+        <button data-tab="situations"></button>
+      </nav>
+    </div>
+    <div class="content-body" id="contentBody"></div>
+  </section>
+</main>
+
+<footer id="footerEl"></footer>
+
+<script>
+/* ============================================================
+   LANGUAGE
+   ============================================================ */
+let LANG = localStorage.getItem('plo_lang') || 'en';
+function L(v) { return (v && typeof v === 'object' && 'en' in v) ? v[LANG] : v; }
+
+/* ============================================================
+   CARD RENDERING
+   ============================================================ */
+const SUIT_GLYPH = { s: '♠', h: '♥', d: '♦', c: '♣' };
+const RED_SUITS = new Set(['h', 'd']);
+
+function parseHand(str) {
+  const clean = str.replace(/\s+/g, '');
+  const out = [];
+  for (let i = 0; i < clean.length; i += 2) out.push([clean[i], clean[i + 1].toLowerCase()]);
+  return out;
+}
+function renderHand(str) {
+  let html = '<div class="hand">';
+  parseHand(str).forEach(([rank, suit]) => {
+    const red = RED_SUITS.has(suit);
+    const g = SUIT_GLYPH[suit];
+    html += `<div class="card ${red ? 'red' : 'black'}">
+      <span class="corner">${rank}${g}</span>
+      <span class="rank">${rank}</span><span class="suit">${g}</span></div>`;
+  });
+  return html + '</div>';
+}
+function renderMiniHand(str) {
+  let html = '<span class="mini-hand">';
+  parseHand(str).forEach(([rank, suit]) =>
+    html += `<span class="mc ${RED_SUITS.has(suit) ? 'red' : ''}">${rank}${SUIT_GLYPH[suit]}</span>`);
+  return html + '</span>';
+}
+
+/* ============================================================
+   UI STRINGS
+   ============================================================ */
+const UI = {
+  sub: { en: 'Classify hands and make preflop decisions the way Jeff Hwang\'s "Big Play" framework does',
+         th: 'จัดประเภทมือเริ่มต้นและตัดสินใจ preflop ตามแนวทาง "Big Play" ของ Jeff Hwang' },
+  home: { en: '← home', th: '← หน้าแรก' },
+  footer: {
+    en: 'Drills adapted from Jeff Hwang, <i>Pot-Limit Omaha Poker: The Big Play Strategy</i> (pp. 81–82).<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.',
+    th: 'แบบฝึกหัดดัดแปลงจาก Jeff Hwang, <i>Pot-Limit Omaha Poker: The Big Play Strategy</i> (น. 81–82)<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> สงวนลิขสิทธิ์'
+  },
+  score:   { en: 'Score', th: 'คะแนน' },
+  spot:    { en: 'Spot', th: 'สถานการณ์' },
+  correct: { en: 'Correct.', th: 'ถูกต้อง' },
+  notquite:{ en: 'Not quite.', th: 'ยังไม่ใช่' },
+  prev:    { en: '← Previous', th: '← ก่อนหน้า' },
+  next:    { en: 'Next →', th: 'ถัดไป →' },
+  seeRes:  { en: 'See results →', th: 'ดูผล →' },
+  retake:  { en: 'Retake', th: 'ทำใหม่' },
+  reviewPrimer: { en: 'Review primer', th: 'ทบทวนพื้นฐาน' }
+};
+const TAB_LABELS = {
+  primer:     { en: 'Primer', th: 'พื้นฐาน' },
+  classify:   { en: 'Classify Hands', th: 'จัดประเภทมือ' },
+  situations: { en: 'Practice Situations', th: 'สถานการณ์จริง' }
+};
+
+/* ============================================================
+   PRIMER CONTENT
+   ============================================================ */
+const PRIMER = [
+  { h: { en: "The framework", th: "หลักการ" }, p: [
+    { en: "Every Omaha starting hand sorts into one of four tiers: <b>Premium</b>, <b>Speculative</b>, <b>Marginal</b>, or <b>Trash</b>. The test Hwang uses is simple — <b>imagine the best flop you could possibly hit</b> (a \"miracle flop\"), then ask how good that outcome really is and how often a flop near it shows up.",
+      th: "ทุกมือเริ่มต้นใน Omaha แบ่งได้เป็น 4 ระดับ: <b>Premium</b>, <b>Speculative</b>, <b>Marginal</b>, หรือ <b>Trash</b> วิธีทดสอบของ Hwang นั้นง่ายมาก — <b>ลองนึกถึง flop ที่ดีที่สุดเท่าที่มือนี้จะติดได้</b> (\"miracle flop\") แล้วถามว่าผลลัพธ์นั้นดีจริงแค่ไหน และ flop แบบนั้นมาบ่อยแค่ไหน" },
+    { en: "Because Omaha forces you to use <b>exactly two of your four hole cards</b>, the value of a hand lives in its <b>structure</b> — how its cards combine to make nut straights, nut flush draws, big wraps, and top sets. Pretty cards that don't work together are worth very little.",
+      th: "เพราะ Omaha บังคับให้ใช้ <b>ไพ่ในมือ 2 ใบจาก 4 ใบพอดี</b> คุณค่าของมือจึงอยู่ที่ <b>โครงสร้าง</b> — ว่าไพ่ประกอบกันเป็น nut straight, nut flush draw, big wrap และ top set ได้ดีแค่ไหน ไพ่สวยที่ไม่เชื่อมกันแทบไม่มีค่า" }
+  ]},
+  { h: { en: "The four tiers", th: "สี่ระดับของมือ" }, table: {
+    head: [ { en: "Tier", th: "ระดับ" }, { en: "What it is", th: "คืออะไร" }, { en: "How to play it", th: "เล่นยังไง" } ],
+    rows: [
+      [ { en: "<span class='tier-tag tier-premium'>Premium</span>", th: "<span class='tier-tag tier-premium'>Premium</span>" },
+        { en: "Coordinated high cards, double-suited aces, big double pairs, premium rundowns. Makes the <b>nut</b> straight, nut flush draw, top set, or a big wrap.",
+          th: "ไพ่สูงที่เชื่อมกัน, double-suited aces, big double pair, premium rundown ติด <b>nut</b> straight, nut flush draw, top set หรือ big wrap ได้" },
+        { en: "Worth a raise; many are playable from any position.", th: "คุ้มที่จะ raise หลายมือเล่นได้จากทุกตำแหน่ง" } ],
+      [ { en: "<span class='tier-tag tier-speculative'>Speculative</span>", th: "<span class='tier-tag tier-speculative'>Speculative</span>" },
+        { en: "Real big-play potential but a structural flaw — low cards, a non-nut draw, or a gap. Lots of these still flop monsters.",
+          th: "มีศักยภาพทำเงินก้อนใหญ่ แต่มีจุดอ่อนเชิงโครงสร้าง — ไพ่ต่ำ, non-nut draw หรือมีช่องว่าง หลายมือก็ยัง flop monster hand ได้" },
+        { en: "A calling hand; raise the bigger ones in late position.", th: "เป็นมือไว้ call; raise มือใหญ่ๆ ในตำแหน่งหลัง" } ],
+      [ { en: "<span class='tier-tag tier-marginal'>Marginal</span>", th: "<span class='tier-tag tier-marginal'>Marginal</span>" },
+        { en: "One-way hands: a lone pair, a three-card hand, or a top-gap hand. They make one thing and little else.",
+          th: "มือทางเดียว: pair เดี่ยว, มือสามใบ, หรือมือที่ช่องว่างอยู่ด้านบน ทำได้อย่างเดียวแทบไม่มีอย่างอื่น" },
+        { en: "Late position, minimum bet only — lean on position.", th: "เล่นตำแหน่งหลัง ลง bet ขั้นต่ำเท่านั้น — อาศัยความได้เปรียบจากตำแหน่ง" } ],
+      [ { en: "<span class='tier-tag tier-trash'>Trash</span>", th: "<span class='tier-tag tier-trash'>Trash</span>" },
+        { en: "Dominated draws, second-nut draws, uncoordinated \"two hold'em hands,\" or low pairs that can't make top set without a straight on board.",
+          th: "draw ที่ถูกdominate, second-nut draw, มือ \"Hold'em สองมือ\" ที่ไม่เชื่อมกัน, หรือ pair ต่ำที่ทำ top set ไม่ได้โดยไม่มี straight บน board" },
+        { en: "Fold (or rarely limp the very best of them in position).", th: "fold (หรือนานๆ ครั้ง limp เฉพาะมือที่ดีที่สุดเมื่ออยู่ในตำแหน่ง)" } ]
+    ]
+  }},
+  { h: { en: "The structural flaws that demote a hand", th: "จุดอ่อนเชิงโครงสร้างที่ลดเกรดมือ" }, list: [
+    { en: "<b>Domination by low cards.</b> A low straight is constantly out-flopped by a bigger straight. <span class='mono'>9-7-5-3</span> is trash because any straight it flops is dominated.",
+      th: "<b>ถูกdominateเพราะไพ่ต่ำ</b> straight เล็กมักโดน straight ใหญ่กว่ากดทับ <span class='mono'>9-7-5-3</span> เป็น Trash เพราะ straight ที่ติดล้วนถูกdominate" },
+    { en: "<b>Non-nut draws.</b> Chasing the second-nut flush or a sucker straight (where hitting the top end makes the <i>second</i>-best straight) just costs money.",
+      th: "<b>non-nut draw</b> การไล่ second-nut flush หรือ sucker straight (ที่ติดปลายบนแล้วได้ straight อันดับ<i>สอง</i>) มีแต่เสียเงิน" },
+    { en: "<b>The dangler.</b> A single uncoordinated card (the <span class='mono'>4</span> in <span class='mono'>A-K-Q-4</span>) effectively makes it a three-card hand.",
+      th: "<b>dangler (ไพ่หลุด)</b> ไพ่เดี่ยวที่ไม่เชื่อมกับใคร (เลข <span class='mono'>4</span> ใน <span class='mono'>A-K-Q-4</span>) ทำให้กลายเป็นมือสามใบโดยปริยาย" },
+    { en: "<b>The top gap.</b> <span class='mono'>K-J-T-9</span> is physically handicapped — the gap is at the top, so it can't make the nut wrap a true rundown would.",
+      th: "<b>top gap (ช่องว่างด้านบน)</b> <span class='mono'>K-J-T-9</span> เสียเปรียบเชิงโครงสร้าง — ช่องว่างอยู่ด้านบน จึงทำ nut wrap แบบ rundown แท้ๆ ไม่ได้" },
+    { en: "<b>Low pairs that can't make top set.</b> A pair of <span class='mono'>6</span>s can't flop top set without a straight already being possible on the board.",
+      th: "<b>pair ต่ำที่ทำ top set ไม่ได้</b> pair <span class='mono'>6</span> ติด top set ไม่ได้เลยถ้าบน board ยังไม่มีโอกาสเกิด straight" }
+  ], callout: { kind: "warn", tag: { en: "watch", th: "ระวัง" },
+    text: { en: "\"Two hold'em hands don't make an Omaha hand.\" <b>Q-J + 7-6</b> looks playable but the halves don't connect, so it has almost no big-play potential. Coordination beats raw card rank.",
+            th: "\"Hold'em สองมือรวมกันไม่เป็นมือ Omaha\" <b>Q-J + 7-6</b> ดูเล่นได้แต่สองส่วนไม่เชื่อมกัน จึงแทบไม่มีศักยภาพทำเงินก้อนใหญ่ ความเชื่อมโยงสำคัญกว่าแต้มไพ่" } } },
+  { h: { en: "What makes the premiums premium", th: "อะไรทำให้ Premium เป็น Premium" }, list: [
+    { en: "<b>Suited aces</b> draw to the <b>nut</b> flush, not a second-best one.",
+      th: "<b>suited ace</b> draw ไปหา <b>nut</b> flush ไม่ใช่ flush อันดับสอง" },
+    { en: "<b>Double-suited aces with connectors</b> (e.g. <span class='mono'>A-A-8-7 ds</span>) add big multi-way potential on top of top set.",
+      th: "<b>double-suited aces พร้อม connectors</b> (เช่น <span class='mono'>A-A-8-7 ds</span>) เพิ่มศักยภาพเล่นหลายทางบนพื้นฐานของ top set" },
+    { en: "<b>Big double pairs</b> like <span class='mono'>Q-Q-J-J</span> flop a set 21.4% of the time — the high hit rate alone makes them premium even though the result is often a one-way hand.",
+      th: "<b>big double pair</b> อย่าง <span class='mono'>Q-Q-J-J</span> ติด set 21.4% ของครั้ง — โอกาสติดสูงทำให้เป็น Premium แม้ผลที่ได้มักเป็นมือทางเดียว" },
+    { en: "<b>Premium rundowns</b> (e.g. <span class='mono'>J-T-9-8 ds</span>) make nut straight draws, two pair with open-enders, and serious freeroll potential — \"a real PLO hand.\"",
+      th: "<b>premium rundown</b> (เช่น <span class='mono'>J-T-9-8 ds</span>) ทำ nut straight draw, two pair พร้อม open-ender และมีโอกาส freeroll สูง — \"มือ PLO ของจริง\"" },
+    { en: "The <b>Magnum</b> — <span class='mono'>A-A-J-T ds</span> — is the ultimate hand: dominating straight draws, dual nut-flush draws, and top set potential all at once.",
+      th: "<b>Magnum</b> — <span class='mono'>A-A-J-T ds</span> — คือสุดยอดมือ: straight draw ที่dominate, nut flush draw สองดอก และโอกาส top set ครบในมือเดียว" }
+  ], callout: { kind: "good", tag: { en: "key", th: "สำคัญ" },
+    text: { en: "Play for the nuts. In Omaha, second-best hands and second-nut draws are how stacks get lost. When in doubt, ask whether the hand can make <b>the</b> nuts, not just <b>a</b> hand.",
+            th: "เล่นเพื่อ nut ใน Omaha มืออันดับสองและ second-nut draw คือสาเหตุที่ทำให้เสีย stack เมื่อไม่แน่ใจ ให้ถามว่ามือนี้ทำ <b>nut</b> ได้ไหม ไม่ใช่แค่ทำ<b>มืออะไรสักอย่าง</b>" } } },
+  { h: { en: "A note on aces", th: "ข้อสังเกตเรื่อง ace" }, p: [
+    { en: "Not all aces are equal. <b>Double-suited aces with connectors</b> raise from any position. <b>Trash aces</b> — bare pairs like <span class='mono'>A-A-8-2</span> with no suits or connectors — are one-way hands that need to flop an ace to continue, so they're only speculative. And when you do hold aces against a raise and a reraise, remember they're often dominated by another big hand: don't call two cold bets just because you have an ace in your hand.",
+      th: "ace ไม่ได้ดีเท่ากันหมด <b>double-suited aces พร้อม connectors</b> raise ได้จากทุกตำแหน่ง ส่วน <b>trash aces</b> — pair เปล่าๆ อย่าง <span class='mono'>A-A-8-2</span> ที่ไม่มี suit หรือ connector — เป็นมือทางเดียวที่ต้องติด ace บน flop จึงจะไปต่อได้ จึงเป็นแค่มือ Speculative และเมื่อคุณถือ aces เจอทั้ง raise และ reraise จำไว้ว่ามันมักถูกมือใหญ่อีกมือdominate: อย่า call สองเด้งทั้งที่ยังไม่ลงทุน เพียงเพราะมี ace อยู่ในมือ" }
+  ]}
+];
+
+/* ============================================================
+   QUIZ — Classify Hands
+   ============================================================ */
+const TIER_OPTS = [
+  { en: "Premium", th: "Premium" },
+  { en: "Speculative", th: "Speculative" },
+  { en: "Marginal", th: "Marginal" },
+  { en: "Trash", th: "Trash" }
+];
+
+const CLASSIFY = [
+  { hand: "KsKdQdJs", a: 0, e: {
+    en: "<b>Premium.</b> Easy to imagine favorable flops: T-9-8 for the nut straight with redraws, K-T-9 for the nut straight plus a full house, or T-9-x for a 12-card nut straight draw with an overpair.",
+    th: "<b>Premium</b> นึก flop ดีๆ ได้ง่าย: T-9-8 ได้ nut straight พร้อม redraw, K-T-9 ได้ nut straight บวก full house, หรือ T-9-x ได้ nut straight draw 12 ใบพร้อม overpair" } },
+  { hand: "JdJc6c3s", a: 2, e: {
+    en: "<b>Marginal.</b> The pair of Jacks is a one-way hand and the single suit barely helps. A late-position, minimum-bet-only type of hand.",
+    th: "<b>Marginal</b> pair J เป็นมือทางเดียว และมี suit เดียวช่วยอะไรไม่ได้มาก เป็นมือสำหรับตำแหน่งหลัง ลง bet ขั้นต่ำเท่านั้น" } },
+  { hand: "As9d8d7s", a: 0, e: {
+    en: "<b>Premium</b> (near-premium drawing hand). Flops 6-5-4 for the nut straight with nut-flush redraws; 6♠5♠2♦ gives a 13-card nut straight draw plus the nut flush draw. Worth playing from any position.",
+    th: "<b>Premium</b> (มือ draw เกือบ premium) ติด 6-5-4 ได้ nut straight พร้อม nut-flush redraw; 6♠5♠2♦ ให้ nut straight draw 13 ใบบวก nut flush draw คุ้มที่จะเล่นจากทุกตำแหน่ง" } },
+  { hand: "7s6c5s5c", a: 1, e: {
+    en: "<b>Speculative</b> with big-play potential: it can flop the nut straight with a set and two flush draws, a 12-card nut straight draw with a pair, or a set with an open-ender.",
+    th: "<b>Speculative</b> ที่มีศักยภาพทำเงินก้อนใหญ่: ติด nut straight พร้อม set และ flush draw สองดอก, nut straight draw 12 ใบพร้อม pair, หรือ set พร้อม open-ender ได้" } },
+  { hand: "9h7d5c3s", a: 3, e: {
+    en: "<b>Trash</b> — complete and utter, even double-suited. Any straight it flops is dominated. On 6-4-2 it's a 58/42 dog to 8-7-5-3 before suits, because a 5 or 7 makes the opponent a bigger straight while only an 8 saves you.",
+    th: "<b>Trash</b> — Trash แท้ๆ ต่อให้ double-suited ก็ตาม straight ที่ติดล้วนถูกdominate บน board 6-4-2 มันเป็นรอง 8-7-5-3 ที่ 58/42 ก่อนคิด suit เพราะ 5 หรือ 7 ทำให้คู่ต่อสู้ได้ straight ใหญ่กว่า ขณะที่มีแค่ 8 เท่านั้นที่ช่วยคุณได้" } },
+  { hand: "AsKcQd9s", a: 0, e: {
+    en: "<b>Premium</b> drawing hand. Flops J♠T♣8♠ for the nut straight with redraws, or J♠T♠x for a 16-card nut straight draw with the nut flush draw. High cards plus nut-flush potential.",
+    th: "<b>Premium</b> มือ draw ติด J♠T♣8♠ ได้ nut straight พร้อม redraw, หรือ J♠T♠x ได้ nut straight draw 16 ใบพร้อม nut flush draw ไพ่สูงบวกศักยภาพ nut flush" } },
+  { hand: "As2s9c9d", a: 1, e: {
+    en: "<b>Speculative.</b> Top set with the nut flush draw is a favorite over the biggest drawing hand against it, but it's a big-play hand, not a raise-first-in hand. A bigger pair might raise in late position.",
+    th: "<b>Speculative</b> top set พร้อม nut flush draw เป็นต่อมือ draw ที่ใหญ่ที่สุดที่มาสู้ แต่เป็นมือไว้ทำเงินก้อนใหญ่ ไม่ใช่มือไว้ raise เปิด pair ที่ใหญ่กว่านี้อาจ raise ในตำแหน่งหลังได้" } },
+  { hand: "Kd9d6c6s", a: 3, e: {
+    en: "<b>Trash.</b> A pair of 6s can't flop top set without a straight already possible, and drawing at the <i>second</i>-nut flush only costs money. It's hard enough to flop a set with the nut flush draw, let alone this.",
+    th: "<b>Trash</b> pair 6 ติด top set ไม่ได้ถ้า board ยังไม่มีโอกาส straight และการ draw second-nut flush มีแต่เสียเงิน แค่จะติด set พร้อม nut flush draw ก็ยากแล้ว นี่ยิ่งไปกันใหญ่" } },
+  { hand: "JsTc9s8c", a: 0, e: {
+    en: "<b>Premium.</b> Makes 13-card nut straight draws, two pair with open-enders, and has serious freeroll potential with its suits. \"A real PLO hand.\"",
+    th: "<b>Premium</b> ทำ nut straight draw 13 ใบ, two pair พร้อม open-ender และมีโอกาส freeroll สูงจาก suit ทั้งสอง \"มือ PLO ของจริง\"" } },
+  { hand: "AsAc8d2h", a: 1, e: {
+    en: "<b>Speculative.</b> Trash aces are a one-way hand that needs to catch an ace on the flop to continue. Without suits or connectors there's no multi-way potential.",
+    th: "<b>Speculative</b> trash aces เป็นมือทางเดียวที่ต้องติด ace บน flop จึงจะไปต่อได้ เมื่อไม่มี suit หรือ connector ก็ไม่มีศักยภาพเล่นหลายทาง" } },
+  { hand: "KdJhTd9s", a: 2, e: {
+    en: "<b>Marginal.</b> A top-gap hand is physically handicapped, though it does have some inside Broadway-wrap potential.",
+    th: "<b>Marginal</b> มือ top-gap เสียเปรียบเชิงโครงสร้าง แม้จะมีศักยภาพ inside Broadway wrap อยู่บ้าง" } },
+  { hand: "QsJs7c6c", a: 3, e: {
+    en: "<b>Trash.</b> Two hold'em hands don't make an Omaha hand. Q-J and 7-6 are each fine as Hold'em holdings, but the big gap between them means they can never combine into one straight or wrap — and in Omaha you must use exactly two of your four cards, so a hand is only as strong as the best two-card piece it can pair with the board. A coordinated hand like J-T-9-8 always has cards working together for nut straight draws and wraps; Q-J-7-6 splits into two isolated pieces, flops top pair at best, and has almost no big-play potential.",
+    th: "<b>Trash</b> Hold'em สองมือรวมกันไม่เป็นมือ Omaha — Q-J และ 7-6 ต่างก็เป็นมือ Hold'em ที่ใช้ได้ แต่ช่องว่างที่ห่างกันมากทำให้รวมกันเป็น straight หรือ wrap เดียวไม่ได้เลย และใน Omaha คุณต้องใช้ไพ่ในมือ 2 ใบจาก 4 ใบพอดี มือจึงแข็งได้แค่เท่ากับ combination 2 ใบที่ดีที่สุดที่จับคู่กับ board ได้ มือที่เชื่อมกันอย่าง J-T-9-8 มีไพ่ทำงานร่วมกันเสมอเพื่อทำ nut straight draw และ wrap แต่ Q-J-7-6 แตกเป็นสองส่วนที่แยกขาดจากกัน อย่างมากก็ติดแค่ top pair จึงแทบไม่มีศักยภาพทำเงินก้อนใหญ่" } },
+  { hand: "AsJsTdTc", a: 0, e: {
+    en: "<b>Premium</b> drawing hand. Can make top set with the nut flush draw and a 12-card Broadway wrap with the nut flush draw. The suited ace and the high pair both pull their weight.",
+    th: "<b>Premium</b> มือ draw ทำ top set พร้อม nut flush draw และ Broadway wrap 12 ใบพร้อม nut flush draw ได้ ทั้ง suited ace และ pair สูงต่างทำหน้าที่ของมัน" } },
+  { hand: "KcQsJs4c", a: 2, e: {
+    en: "<b>Marginal.</b> Basically a three-card hand, but three Broadway cards double-suited can be played for the minimum in late position — 13-card nut straight draw and inside-Broadway-wrap potential plus position.",
+    th: "<b>Marginal</b> โดยพื้นฐานคือมือสามใบ แต่ไพ่ Broadway สามใบแบบ double-suited เล่นแบบลงขั้นต่ำในตำแหน่งหลังได้ — มี nut straight draw 13 ใบ ศักยภาพ inside Broadway wrap บวกความได้เปรียบจากตำแหน่ง" } },
+  { hand: "Ad9d8s6s", a: 1, e: {
+    en: "<b>Speculative.</b> Flops a 13-card nut straight draw with the nut flush draw, but one of its straight draws is a non-nut draw and its two-pair flops make sucker open-enders. That gap demotes it below the A-9-8-7 version.",
+    th: "<b>Speculative</b> ติด nut straight draw 13 ใบพร้อม nut flush draw แต่ straight draw อันหนึ่งไม่ใช่ nut และ flop two pair ของมันทำ sucker open-ender ช่องว่างนั้นลดเกรดมันลงต่ำกว่าเวอร์ชัน A-9-8-7" } },
+  { hand: "AsAcJsTc", a: 0, e: {
+    en: "<b>Premium — the Magnum.</b> The highest-percentage, highest-potential multi-way hand: dominating straight draws, dual nut-flush draws, and top set potential all in one.",
+    th: "<b>Premium — Magnum</b> มือเล่นหลายทางที่เปอร์เซ็นต์สูงสุดและศักยภาพสูงสุด: straight draw ที่dominate, nut flush draw สองดอก และโอกาส top set ครบในมือเดียว" } }
+];
+
+/* ============================================================
+   QUIZ — Practice Situations ($2/$5, $1,000 stacks)
+   ============================================================ */
+const UNRAISED_OPTS = [
+  { en: "Fold", th: "Fold" },
+  { en: "Limp", th: "Limp" },
+  { en: "Raise", th: "Raise" }
+];
+const RAISED_OPTS = [
+  { en: "Fold", th: "Fold" },
+  { en: "Call", th: "Call" },
+  { en: "Reraise", th: "Reraise" }
+];
+const LIMP_BEHIND_OPTS = [
+  { en: "Fold", th: "Fold" },
+  { en: "Call", th: "Call" },
+  { en: "Raise", th: "Raise" }
+];
+const BB_OPTS = [
+  { en: "Fold", th: "Fold" },
+  { en: "Check", th: "Check" },
+  { en: "Raise", th: "Raise" }
+];
+const OPTSETS = { u: UNRAISED_OPTS, ul: LIMP_BEHIND_OPTS, bb: BB_OPTS, r: RAISED_OPTS };
+
+const SITUATIONS = [
+  { hand: "AcAdTh6s", os: "ul", a: 1,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Call (limp).</b> This is a trashy AA hand. You still want to see the flop, but you don't want to raise with it.",
+         th: "<b>Call (limp)</b> นี่คือมือ AA แบบ trash คุณยังอยากเห็น flop แต่ไม่อยาก raise ด้วยมือนี้" } },
+  { hand: "AsAcTs5c", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Raise.</b> Double-suited aces are worth a raise from late position.",
+         th: "<b>Raise</b> double-suited aces คุ้มที่จะ raise จากตำแหน่งหลัง" } },
+  { hand: "AdAc9d5c", os: "ul", a: 1,
+    ctx: { en: "In the <b>small blind</b>. Four players limp.", th: "อยู่ <b>small blind</b> มีผู้เล่น limp 4 คน" },
+    e: { en: "<b>Call.</b> Double-suited aces alone don't warrant a raise from up front, and this hand doesn't make a nut straight, which weakens it further. From the small blind with limpers already in, you're completing the bet — calling — not open-limping.",
+         th: "<b>Call</b> ลำพัง double-suited aces ยังไม่คู่ควรกับการ raise จากตำแหน่งหน้า และมือนี้ทำ nut straight ไม่ได้ ยิ่งทำให้อ่อนลงไปอีก — อยู่ SB และมีคน limp มาก่อนแล้ว จึงเป็นการ call/complete ไม่ใช่ open-limp" } },
+  { hand: "AsAc8s7c", os: "u", a: 2,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Raise.</b> Double-suited aces with connecting sidecards are worth a raise from any position.",
+         th: "<b>Raise</b> double-suited aces พร้อม sidecard ที่เชื่อมกันคุ้มที่จะ raise จากทุกตำแหน่ง" } },
+  { hand: "AcAhJcTd", os: "r", a: 1,
+    ctx: { en: "In the <b>small blind</b>. Three players limp, then the <b>button raises</b>.", th: "อยู่ <b>small blind</b> มีผู้เล่น limp 3 คน แล้ว <b>button raise</b>" },
+    e: { en: "<b>Call.</b> In a deep-stacked game you don't mind building a value pot, but facing a raise you don't want to reraise — that risks going heads-up out of position, a recipe for disaster.",
+         th: "<b>Call</b> ในเกม stack ลึก คุณไม่รังเกียจที่จะสร้าง value pot แต่เมื่อเจอ raise คุณไม่อยาก reraise — เพราะเสี่ยงจะเล่น heads-up โดยเสียตำแหน่ง ซึ่งเป็นสูตรหายนะ" } },
+  { hand: "AsAdTsTd", os: "r", a: 2,
+    ctx: { en: "On the <b>button</b>. There is a <b>raise and two callers</b> in front of you.", th: "อยู่ <b>button</b> มี <b>raise และ call สองคน</b> มาก่อนหน้าคุณ" },
+    e: { en: "<b>Reraise.</b> The extra pair and being double-suited make this such a high-percentage hand you can afford to reraise — and catching a set with the other pair adds deception.",
+         th: "<b>Reraise</b> pair ที่สองและการเป็น double-suited ทำให้มือนี้เปอร์เซ็นต์สูงพอที่จะ reraise ได้ — และการติด set จาก pair อีกคู่ยังเพิ่มการอำพราง" } },
+  { hand: "AsAdJs3c", os: "r", a: 1,
+    ctx: { en: "<b>UTG</b>. You limp; next player raises to $25; three players call; both blinds call.", th: "<b>UTG</b> คุณ limp; คนถัดไป raise เป็น $25; มี call 3 คน; ทั้งสอง blind call" },
+    e: { en: "<b>Just call.</b> You could make it ~$200, but with $1,000 stacks you'd give the field odds to outdraw your aces. You'd win callers, not the pot — let it stay multi-way and cheap.",
+         th: "<b>แค่ Call</b> คุณจะ raise เป็น ~$200 ก็ได้ แต่ด้วย stack $1,000 คุณจะให้ราคาคนอื่นมา outdraw aces ของคุณ คุณจะได้คน call ไม่ใช่ pot — ปล่อยให้เล่นหลายทางและถูกๆ ไว้" } },
+  { hand: "AsAdJs3c", os: "r", a: 2,
+    ctx: { en: "<b>UTG</b>. You limp; a raise to $25 gets three callers and the SB; now the <b>BB reraises to $180</b>.", th: "<b>UTG</b> คุณ limp; มี raise เป็น $25 ได้ call 3 คนและ SB; ตอนนี้ <b>BB reraise เป็น $180</b>" },
+    e: { en: "<b>Reraise.</b> Make it ~$665 — two-thirds of your stack. Now the field is no longer getting implied odds to crack your aces, and you're a favorite against virtually any hand but another AA.",
+         th: "<b>Reraise</b> raise เป็น ~$665 — สองในสามของ stack ตอนนี้คนอื่นไม่ได้ implied odds มาทุบ aces ของคุณอีกแล้ว และคุณเป็นต่อแทบทุกมือยกเว้น AA อีกมือ" } },
+  { hand: "Ts9c8s7d", os: "ul", a: 2,
+    ctx: { en: "In <b>middle position</b>. Three players limp in front of you.", th: "อยู่ <b>middle position</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Raise.</b> This is a premium drawing hand, and three limpers assure you of a multi-way pot. Three to four times the big blind is adequate.",
+         th: "<b>Raise</b> นี่คือมือ draw แบบ premium และคน limp 3 คนรับรองว่า pot จะเล่นหลายทาง raise 3-4 เท่าของ big blind ก็พอ" } },
+  { hand: "AsKcQs4c", os: "r", a: 1,
+    ctx: { en: "On the <b>button</b>. Two players limp, then a middle player <b>raises</b>.", th: "อยู่ <b>button</b> มี limp 2 คน แล้วผู้เล่นตำแหน่งกลาง <b>raise</b>" },
+    e: { en: "<b>Call.</b> With the dangler (the 4) this is a speculative drawing hand — you run the risk of being dominated, so call rather than reraise.",
+         th: "<b>Call</b> เพราะมี dangler (เลข 4) มือนี้จึงเป็นมือ draw แบบ speculative — คุณเสี่ยงโดนdominate จึง call แทนที่จะ reraise" } },
+  { hand: "5s5c2s2c", os: "u", a: 0,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Fold.</b> You don't want to flop bottom set — and especially not from up front.",
+         th: "<b>Fold</b> คุณไม่อยากติด bottom set — โดยเฉพาะจากตำแหน่งหน้า" } },
+  { hand: "AsKcQs9d", os: "u", a: 2,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Raise.</b> Any four cards nine-and-higher headed by a suited ace are worth a raise.",
+         th: "<b>Raise</b> ไพ่สี่ใบที่เป็นเก้าขึ้นไปนำด้วย suited ace คุ้มที่จะ raise" } },
+  { hand: "Ad9d8c7s", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Raise.</b> You'll see the flop with any three straight cards 6-5-4 and higher headed by a suited ace, and should often raise from late position — particularly the bigger ones.",
+         th: "<b>Raise</b> คุณจะเห็น flop ด้วยไพ่ straight สามใบตั้งแต่ 6-5-4 ขึ้นไปที่นำด้วย suited ace และควร raise บ่อยๆ จากตำแหน่งหลัง — โดยเฉพาะมือที่ใหญ่กว่า" } },
+  { hand: "QsQcJsTd", os: "u", a: 1,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Limp.</b> You don't want to raise a hand with a pair in it from up front — the occasional exceptions being aces or big double-paired hands like Q-Q-J-J.",
+         th: "<b>Limp</b> คุณไม่อยาก raise มือที่มี pair อยู่จากตำแหน่งหน้า — ยกเว้นบางครั้งคือ aces หรือมือ big double pair อย่าง Q-Q-J-J" } },
+  { hand: "QdTh9d8c", os: "r", a: 0,
+    ctx: { en: "On the <b>button</b>. It's a <b>raise and two callers</b> to you.", th: "อยู่ <b>button</b> มาถึงคุณเป็น <b>raise และ call สองคน</b>" },
+    e: { en: "<b>Fold.</b> The gap being on the top marginalizes the hand — it can't make the nut wrap a true rundown would.",
+         th: "<b>Fold</b> ช่องว่างที่อยู่ด้านบนทำให้มือนี้ marginal — ทำ nut wrap แบบ rundown แท้ๆ ไม่ได้" } },
+  { hand: "Ad8h7d6h", os: "r", a: 0,
+    ctx: { en: "On the <b>button</b>. It's a <b>raise and a reraise</b> to you.", th: "อยู่ <b>button</b> มาถึงคุณเป็น <b>raise และ reraise</b>" },
+    e: { en: "<b>Fold.</b> Although this is a big-play drawing hand, the raise-and-reraise screams aces, which dominate you. It doesn't pay to call two bets cold with a hand that has an ace in it.",
+         th: "<b>Fold</b> แม้นี่จะเป็นมือ draw ที่ทำเงินก้อนใหญ่ได้ แต่ raise และ reraise บ่งบอกชัดว่าเป็น aces ซึ่งdominateมือคุณ ไม่คุ้มที่จะ call สองเด้งทั้งที่ยังไม่ลงทุนด้วยมือที่มี ace อยู่" } },
+  { hand: "AsAcJsTd", os: "bb", a: 2,
+    ctx: { en: "In the <b>big blind</b>. Three players limp.", th: "อยู่ <b>big blind</b> มีผู้เล่น limp 3 คน" },
+    e: { en: "<b>Raise.</b> Aces with two Broadway cards and a suited ace have enough multi-way potential to warrant a raise even from out of position.",
+         th: "<b>Raise</b> aces พร้อมไพ่ Broadway สองใบและ suited ace มีศักยภาพเล่นหลายทางมากพอที่จะ raise ได้แม้อยู่นอกตำแหน่ง" } },
+  { hand: "AcAhJcJd", os: "u", a: 2,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Raise.</b> Aces with a second pair and a single suit are a raising hand from any position.",
+         th: "<b>Raise</b> aces พร้อม pair ที่สองและ suit เดียว เป็นมือสำหรับ raise ได้จากทุกตำแหน่ง" } },
+  { hand: "AsAh7s6c", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Four players limp.", th: "อยู่ <b>button</b> มีผู้เล่น limp 4 คน" },
+    e: { en: "<b>Raise.</b> Aces with connectors and a single suit are good enough to raise from late position.",
+         th: "<b>Raise</b> aces พร้อม connectors และ suit เดียว ดีพอที่จะ raise จากตำแหน่งหลัง" } },
+  { hand: "AsAh7s6c", os: "r", a: 1,
+    ctx: { en: "On the <b>button</b>. An early player <b>raises</b> and gets two callers in front of you.", th: "อยู่ <b>button</b> ผู้เล่นตำแหน่งหน้า <b>raise</b> และมีคน call 2 คนก่อนหน้าคุณ" },
+    e: { en: "<b>Call.</b> Don't reveal your aces by reraising. Just calling keeps you disguised — if everyone checks to you on the flop it reads as weakness you can attack, whereas reraising only makes you a target.",
+         th: "<b>Call</b> อย่าเปิดเผยว่าถือ aces ด้วยการ reraise การแค่ call ช่วยอำพรางมือ — ถ้าทุกคน check มาหาคุณบน flop มันคือสัญญาณอ่อนที่คุณบุกได้ ส่วนการ reraise มีแต่ทำให้คุณตกเป็นเป้า" } },
+  { hand: "AsKcQs4c", os: "ul", a: 1,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Call.</b> With the dangler (the 4) this isn't enough of a hand to raise — just come along behind the limpers.",
+         th: "<b>Call</b> เพราะมี dangler (เลข 4) มือนี้ยังไม่พอจะ raise — แค่ตามเข้าไปหลัง limper ก็พอ" } },
+  { hand: "7s6d5s2d", os: "u", a: 1,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Limp.</b> A speculative double-suited drawing hand that can stand a raise when stacks are deep and pots play multi-way — but in a game full of preflop raises and short-handed pots it's often better off folded.",
+         th: "<b>Limp</b> มือ draw แบบ double-suited เชิงเก็งกำไรที่ทนการ raise ได้เมื่อ stack ลึกและ pot เล่นหลายทาง — แต่ในเกมที่ raise ก่อน flop บ่อยและเล่นกันคนน้อย มักทิ้งไปจะดีกว่า" } },
+  { hand: "As2s9c9d", os: "ul", a: 1,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Call.</b> Big-play potential but speculative — top set with the nut flush draw is a favorite over the biggest draw against it. A calling hand, not a raise.",
+         th: "<b>Call</b> มีศักยภาพทำเงินก้อนใหญ่แต่เก็งกำไร — top set พร้อม nut flush draw เป็นต่อมือ draw ที่ใหญ่ที่สุดที่มาสู้ เป็นมือไว้ call ไม่ใช่ raise" } },
+  { hand: "8s7d6s5d", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Three players limp.", th: "อยู่ <b>button</b> มีผู้เล่น limp 3 คน" },
+    e: { en: "<b>Raise.</b> A premium-structure double-suited rundown — premium drawing hands are raising hands from late position, especially multi-way.",
+         th: "<b>Raise</b> rundown แบบ double-suited โครงสร้าง premium — มือ draw แบบ premium เป็นมือไว้ raise จากตำแหน่งหลัง โดยเฉพาะ pot หลายทาง" } },
+  { hand: "8d7c5d3s", os: "ul", a: 1,
+    ctx: { en: "On the <b>button</b>. Three players limp.", th: "อยู่ <b>button</b> มีผู้เล่น limp 3 คน" },
+    e: { en: "<b>Call.</b> Another speculative hand with big-play potential — come along, but it's not strong enough to raise.",
+         th: "<b>Call</b> อีกหนึ่งมือเก็งกำไรที่มีศักยภาพทำเงินก้อนใหญ่ — ตามเข้าไปได้ แต่ยังไม่แข็งพอจะ raise" } },
+  { hand: "QsJcTsTd", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Three players limp.", th: "อยู่ <b>button</b> มีผู้เล่น limp 3 คน" },
+    e: { en: "<b>Raise.</b> This hand has enough value to warrant a raise from late position.",
+         th: "<b>Raise</b> มือนี้มีคุณค่ามากพอที่จะ raise จากตำแหน่งหลัง" } },
+  { hand: "8s7d6s5c", os: "u", a: 1,
+    ctx: { en: "<b>UTG</b> (first to act).", th: "<b>UTG</b> (คนแรกที่ต้องลงมือ)" },
+    e: { en: "<b>Limp.</b> A premium-structure drawing hand, but the small cards make it more speculative. An occasional raise adds deception.",
+         th: "<b>Limp</b> มือ draw โครงสร้าง premium แต่ไพ่ใบเล็กทำให้เก็งกำไรมากขึ้น การ raise สลับบ้างเป็นครั้งคราวช่วยเพิ่มการอำพราง" } },
+  { hand: "JcTd8c7d", os: "ul", a: 2,
+    ctx: { en: "On the <b>button</b>. Three players limp in front of you.", th: "อยู่ <b>button</b> มีผู้เล่น limp มาก่อนหน้าคุณ 3 คน" },
+    e: { en: "<b>Raise.</b> Despite the gap, this double-suited rundown is good enough to raise from the button.",
+         th: "<b>Raise</b> แม้จะมีช่องว่าง rundown แบบ double-suited มือนี้ก็ดีพอจะ raise จาก button" } },
+  { hand: "QdJc9d7c", os: "r", a: 1,
+    ctx: { en: "On the <b>button</b>. It's a <b>raise and two callers</b> to you.", th: "อยู่ <b>button</b> มาถึงคุณเป็น <b>raise และ call สองคน</b>" },
+    e: { en: "<b>Call.</b> A speculative drawing hand with big-play potential. Tighter players might fold from early position facing a raise, but the button improves its playability enough to come along.",
+         th: "<b>Call</b> มือ draw เก็งกำไรที่มีศักยภาพทำเงินก้อนใหญ่ ผู้เล่นที่ tight อาจ fold จากตำแหน่งหน้าเมื่อเจอ raise แต่การอยู่ button ทำให้เล่นง่ายขึ้นพอจะตามเข้าไป" } }
+];
+
+/* ============================================================
+   APP
+   ============================================================ */
+const bodyEl   = document.getElementById('contentBody');
+const titleEl  = document.getElementById('modeTitle');
+const leadEl   = document.getElementById('modeLead');
+const subEl    = document.getElementById('subEl');
+const homeEl   = document.getElementById('homeEl');
+const footerEl = document.getElementById('footerEl');
+const tabBtns  = [...document.querySelectorAll('#tabNav button')];
+const langBtns = [...document.querySelectorAll('#langToggle button')];
+
+const MODES = {
+  primer: { title: TAB_LABELS.primer,
+    lead: { en: "The four starting-hand tiers, the \"miracle flop\" test, and the structural flaws that turn a pretty four-card hand into trash.",
+            th: "สี่ระดับของมือเริ่มต้น, การทดสอบ \"miracle flop\" และจุดอ่อนเชิงโครงสร้างที่เปลี่ยนไพ่สี่ใบสวยๆ ให้กลายเป็น Trash" } },
+  classify: { title: TAB_LABELS.classify,
+    lead: { en: "You're dealt four cards. Sort each hand into Premium, Speculative, Marginal, or Trash — then check it against the Big-Play framework.",
+            th: "คุณได้ไพ่สี่ใบ จัดแต่ละมือเป็น Premium, Speculative, Marginal หรือ Trash — แล้วตรวจกับแนวทาง Big Play" },
+    opts: TIER_OPTS, data: CLASSIFY,
+    prompt: { en: "Classify this starting hand:", th: "จัดประเภทมือเริ่มต้นนี้:" } },
+  situations: { title: TAB_LABELS.situations,
+    lead: { en: "$2/$5 blinds, $1,000 stacks. Read the position and the action, then pick your play.",
+            th: "Blind $2/$5, stack $1,000 อ่านตำแหน่งและจังหวะการเล่น แล้วเลือกว่าจะเล่นยังไง" },
+    opts: RAISED_OPTS, data: SITUATIONS,
+    prompt: { en: "What's your play?", th: "คุณจะเล่นยังไง?" } }
+};
+
+let currentTab = 'primer';
+const quizState = {};
+
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  subEl.textContent = L(UI.sub);
+  homeEl.textContent = L(UI.home);
+  footerEl.innerHTML = L(UI.footer);
+  langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+  tabBtns.forEach(b => b.textContent = L(TAB_LABELS[b.dataset.tab]));
+}
+function syncHead() {
+  titleEl.textContent = L(MODES[currentTab].title);
+  leadEl.textContent = L(MODES[currentTab].lead);
+}
+function setLang(l) {
+  LANG = l;
+  localStorage.setItem('plo_lang', l);
+  applyStatic();
+  syncHead();
+  render();
+}
+langBtns.forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+function setTab(t) {
+  currentTab = t;
+  tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  syncHead();
+  render();
+}
+tabBtns.forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+function render() {
+  if (currentTab === 'primer') renderPrimer();
+  else renderQuiz();
+}
+
+/* ---- primer ---- */
+function renderPrimer() {
+  let html = '';
+  PRIMER.forEach(sec => {
+    html += `<div class="tut-section"><h4>${L(sec.h)}</h4>`;
+    if (sec.p) sec.p.forEach(p => html += `<p>${L(p)}</p>`);
+    if (sec.list) {
+      html += '<ul>';
+      sec.list.forEach(li => html += `<li>${L(li)}</li>`);
+      html += '</ul>';
+    }
+    if (sec.table) {
+      html += '<table class="facts"><thead><tr>';
+      sec.table.head.forEach(h => html += `<th>${L(h)}</th>`);
+      html += '</tr></thead><tbody>';
+      sec.table.rows.forEach(r => {
+        html += '<tr>';
+        r.forEach(c => html += `<td>${L(c)}</td>`);
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+    if (sec.callout) {
+      const c = sec.callout;
+      html += `<div class="callout ${c.kind}"><span class="tag">${L(c.tag)}</span><span class="text">${L(c.text)}</span></div>`;
+    }
+    html += '</div>';
+  });
+  bodyEl.innerHTML = html;
+}
+
+/* ---- quiz ---- */
+function getState(mode) {
+  if (!quizState[mode]) quizState[mode] = { idx: 0, answers: [], done: false };
+  return quizState[mode];
+}
+
+function renderQuiz() {
+  const mode = MODES[currentTab];
+  const qs = mode.data;
+  const st = getState(currentTab);
+
+  if (st.done) { renderResults(mode, st); return; }
+
+  const item = qs[st.idx];
+  const answered = st.answers[st.idx] != null;
+  const score = st.answers.filter((a, i) => a === qs[i].a).length;
+  const pct = Math.round(st.idx / qs.length * 100);
+  const qof = LANG === 'th'
+    ? `ข้อ <b>${st.idx + 1}</b> จาก ${qs.length}`
+    : `Question <b>${st.idx + 1}</b> of ${qs.length}`;
+
+  let html = `<div class="quiz-wrap">
+    <div class="quiz-top">
+      <span class="qprog">${qof}</span>
+      <span class="score-pill">${L(UI.score)} ${score}/${st.answers.filter(a => a != null).length}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">Q${st.idx + 1}</div>
+      ${renderHand(item.hand)}`;
+
+  if (item.ctx) {
+    html += `<div class="situation"><span class="stag">${L(UI.spot)}</span><span class="stext">${L(item.ctx)}</span></div>`;
+  }
+
+  html += `<div class="q-text">${L(mode.prompt)}</div>`;
+
+  const opts = item.os ? OPTSETS[item.os] : mode.opts;
+  const keys = ['A', 'B', 'C', 'D', 'E'];
+  opts.forEach((opt, i) => {
+    let cls = 'opt';
+    if (answered) {
+      if (i === item.a) cls += ' correct';
+      else if (i === st.answers[st.idx]) cls += ' wrong';
+      else cls += ' dim';
+    }
+    html += `<button class="${cls}" data-opt="${i}" ${answered ? 'disabled' : ''}>
+      <span class="key">${keys[i]}</span><span>${L(opt)}</span></button>`;
+  });
+
+  if (answered) {
+    const ok = st.answers[st.idx] === item.a;
+    html += `<div class="explain ${ok ? 'ok' : 'no'}">
+      <span class="verdict">${ok ? L(UI.correct) : L(UI.notquite)}</span> ${L(item.e)}</div>`;
+  }
+
+  html += `<div class="quiz-actions">`;
+  if (st.idx > 0) html += `<button class="btn" data-act="prev">${L(UI.prev)}</button>`;
+  if (answered) {
+    if (st.idx < qs.length - 1) html += `<button class="btn primary" data-act="next">${L(UI.next)}</button>`;
+    else html += `<button class="btn primary" data-act="finish">${L(UI.seeRes)}</button>`;
+  }
+  html += `</div></div>`;
+  bodyEl.innerHTML = html;
+
+  bodyEl.querySelectorAll('.opt:not(:disabled)').forEach(b =>
+    b.addEventListener('click', () => { st.answers[st.idx] = +b.dataset.opt; renderQuiz(); }));
+  bodyEl.querySelectorAll('[data-act]').forEach(b =>
+    b.addEventListener('click', () => {
+      const a = b.dataset.act;
+      if (a === 'next') st.idx++;
+      else if (a === 'prev') st.idx--;
+      else if (a === 'finish') st.done = true;
+      renderQuiz();
+    }));
+}
+
+const VERDICTS = {
+  pass: { vclass: 'verdict-pass', ring: 'var(--green)',
+    label: { en: 'Big-Play ready', th: 'พร้อมลงสนาม' },
+    msg: { en: "You read structure, not just card rank — you'd hold your own selecting hands at a real PLO table.",
+           th: "คุณอ่านโครงสร้าง ไม่ใช่แค่แต้มไพ่ — คุณเลือกมือที่โต๊ะ PLO จริงได้สบายๆ" } },
+  near: { vclass: 'verdict-near', ring: 'var(--gold)',
+    label: { en: 'Getting there', th: 'ใกล้แล้ว' },
+    msg: { en: 'Close. Review the misses — most leaks here are danglers, top gaps, and non-nut draws sneaking through.',
+           th: 'ใกล้แล้ว ทบทวนข้อที่พลาด — จุดรั่วส่วนใหญ่คือ dangler, top gap และ non-nut draw ที่หลุดผ่านมา' } },
+  fail: { vclass: 'verdict-fail', ring: 'var(--red)',
+    label: { en: 'Back to the primer', th: 'กลับไปอ่านพื้นฐาน' },
+    msg: { en: 'Re-read the Primer tab. Nail the four tiers and the structural flaws first, then run it back.',
+           th: 'อ่านแท็บพื้นฐานอีกรอบ จับสี่ระดับและจุดอ่อนเชิงโครงสร้างให้แม่นก่อน แล้วค่อยลองใหม่' } }
+};
+
+function renderResults(mode, st) {
+  const qs = mode.data;
+  const score = st.answers.filter((a, i) => a === qs[i].a).length;
+  const pct = Math.round(score / qs.length * 100);
+  const v = pct >= 80 ? VERDICTS.pass : pct >= 60 ? VERDICTS.near : VERDICTS.fail;
+
+  const scoreLine = LANG === 'th'
+    ? `คุณได้ <b style="color:var(--text)">${score} / ${qs.length}</b> คะแนนใน${L(mode.title)} ${L(v.msg)}`
+    : `You scored <b style="color:var(--text)">${score} / ${qs.length}</b> on ${L(mode.title)}. ${L(v.msg)}`;
+
+  let html = `<div class="results">
+    <div class="ring" style="background:conic-gradient(${v.ring} ${pct * 3.6}deg, var(--panel-3) 0)">
+      <div style="position:absolute;inset:9px;border-radius:50%;background:var(--panel);display:grid;place-items:center">
+        <span class="pct">${pct}%</span>
+      </div>
+    </div>
+    <h4 class="${v.vclass}">${L(v.label)}</h4>
+    <p>${scoreLine}</p>
+    <div class="review-list">`;
+
+  qs.forEach((item, i) => {
+    const ok = st.answers[i] === item.a;
+    html += `<div class="review-line">
+      <span class="ic ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✕'}</span>
+      ${renderMiniHand(item.hand)}
+      <span>${L((item.os ? OPTSETS[item.os] : mode.opts)[item.a])}</span></div>`;
+  });
+
+  html += `</div>
+    <div class="quiz-actions" style="justify-content:center;margin-top:20px">
+      <button class="btn primary" data-act="retake">${L(UI.retake)}</button>
+      <button class="btn" data-act="toprimer">${L(UI.reviewPrimer)}</button>
+    </div></div>`;
+  bodyEl.innerHTML = html;
+
+  bodyEl.querySelector('[data-act="retake"]').addEventListener('click', () => {
+    quizState[currentTab] = { idx: 0, answers: [], done: false }; renderQuiz();
+  });
+  bodyEl.querySelector('[data-act="toprimer"]').addEventListener('click', () => setTab('primer'));
+}
+
+/* ---- init ---- */
+applyStatic();
+setTab('primer');
+</script>
+
+</body>
+</html>
