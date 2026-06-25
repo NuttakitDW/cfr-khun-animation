@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odds Calculation Drill — Pot Odds, Outs &amp; Equity</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #0f1424;
+  --panel: #131826;
+  --panel-2: #1a2030;
+  --panel-3: #232b3f;
+  --border: #2a3245;
+  --text: #e4e9f2;
+  --muted: #7a8499;
+  --dim: #4a5266;
+  --accent: #5b9eff;
+  --green: #3fdf8e;
+  --red: #ff5e7a;
+  --yellow: #ffc857;
+  --purple: #bf8cff;
+  --orange: #ff8c42;
+  --gold: #ffd54a;
+  --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+header .home { margin-left: auto; color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+
+.tabs { display: flex; gap: 6px; width: 100%; margin-top: 14px; flex-wrap: wrap; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted);
+  border-radius: 8px 8px 0 0; padding: 8px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+
+main { padding: 22px 28px 8px; max-width: 1180px; margin: 0 auto; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; }
+.btn {
+  font: inherit; font-size: 13px; font-weight: 600;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; }
+
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.seg button {
+  font: inherit; font-size: 11.5px; font-weight: 600;
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 7px; padding: 5px 9px; cursor: pointer; white-space: nowrap;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+.seg button.active.mix { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
+
+.stats-row { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
+.stat { text-align: right; }
+.stat .lab { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+.stat .val { font-family: "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; color: var(--text); }
+.stat .val.green { color: var(--green); }
+.stat .val.gold { color: var(--gold); }
+
+.grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+section.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+}
+section.panel h2 { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: var(--text); }
+
+.spot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.cat-badge {
+  font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
+  background: rgba(91,158,255,0.15); color: var(--accent);
+}
+.cat-badge.calc  { background: rgba(255,140,66,0.15);  color: var(--orange); }
+.cat-badge.equity{ background: rgba(63,223,142,0.15);  color: var(--green); }
+.cat-badge.bluff { background: rgba(255,94,122,0.15);  color: #ff8aa0; }
+.cat-badge.spr   { background: rgba(191,140,255,0.15); color: var(--purple); }
+.cat-badge.decide{ background: rgba(255,213,74,0.15);  color: var(--gold); }
+.diff-tag { font-size: 11px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+
+.qbox { margin-top: 4px; padding: 18px 18px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border); }
+.qbox .q { font-size: 17px; color: var(--text); font-weight: 600; line-height: 1.45; }
+.qbox .q b { color: var(--gold); }
+.qbox .q .big { font-family: "SF Mono", Menlo, monospace; font-size: 22px; color: var(--cyan); font-weight: 700; }
+.qbox .ctx { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.55; }
+
+.answer { margin-top: 18px; }
+.answer-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.answer-row input {
+  font: inherit; font-family: "SF Mono", Menlo, monospace; font-size: 20px; font-weight: 700;
+  width: 110px; padding: 9px 12px; border-radius: 8px; text-align: center;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+.answer-row input:focus { outline: none; border-color: var(--accent); }
+.unit { font-family: "SF Mono", Menlo, monospace; color: var(--muted); font-size: 16px; }
+
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choices button {
+  font: inherit; font-size: 14px; font-weight: 600; text-align: left;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  border-radius: 9px; padding: 11px 14px; cursor: pointer; transition: border-color .12s, background .12s;
+}
+.choices button:hover:not(:disabled) { border-color: var(--accent); }
+.choices button .mono { color: var(--cyan); }
+.choices button.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.choices button.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.choices button:disabled { cursor: default; }
+
+.feedback { margin-top: 16px; min-height: 10px; }
+.verdict { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.verdict.ok { color: var(--green); }
+.verdict.no { color: var(--red); }
+.verdict .pill { font-family: "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
+.explain { font-size: 13.5px; color: var(--muted); margin-top: 12px; line-height: 1.65; background: rgba(91,158,255,0.05); border: 1px solid rgba(91,158,255,0.18); border-radius: 9px; padding: 12px 14px; }
+.explain b { color: var(--text); }
+.explain .formula { font-family: "SF Mono", Menlo, monospace; color: var(--cyan); background: rgba(63,200,212,0.08); padding: 1px 6px; border-radius: 4px; }
+.explain .book { color: var(--gold); font-weight: 700; }
+
+.hint-box { margin-top: 12px; font-size: 12.5px; color: var(--cyan); background: rgba(63,200,212,0.07); border: 1px solid rgba(63,200,212,0.25); border-radius: 8px; padding: 9px 12px; }
+
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-top: 12px; }
+.toggle-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+.hidden { display: none !important; }
+
+/* right column */
+.kv { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.kv .k { color: var(--muted); }
+.kv .v { font-family: "SF Mono", Menlo, monospace; font-weight: 700; }
+.gamestat { margin-bottom: 11px; }
+.gamestat .gname { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.gamestat .gname b { color: var(--text); font-weight: 600; }
+.track { height: 7px; border-radius: 4px; background: rgba(255,255,255,0.05); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .5s cubic-bezier(.2,.7,.2,1); }
+.muted-note { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 4px; }
+
+/* reference + math tables */
+.ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ref-table caption { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700; padding-bottom: 8px; }
+.ref-table th, .ref-table td { text-align: left; padding: 7px 9px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ref-table th { color: var(--muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+.ref-table td.mono, .ref-table th.mono { font-family: "SF Mono", Menlo, monospace; }
+.ref-table td.hi { color: var(--gold); font-weight: 700; }
+.ref-table td.g { color: var(--green); font-weight: 700; }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+.math-card { margin-bottom: 16px; }
+.math-card .lead { font-size: 14px; color: var(--text); line-height: 1.65; }
+.math-card .lead b { color: var(--gold); }
+.formula-block { font-family: "SF Mono", Menlo, monospace; font-size: 13.5px; color: var(--cyan);
+  background: rgba(63,200,212,0.07); border: 1px solid rgba(63,200,212,0.22); border-radius: 9px;
+  padding: 12px 14px; margin: 12px 0; line-height: 1.7; }
+.formula-block .c { color: var(--muted); }
+.math-card ul { margin: 8px 0 0; padding-left: 18px; }
+.math-card li { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 6px; }
+.math-card li b { color: var(--text); }
+.callout { font-size: 13px; color: var(--text); background: rgba(255,213,74,0.07); border: 1px solid rgba(255,213,74,0.28);
+  border-radius: 9px; padding: 11px 14px; margin-top: 12px; line-height: 1.6; }
+.callout b { color: var(--gold); }
+
+footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+@media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
+@media (max-width: 760px){ .ref-grid { grid-template-columns: 1fr; } }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Odds Calculation Drill</h1>
+    <span class="sub">Master pot odds, outs, equity &amp; break-evens — built straight from the reference charts</span>
+    <a class="home" href="/">← home</a>
+  </div>
+  <nav class="tabs">
+    <button data-view="drill" class="active">Drill</button>
+    <button data-view="charts">Reference Charts</button>
+    <button data-view="math">How the Math Works</button>
+  </nav>
+</header>
+
+<main>
+ <div id="drillView">
+  <div class="controls">
+    <button class="btn primary" id="newBtn">New question</button>
+    <div class="seg" id="catSeg"></div>
+    <div class="stats-row">
+      <div class="stat"><div class="lab">Streak</div><div class="val gold" id="stStreak">0</div></div>
+      <div class="stat"><div class="lab">Best</div><div class="val" id="stBest">0</div></div>
+      <div class="stat"><div class="lab">Accuracy</div><div class="val green" id="stAcc">—</div></div>
+      <div class="stat"><div class="lab">Answered</div><div class="val" id="stSeen">0</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="spot-head">
+        <span class="cat-badge" id="catBadge">—</span>
+        <span class="diff-tag" id="diffTag"></span>
+      </div>
+
+      <div class="qbox">
+        <div class="q" id="questionText">Press “New question” to begin.</div>
+        <div class="ctx" id="contextText"></div>
+      </div>
+
+      <div class="hint-box hidden" id="hintBox"></div>
+
+      <div class="answer" id="answerArea">
+        <div class="answer-row" id="numRow">
+          <input type="number" id="answerInput" step="0.1" placeholder="?" inputmode="decimal">
+          <span class="unit" id="answerUnit">%</span>
+          <button class="btn primary" id="submitBtn">Submit</button>
+          <button class="btn ghost" id="hintBtn">Hint</button>
+          <button class="btn ghost" id="revealBtn">Reveal</button>
+        </div>
+        <div class="choices hidden" id="choiceRow"></div>
+        <div class="toggle-row">
+          <input type="checkbox" id="autoNext"><label for="autoNext">Auto-advance to the next question after a correct answer</label>
+        </div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Session</h2>
+      <h3>Per-topic mastery</h3>
+      <div id="catStats"></div>
+      <div style="margin-top:16px">
+        <div class="kv"><span class="k">Total correct</span><span class="v" id="totCorrect">0</span></div>
+        <div class="kv"><span class="k">Total answered</span><span class="v" id="totSeen">0</span></div>
+      </div>
+      <button class="btn ghost" id="resetStats" style="margin-top:16px;width:100%">Reset session stats</button>
+      <p class="muted-note" style="margin-top:16px">
+        Every answer shows the <b>formula</b> and the <b>exact book value</b>, so you learn <i>why</i> the chart says
+        what it says — not just the number. Numeric answers accept reasonable rounding; the chart’s precise figure is
+        always shown. Stats persist in your browser.
+      </p>
+    </section>
+  </div>
+ </div><!-- /drillView -->
+
+ <div id="chartsView" class="hidden">
+  <section class="panel" style="margin-bottom:16px">
+    <h2>Reference</h2>
+    <h3>The charts you’re drilling</h3>
+    <p class="muted-note" style="font-size:13px">Transcribed exactly from the source. These are the answer keys the drill grades against.</p>
+  </section>
+  <div class="ref-grid" id="chartsGrid"></div>
+ </div><!-- /chartsView -->
+
+ <div id="mathView" class="hidden">
+  <section class="panel math-card">
+    <h2>Foundations</h2>
+    <h3>Odds ratio ⇄ percentage</h3>
+    <p class="lead">An odds ratio of <b>A:1</b> means “A ways to lose for every 1 way to win.” To turn it into a winning percentage, put your 1 winning way over the total ways:</p>
+    <div class="formula-block">
+      percentage = 1 / (A + 1)<br>
+      <span class="c">// 2:1 → 1/3 = 33%   ·   3:1 → 1/4 = 25%   ·   5:1 → 1/6 = 16.7%</span>
+    </div>
+    <p class="lead">Going the other way, from a percentage <b>p</b> back to odds: <span class="formula-block" style="display:inline-block;margin:0;padding:4px 10px">odds = (1 − p) / p : 1</span></p>
+  </section>
+
+  <section class="panel math-card">
+    <h2>Drawing hands</h2>
+    <h3>The Rule of 2 and 4</h3>
+    <p class="lead">A fast estimate of your equity with a draw, no chart required:</p>
+    <div class="formula-block">
+      one card to come   → equity ≈ outs × <b>2</b><br>
+      two cards (all-in on flop) → equity ≈ outs × <b>4</b>
+    </div>
+    <ul>
+      <li><b>Flop, not all-in</b> (you’ll see the turn only): × 2.</li>
+      <li><b>Flop, all-in</b> (turn <i>and</i> river): × 4.</li>
+      <li><b>Turn</b> (river only): × 2.</li>
+    </ul>
+    <div class="callout"><b>Accuracy caveat:</b> ×4 slightly over-counts past ~8 outs (it double-counts the cards). With 9+ outs, shave a few points — e.g. 9 outs ×4 = 36, the true number is ~35.</div>
+  </section>
+
+  <section class="panel math-card">
+    <h2>Calling</h2>
+    <h3>Pot odds &amp; hero-call break-even</h3>
+    <p class="lead">Villain bets <b>B</b> into a pot of <b>P</b>. You must call B to win what’s already there plus their bet (P + B). The price you’re getting:</p>
+    <div class="formula-block">
+      pot odds ratio = (P + B) : B<br>
+      break-even %   = B / (P + 2B)<br>
+      <span class="c">// ½-pot bet: call 0.5 to win 1.5 → 3:1 → 0.5/2 = 25%</span>
+    </div>
+    <p class="lead">If your equity is <b>above</b> the break-even %, calling is profitable. The <b>Pot Odds</b> and <b>Hero Call Break-Even</b> charts are the same numbers from these two angles.</p>
+  </section>
+
+  <section class="panel math-card">
+    <h2>Bluffing</h2>
+    <h3>Bluff break-even</h3>
+    <p class="lead">You bet <b>B</b> into a pot of <b>P</b>, risking B to win P. The fold % you need to break even on the bluff alone:</p>
+    <div class="formula-block">
+      break-even fold % = B / (P + B) = risk / (risk + reward)<br>
+      <span class="c">// ½-pot bluff: 0.5 / 1.5 = 33%   ·   pot-sized: 1/2 = 50%</span>
+    </div>
+    <div class="callout"><b>The key asymmetry:</b> a ½-pot bet needs villain to fold <b>33%</b> as a bluff, but only offers a caller <b>25%</b> pot odds. Same bet size, two different numbers — don’t mix them up.</div>
+  </section>
+
+  <section class="panel math-card">
+    <h2>Commitment</h2>
+    <h3>SPR — Stack-to-Pot Ratio</h3>
+    <p class="lead">SPR = effective stack ÷ pot, measured on the flop. It tells you how strong a hand you need to commit your stack:</p>
+    <div class="formula-block">SPR = effective stack / pot size</div>
+    <ul>
+      <li><b>Low (0–5):</b> commit with over pair, top pair, bottom two pair.</li>
+      <li><b>Medium (6–15):</b> top two pair, sets, non-nutted flushes &amp; straights.</li>
+      <li><b>High (16+):</b> sets and nutted hands only.</li>
+    </ul>
+  </section>
+ </div><!-- /mathView -->
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+<script>
+/* ============================================================
+   CHART DATA — transcribed exactly from the reference pages
+   ============================================================ */
+const ODDS_PCT = [
+  {odds:'1:1', a:1, pct:50},   {odds:'2:1', a:2, pct:33},   {odds:'3:1', a:3, pct:25},
+  {odds:'4:1', a:4, pct:20},   {odds:'5:1', a:5, pct:16.7}, {odds:'6:1', a:6, pct:14.3},
+  {odds:'7:1', a:7, pct:12.5},
+];
+
+const DRAWS = [
+  {name:'Flush Draw',                outs:9, flop:18, flopAllIn:36, turn:18},
+  {name:'Open-Ended Straight Draw',  outs:8, flop:16, flopAllIn:32, turn:16},
+  {name:'Over Cards / 2-Pair Draw',  outs:6, flop:12, flopAllIn:24, turn:12},
+  {name:'Gut Shot Straight Draw',    outs:4, flop:8,  flopAllIn:16, turn:8},
+];
+
+// outs, %flop not all-in, %flop all-in, flop all-in odds, %turn, turn odds
+const OUTS_TABLE = [
+  [1,  2.1,  4.3, '22.5:1', 2.1, '45:1'],
+  [2,  4.3,  8.4, '10.9:1', 4.3, '22:1'],
+  [3,  6.4, 12.5, '7:1',    6.4, '14.3:1'],
+  [4,  8.5, 16.5, '5.1:1',  8.5, '10.5:1'],
+  [5, 10.6, 20.3, '3.9:1', 10.6, '8.2:1'],
+  [6, 12.8, 24.0, '3.1:1', 12.8, '6.7:1'],
+  [7, 14.9, 27.8, '2.6:1', 14.9, '5.6:1'],
+  [8, 17.0, 31.5, '2.2:1', 17.0, '4.8:1'],
+  [9, 19.1, 35.0, '1.9:1', 19.1, '4.1:1'],
+  [10,21.3, 38.4, '1.6:1', 21.3, '3.6:1'],
+  [11,23.4, 41.7, '1.4:1', 23.4, '3.2:1'],
+  [12,25.5, 45.0, '1.2:1', 25.5, '2.9:1'],
+  [13,27.7, 48.1, '1.1:1', 27.7, '2.6:1'],
+  [14,29.8, 51.2, '.95:1', 29.8, '2.3:1'],
+];
+
+const POT_ODDS = [
+  {bet:'1/4 pot', ratio:'5:1',   pct:16.7},
+  {bet:'1/3 pot', ratio:'4:1',   pct:19.9},
+  {bet:'1/2 pot', ratio:'3:1',   pct:25},
+  {bet:'2/3 pot', ratio:'2.5:1', pct:28.5},
+  {bet:'3/4 pot', ratio:'2.3:1', pct:30},
+  {bet:'pot',     ratio:'2:1',   pct:33.3},
+];
+
+const BLUFF_BE = [
+  {bet:'1/4 pot', risk:25,  ratio:'4:1',   pct:20},
+  {bet:'1/3 pot', risk:33,  ratio:'3:1',   pct:25},
+  {bet:'1/2 pot', risk:50,  ratio:'2:1',   pct:33},
+  {bet:'3/4 pot', risk:75,  ratio:'1.3:1', pct:43},
+  {bet:'pot',     risk:100, ratio:'1:1',   pct:50},
+];
+
+const PREFLOP = [
+  {type:'Over Pair vs Under Pair',      ex:'AA vs QQ', fav:'AA', other:'QQ', pct:81.55},
+  {type:'Over Cards vs Pair',           ex:'AK vs TT', fav:'TT', other:'AK', pct:56.17},
+  {type:'Dominated Hand',               ex:'KQ vs KJ', fav:'KQ', other:'KJ', pct:73.16},
+  {type:'Over Cards vs Under Cards',    ex:'JT vs 68', fav:'JT', other:'68', pct:69.69},
+];
+
+const SPR = [
+  {level:'Low',    range:'0 to 5', lo:0,  hi:5,  commit:'Over Pair, Top Pair, Bottom 2 Pair'},
+  {level:'Medium', range:'6 to 15',lo:6,  hi:15, commit:'Top 2 Pair, Sets, Non-Nutted Flushes & Straights'},
+  {level:'High',   range:'16+',    lo:16, hi:999,commit:'Sets, Nutted Hands'},
+];
+
+const MADE_BET = [
+  {draw:'Flush + OESD',                  equity:33, size:'Slightly Over Bet Pot',  offer:'Greater than 33%'},
+  {draw:'Flush + Gut-Shot Straight Draw',equity:25, size:'2/3 Pot-Sized or More',  offer:'28.5% or more'},
+  {draw:'Flush Draw',                    equity:19, size:'1/2 Pot-Sized or More',  offer:'25% or more'},
+  {draw:'Open-Ended Straight Draw',      equity:17, size:'1/2 Pot-Sized or More',  offer:'25% or more'},
+  {draw:'Over Cards 2-Pair Draw',        equity:13, size:'1/2 Pot-Sized or More',  offer:'25% or more'},
+  {draw:'Gut-Shot Straight Draw',        equity:8,  size:'1/2 Pot-Sized or More',  offer:'25% or more'},
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const el = id => document.getElementById(id);
+const RNG = { int:n=>Math.floor(Math.random()*n), pick:a=>a[Math.floor(Math.random()*a.length)] };
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=RNG.int(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const fmtPct = v => (Math.round(v*10)/10).toString().replace(/\.0$/,'') + '%';
+
+// build 4 choices from a correct value + a pool of distractors (numbers or strings)
+function choiceSet(correct, pool, fmt){
+  fmt = fmt || (x=>x);
+  const others = shuffle(pool.filter(x=>String(x)!==String(correct))).slice(0,3);
+  return shuffle([correct, ...others]).map(v=>({ label: fmt(v), correct: String(v)===String(correct) }));
+}
+
+/* ============================================================
+   CATEGORIES + GENERATORS
+   Each generator returns:
+   { catKey, prompt, context?, mode:'num'|'choice',
+     answer, tol, unit,            // num
+     choices:[{label,correct}],    // choice
+     hint, explain }
+   ============================================================ */
+const CATS = [
+  { key:'mix',      label:'Mixed',          badge:'',       cls:'' },
+  { key:'odds',     label:'Odds ⇄ %',       badge:'CONVERT',cls:'calc' },
+  { key:'rule24',   label:'Rule of 2 & 4',  badge:'OUTS',   cls:'equity' },
+  { key:'outs',     label:'Outs → Equity',  badge:'OUTS',   cls:'equity' },
+  { key:'potodds',  label:'Pot Odds',       badge:'CALL',   cls:'calc' },
+  { key:'bluff',    label:'Bluff Break-Even',badge:'BLUFF', cls:'bluff' },
+  { key:'herocall', label:'Hero Call B/E',  badge:'CALL',   cls:'bluff' },
+  { key:'preflop',  label:'Preflop Equity', badge:'EQUITY', cls:'equity' },
+  { key:'spr',      label:'SPR',            badge:'SPR',    cls:'spr' },
+  { key:'decision', label:'Call / Fold',    badge:'DECIDE', cls:'decide' },
+];
+const CAT_BY_KEY = Object.fromEntries(CATS.map(c=>[c.key,c]));
+
+const GEN = {
+  /* ---- Odds ratio ⇄ percentage ---- */
+  odds(){
+    const row = RNG.pick(ODDS_PCT);
+    if(Math.random()<0.55){
+      // ratio -> percentage
+      return {
+        catKey:'odds',
+        prompt:`Convert the odds ratio <span class="big">${row.odds}</span> into a winning percentage.`,
+        context:'“A-to-1 against” means A ways to lose for every 1 way to win.',
+        mode:'num', answer:row.pct, tol:1.6, unit:'%',
+        hint:`Percentage = 1 / (A + 1), where A = ${row.a}.`,
+        explain:`<b>${row.odds}</b> means 1 winning outcome out of <b>${row.a+1}</b> total. `+
+          `<span class="formula">1 / (${row.a} + 1) = 1/${row.a+1}</span> = <span class="book">${fmtPct(row.pct)}</span> per the chart.`
+      };
+    } else {
+      // percentage -> ratio (choice)
+      return {
+        catKey:'odds',
+        prompt:`About <span class="big">${fmtPct(row.pct)}</span> equity corresponds to which odds ratio?`,
+        context:'Pick the “X-to-1 against” line from the Odds-to-Percentage table.',
+        mode:'choice',
+        choices: choiceSet(row.odds, ODDS_PCT.map(r=>r.odds)),
+        hint:`Odds = (1 − p) / p. With p ≈ ${fmtPct(row.pct)}, that’s roughly ${row.a}-to-1.`,
+        explain:`<span class="book">${fmtPct(row.pct)}</span> ↔ <b>${row.odds}</b>: `+
+          `the loser side is ${row.a}× the winner side, since 1/(${row.a}+1) = ${fmtPct(row.pct)}.`
+      };
+    }
+  },
+
+  /* ---- Rule of 2 & 4 ---- */
+  rule24(){
+    const draw = RNG.pick(DRAWS);
+    const mode = RNG.pick(['flop','flopAllIn','turn']);
+    const useName = Math.random()<0.6;
+    const outs = draw.outs;
+    let scenario, mult, answer, key;
+    if(mode==='flopAllIn'){ scenario='on the flop and <b>all-in</b> (both the turn and river to come)'; mult=4; answer=draw.flopAllIn; key='×4'; }
+    else if(mode==='turn'){ scenario='on the <b>turn</b>, one card (the river) to come'; mult=2; answer=draw.turn; key='×2'; }
+    else { scenario='on the <b>flop</b>, <b>not</b> all-in (you’ll see only the turn)'; mult=2; answer=draw.flop; key='×2'; }
+    const subject = useName ? `a <b>${draw.name}</b> (${outs} outs)` : `<b>${outs} outs</b>`;
+    return {
+      catKey:'rule24',
+      prompt:`You have ${subject} ${scenario}. Estimate your equity with the Rule of 2 and 4.`,
+      context:'One card to come → outs × 2. All-in on the flop (two cards) → outs × 4.',
+      mode:'num', answer, tol:0.5, unit:'%',
+      hint:`${scenario.includes('all-in')?'Two cards to come → multiply by 4':'One card to come → multiply by 2'}. Outs = ${outs}.`,
+      explain:`${outs} outs <span class="formula">${key} = ${answer}</span>% — the chart lists `+
+        `<span class="book">${fmtPct(answer)}</span> for a ${draw.name.toLowerCase()} ${mode==='flopAllIn'?'all-in on the flop':mode==='turn'?'on the turn':'on the flop'}.`+
+        (mult===4 && outs>=9 ? ` <i>(×4 slightly over-counts past 8 outs — true value ≈ ${OUTS_TABLE.find(r=>r[0]===outs)[2]}%.)</i>`:'')
+    };
+  },
+
+  /* ---- Outs → exact equity (and naming draws) ---- */
+  outs(){
+    const r = Math.random();
+    if(r<0.4){
+      // name the draw -> outs
+      const draw = RNG.pick(DRAWS);
+      return {
+        catKey:'outs',
+        prompt:`How many outs does a <span class="big">${draw.name}</span> have?`,
+        context:'The four canonical drawing hands from the equity-scenarios chart.',
+        mode:'num', answer:draw.outs, tol:0, unit:'outs',
+        hint:'Flush = 9, OESD = 8, over-cards/2-pair = 6, gutshot = 4.',
+        explain:`A <b>${draw.name.toLowerCase()}</b> has <span class="book">${draw.outs} outs</span>.`
+      };
+    } else {
+      // exact equity lookup from table
+      const row = RNG.pick(OUTS_TABLE.slice(0,12));
+      const col = RNG.pick(['flop','turn']);
+      const ans = col==='flop' ? row[1] : row[4];
+      const where = col==='flop' ? 'on the flop, with one card to come (not all-in)' : 'on the turn, with the river to come';
+      return {
+        catKey:'outs',
+        prompt:`Per the exact Outs-to-Equity table: with <span class="big">${row[0]} outs</span> ${where}, what is your equity?`,
+        context:'These are precise figures — the Rule of 2 (outs × 2) gets you within a point.',
+        mode:'num', answer:ans, tol:1.4, unit:'%',
+        hint:`Rule of 2 estimate: ${row[0]} × 2 = ${row[0]*2}%. The table is just slightly higher.`,
+        explain:`${row[0]} outs, one card to come → <span class="book">${fmtPct(ans)}</span> exact `+
+          `(Rule of 2 said ${row[0]*2}% — close enough at the table).`
+      };
+    }
+  },
+
+  /* ---- Pot odds offered by bet sizing ---- */
+  potodds(){
+    const row = RNG.pick(POT_ODDS);
+    if(Math.random()<0.6){
+      return {
+        catKey:'potodds',
+        prompt:`Villain bets <span class="big">${row.bet}</span>. What pot-odds percentage are you being offered to call?`,
+        context:'You call the bet to win the existing pot plus that bet.',
+        mode:'num', answer:row.pct, tol:1.6, unit:'%',
+        hint:`Call B to win P + B. ${row.bet} → ratio ${row.ratio}.`,
+        explain:`A ${row.bet} bet lays you <b>${row.ratio}</b> → <span class="formula">1/(${row.ratio.split(':')[0]}+1)</span> = `+
+          `<span class="book">${fmtPct(row.pct)}</span>. You need at least this much equity to call.`
+      };
+    } else {
+      return {
+        catKey:'potodds',
+        prompt:`A <span class="big">${row.bet}</span> bet gives you what pot-odds <b>ratio</b>?`,
+        context:'Expressed as “X-to-1” — reward to risk.',
+        mode:'choice',
+        choices: choiceSet(row.ratio, POT_ODDS.map(r=>r.ratio)),
+        hint:`Smaller bet = better price. ${row.bet} ≈ ${row.pct}%.`,
+        explain:`${row.bet} → <b>${row.ratio}</b> pot odds = <span class="book">${fmtPct(row.pct)}</span>.`
+      };
+    }
+  },
+
+  /* ---- Bluff break-even ---- */
+  bluff(){
+    const row = RNG.pick(BLUFF_BE);
+    return {
+      catKey:'bluff',
+      prompt:`You bluff <span class="big">${row.bet}</span>. How often must villain fold for the bluff to break even?`,
+      context:'Risk your bet to win the current pot. Using a $100 pot, you risk $'+row.risk+' to win $100.',
+      mode:'num', answer:row.pct, tol:2.0, unit:'%',
+      hint:`break-even = risk / (risk + reward) = ${row.risk} / (${row.risk} + 100).`,
+      explain:`Risk $${row.risk} to win $100 → <span class="formula">${row.risk}/(${row.risk}+100)</span> = `+
+        `<span class="book">${fmtPct(row.pct)}</span> (ratio ${row.ratio}). `+
+        (row.bet==='1/2 pot' ? `Note: this 33% is <b>not</b> the 25% pot-odds price — different formula.`:'')
+    };
+  },
+
+  /* ---- Hero call break-even ---- */
+  herocall(){
+    const row = RNG.pick(POT_ODDS); // hero-call table == pot-odds table
+    return {
+      catKey:'herocall',
+      prompt:`Villain bets <span class="big">${row.bet}</span>. How often must you win at showdown for a call to break even?`,
+      context:'Your hero-call break-even equals the pot odds you’re being laid.',
+      mode:'num', answer:row.pct, tol:1.6, unit:'%',
+      hint:`Same as pot odds: ${row.bet} lays ${row.ratio}.`,
+      explain:`${row.bet} → <b>${row.ratio}</b> → break-even <span class="book">${fmtPct(row.pct)}</span>. `+
+        `Win more often than this and the call prints.`
+    };
+  },
+
+  /* ---- Preflop equity scenarios ---- */
+  preflop(){
+    const row = RNG.pick(PREFLOP);
+    const r = Math.random();
+    if(r<0.5){
+      // who's favored
+      return {
+        catKey:'preflop',
+        prompt:`<span class="big">${row.ex}</span> preflop — which hand is the equity favorite?`,
+        context:row.type+'.',
+        mode:'choice',
+        choices: shuffle([
+          {label:row.fav+' (favorite)', correct:true},
+          {label:row.other, correct:false},
+          {label:'Essentially a coin flip', correct:false},
+        ]),
+        hint:`This is the “${row.type}” scenario.`,
+        explain:`<b>${row.fav}</b> is favored at <span class="book">${row.pct}%</span> in ${row.ex} (${row.type.toLowerCase()}).`
+      };
+    } else {
+      // rough equity of the favorite
+      const pool = PREFLOP.map(p=>p.pct).concat([55,62,77]);
+      return {
+        catKey:'preflop',
+        prompt:`In <span class="big">${row.ex}</span>, roughly what equity does the favorite (<b>${row.fav}</b>) hold?`,
+        context:row.type+'. Pick the closest figure.',
+        mode:'choice',
+        choices: choiceSet(row.pct, pool, x=>x+'%'),
+        hint:`${row.type}: ${/Under Pair/.test(row.type)?'over pair dominates ~80/20':'a clear but not overwhelming edge'}.`,
+        explain:`${row.ex}: <b>${row.fav}</b> ≈ <span class="book">${row.pct}%</span> (${row.type.toLowerCase()}).`
+      };
+    }
+  },
+
+  /* ---- SPR guideline ---- */
+  spr(){
+    const r = Math.random();
+    if(r<0.45){
+      // value -> band
+      const band = RNG.pick(SPR);
+      const val = band.hi>900 ? 16+RNG.int(20) : band.lo + RNG.int(band.hi-band.lo+1);
+      return {
+        catKey:'spr',
+        prompt:`Your stack-to-pot ratio on the flop is <span class="big">${val}</span>. Which SPR band is that?`,
+        context:'Low 0–5 · Medium 6–15 · High 16+.',
+        mode:'choice',
+        choices: shuffle(SPR.map(s=>({label:`${s.level} (${s.range})`, correct:s.level===band.level}))),
+        hint:`0–5 Low, 6–15 Medium, 16+ High.`,
+        explain:`SPR ${val} → <b>${band.level}</b> (${band.range}). Commit with: <span class="book">${band.commit}</span>.`
+      };
+    } else {
+      // band -> hands to commit
+      const band = RNG.pick(SPR);
+      return {
+        catKey:'spr',
+        prompt:`At a <span class="big">${band.level} SPR (${band.range})</span>, which hands are you willing to commit your stack with?`,
+        context:'From the SPR Guideline table.',
+        mode:'choice',
+        choices: shuffle(SPR.map(s=>({label:s.commit, correct:s.level===band.level}))),
+        hint:`Lower SPR → commit lighter; higher SPR → need the nuts.`,
+        explain:`<b>${band.level} SPR (${band.range})</b> → commit with <span class="book">${band.commit}</span>.`
+      };
+    }
+  },
+
+  /* ---- Applied call/fold decision ---- */
+  decision(){
+    const draw = RNG.pick(DRAWS);
+    const bet = RNG.pick(POT_ODDS.slice(1)); // skip tiny 1/4 for sharper spots
+    const equity = draw.flop;             // flop, not all-in → rule of 2
+    const need = bet.pct;
+    const profitable = equity >= need;
+    return {
+      catKey:'decision',
+      prompt:`You hold a <b>${draw.name}</b> on the flop (not all-in). Villain bets <span class="big">${bet.bet}</span>. `+
+             `On <b>direct pot odds alone</b>, is calling profitable?`,
+      context:`Estimate your equity with the Rule of 2, compare to the pot-odds price.`,
+      mode:'choice',
+      choices: shuffle([
+        {label:`Call — equity beats the price`, correct:profitable},
+        {label:`Fold — price too high (need implied odds)`, correct:!profitable},
+      ]),
+      hint:`Equity ≈ ${draw.outs} × 2 = ${equity}%. Price for ${bet.bet} = ${fmtPct(need)}. Compare them.`,
+      explain:`Equity ≈ ${draw.outs} × 2 = <b>${equity}%</b>; ${bet.bet} demands <b>${fmtPct(need)}</b>. `+
+        (profitable
+          ? `${equity}% ≥ ${fmtPct(need)} → <span class="book">a profitable call</span> on pot odds alone.`
+          : `${equity}% &lt; ${fmtPct(need)} → <span class="book">a fold</span> on direct odds — you’d need implied odds to continue.`)
+    };
+  },
+};
+
+/* ============================================================
+   ENGINE
+   ============================================================ */
+const STORE_KEY = 'oddsDrillStats';
+let mode = 'mix';
+let current = null;
+let answered = false;
+
+const defaultStats = ()=>({ seen:0, correct:0, streak:0, best:0, perCat:{} });
+let stats = loadStats();
+function loadStats(){
+  try{ const s = JSON.parse(localStorage.getItem(STORE_KEY)); if(s && s.perCat) return s; }catch(e){}
+  return defaultStats();
+}
+function saveStats(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(stats)); }catch(e){} }
+
+function buildSeg(){
+  const seg = el('catSeg');
+  seg.innerHTML = '';
+  for(const c of CATS){
+    const b = document.createElement('button');
+    b.textContent = c.label; b.dataset.key = c.key;
+    if(c.key===mode) b.classList.add('active', c.key==='mix'?'mix':'');
+    b.onclick = ()=>{ mode = c.key; updateSeg(); newQuestion(); };
+    seg.appendChild(b);
+  }
+}
+function updateSeg(){
+  el('catSeg').querySelectorAll('button').forEach(b=>{
+    const on = b.dataset.key===mode;
+    b.classList.toggle('active', on);
+    b.classList.toggle('mix', on && b.dataset.key==='mix');
+  });
+}
+
+function newQuestion(){
+  answered = false;
+  const key = mode==='mix' ? RNG.pick(CATS.filter(c=>c.key!=='mix')).key : mode;
+  current = GEN[key]();
+  const cat = CAT_BY_KEY[current.catKey];
+
+  const badge = el('catBadge');
+  badge.textContent = cat.label;
+  badge.className = 'cat-badge ' + (cat.cls||'');
+  el('diffTag').textContent = mode==='mix' ? 'mixed mode' : '';
+
+  el('questionText').innerHTML = current.prompt;
+  el('contextText').innerHTML = current.context || '';
+  el('hintBox').classList.add('hidden');
+  el('feedback').innerHTML = '';
+
+  if(current.mode==='num'){
+    el('numRow').classList.remove('hidden');
+    el('choiceRow').classList.add('hidden');
+    el('answerUnit').textContent = current.unit || '%';
+    const inp = el('answerInput');
+    inp.value = ''; inp.disabled = false;
+    el('submitBtn').disabled = false;
+    inp.focus();
+  } else {
+    el('numRow').classList.add('hidden');
+    const cr = el('choiceRow');
+    cr.classList.remove('hidden');
+    cr.innerHTML = '';
+    current.choices.forEach((ch,i)=>{
+      const b = document.createElement('button');
+      b.innerHTML = ch.label;
+      b.onclick = ()=>gradeChoice(i, b);
+      cr.appendChild(b);
+    });
+  }
+}
+
+function gradeNum(){
+  if(answered || !current || current.mode!=='num') return;
+  const raw = el('answerInput').value.trim();
+  if(raw==='') return;
+  const val = parseFloat(raw);
+  if(isNaN(val)) return;
+  const ok = Math.abs(val - current.answer) <= (current.tol||0) + 1e-9;
+  finish(ok, `Your answer: ${raw}${current.unit==='outs'?'':''}`, current.answer + (current.unit==='%'?'%':current.unit==='outs'?' outs':''));
+}
+
+function gradeChoice(idx, btn){
+  if(answered || !current) return;
+  const ch = current.choices[idx];
+  const cr = el('choiceRow');
+  cr.querySelectorAll('button').forEach((b,i)=>{
+    b.disabled = true;
+    if(current.choices[i].correct) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong');
+  });
+  finish(ch.correct, '', '');
+}
+
+function finish(ok, yourLine, correctLine){
+  answered = true;
+  if(current.mode==='num'){ el('answerInput').disabled = true; el('submitBtn').disabled = true; }
+
+  // stats
+  stats.seen++;
+  const pc = stats.perCat[current.catKey] || (stats.perCat[current.catKey]={seen:0,correct:0});
+  pc.seen++;
+  if(ok){ stats.correct++; pc.correct++; stats.streak++; stats.best=Math.max(stats.best,stats.streak); }
+  else { stats.streak=0; }
+  saveStats(); renderStats();
+
+  const fb = el('feedback');
+  const verdict = ok
+    ? `<div class="verdict ok">✓ Correct${current.mode==='num'?` <span class="pill">exact: ${correctLine}</span>`:''}</div>`
+    : `<div class="verdict no">✗ Not quite${current.mode==='num'?` <span class="pill">answer: ${correctLine}</span>`:''}</div>`;
+  fb.innerHTML = verdict + `<div class="explain">${current.explain}</div>`;
+
+  if(ok && el('autoNext').checked){ setTimeout(()=>{ if(answered) newQuestion(); }, 1300); }
+}
+
+function reveal(){
+  if(answered) return;
+  // count reveal as a miss for the streak but show the answer
+  if(current.mode==='choice'){
+    const cr = el('choiceRow');
+    cr.querySelectorAll('button').forEach((b,i)=>{ b.disabled=true; if(current.choices[i].correct) b.classList.add('correct'); });
+  }
+  const correctLine = current.mode==='num' ? current.answer + (current.unit==='%'?'%':current.unit==='outs'?' outs':'') : '';
+  answered = true;
+  if(current.mode==='num'){ el('answerInput').disabled=true; el('submitBtn').disabled=true; }
+  stats.seen++; stats.streak=0;
+  const pc = stats.perCat[current.catKey] || (stats.perCat[current.catKey]={seen:0,correct:0});
+  pc.seen++;
+  saveStats(); renderStats();
+  el('feedback').innerHTML =
+    `<div class="verdict no">Revealed${current.mode==='num'?` <span class="pill">answer: ${correctLine}</span>`:''}</div>`+
+    `<div class="explain">${current.explain}</div>`;
+}
+
+function showHint(){
+  if(!current) return;
+  const hb = el('hintBox');
+  hb.textContent = current.hint || 'No hint for this one — work the formula.';
+  hb.classList.remove('hidden');
+}
+
+function renderStats(){
+  el('stStreak').textContent = stats.streak;
+  el('stBest').textContent = stats.best;
+  el('stSeen').textContent = stats.seen;
+  el('stAcc').textContent = stats.seen ? Math.round(100*stats.correct/stats.seen)+'%' : '—';
+  el('totCorrect').textContent = stats.correct;
+  el('totSeen').textContent = stats.seen;
+
+  const wrap = el('catStats');
+  wrap.innerHTML = '';
+  for(const c of CATS){
+    if(c.key==='mix') continue;
+    const pc = stats.perCat[c.key] || {seen:0,correct:0};
+    const pct = pc.seen ? Math.round(100*pc.correct/pc.seen) : 0;
+    const d = document.createElement('div');
+    d.className = 'gamestat';
+    d.innerHTML =
+      `<div class="gname"><b>${c.label}</b><span class="mono">${pc.seen?pct+'% · '+pc.correct+'/'+pc.seen:'—'}</span></div>`+
+      `<div class="track"><span style="width:${pc.seen?pct:0}%"></span></div>`;
+    wrap.appendChild(d);
+  }
+}
+
+/* ============================================================
+   REFERENCE CHARTS RENDERING
+   ============================================================ */
+function renderCharts(){
+  const g = el('chartsGrid');
+  if(g.dataset.done) return;
+  g.dataset.done = '1';
+  const T = (caption, head, rows) =>
+    `<table class="ref-table"><caption>${caption}</caption>`+
+    `<thead><tr>${head.map(h=>`<th class="${/[%#]|Odds|Ratio|Equity|Risk/.test(h)?'mono':''}">${h}</th>`).join('')}</tr></thead>`+
+    `<tbody>${rows}</tbody></table>`;
+
+  const panel = inner => `<section class="panel">${inner}</section>`;
+
+  const oddsTbl = T('Odds-to-Percentage', ['Odds','Percentage'],
+    ODDS_PCT.map(r=>`<tr><td class="mono">${r.odds}</td><td class="mono hi">${fmtPct(r.pct)}</td></tr>`).join(''));
+
+  const drawTbl = T('Common Drawing-Hand Equity', ['Draw','Outs','Flop','Flop A-I','Turn'],
+    DRAWS.map(r=>`<tr><td>${r.name}</td><td class="mono">${r.outs}</td><td class="mono g">${r.flop}%</td><td class="mono">${r.flopAllIn}%</td><td class="mono">${r.turn}%</td></tr>`).join(''));
+
+  const outsTbl = T('Outs-to-Equity', ['Outs','% Flop','% Flop A-I','Flop Odds','% Turn','Turn Odds'],
+    OUTS_TABLE.map(r=>`<tr><td class="mono hi">${r[0]}</td><td class="mono">${r[1]}%</td><td class="mono">${r[2]}%</td><td class="mono">${r[3]}</td><td class="mono">${r[4]}%</td><td class="mono">${r[5]}</td></tr>`).join(''));
+
+  const potTbl = T('Pot Odds Offered by Bet Sizing', ['Bet Size','Ratio','Pot Odds'],
+    POT_ODDS.map(r=>`<tr><td>${r.bet}</td><td class="mono">${r.ratio}</td><td class="mono hi">${fmtPct(r.pct)}</td></tr>`).join(''));
+
+  const bluffTbl = T('Bluff Break-Even (using $100 pot)', ['Bluff Size','Reward:Risk','Break-Even'],
+    BLUFF_BE.map(r=>`<tr><td>${r.bet}</td><td class="mono">$100:$${r.risk} = ${r.ratio}</td><td class="mono hi">${fmtPct(r.pct)}</td></tr>`).join(''));
+
+  const heroTbl = T('Hero Call Break-Even', ['Villain Bet','Pot Odds','Break-Even'],
+    POT_ODDS.map(r=>`<tr><td>${r.bet}</td><td class="mono">${r.ratio}</td><td class="mono hi">${fmtPct(r.pct)}</td></tr>`).join(''));
+
+  const preTbl = T('Common Pre-Flop Equity Scenarios', ['Scenario','Example','Favorite'],
+    PREFLOP.map(r=>`<tr><td>${r.type}</td><td class="mono">${r.ex}</td><td class="mono g">${r.fav} (${r.pct}%)</td></tr>`).join(''));
+
+  const sprTbl = T('SPR Guideline', ['SPR','Size','Hands to Commit'],
+    SPR.map(r=>`<tr><td class="hi">${r.level}</td><td class="mono">${r.range}</td><td>${r.commit}</td></tr>`).join(''));
+
+  const madeTbl = T('Recommended Bet Sizing with Made/Drawing Hands', ['Drawing Hand','Equity','Bet Size','Pot Odds We Offer'],
+    MADE_BET.map(r=>`<tr><td>${r.draw}</td><td class="mono g">${r.equity}%</td><td>${r.size}</td><td class="mono">${r.offer}</td></tr>`).join(''));
+
+  g.innerHTML =
+    panel(oddsTbl) + panel(drawTbl) +
+    panel('<div style="grid-column:1/-1">'+outsTbl+'</div>') +
+    panel(potTbl) + panel(heroTbl) +
+    panel(bluffTbl) + panel(preTbl) +
+    panel(sprTbl) + panel(madeTbl);
+  // outs table spans full width
+  g.querySelectorAll('section.panel').forEach(s=>{
+    if(s.querySelector('caption') && s.querySelector('caption').textContent==='Outs-to-Equity') s.style.gridColumn='1 / -1';
+  });
+}
+
+/* ============================================================
+   TABS + WIRING
+   ============================================================ */
+const VIEWS = { drill:'drillView', charts:'chartsView', math:'mathView' };
+function showTab(view){
+  for(const [k,id] of Object.entries(VIEWS)) el(id).classList.toggle('hidden', k!==view);
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  if(view==='charts') renderCharts();
+}
+document.querySelector('.tabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(b) showTab(b.dataset.view);
+});
+
+el('newBtn').onclick = newQuestion;
+el('submitBtn').onclick = gradeNum;
+el('hintBtn').onclick = showHint;
+el('revealBtn').onclick = reveal;
+el('answerInput').addEventListener('keydown', e=>{ if(e.key==='Enter') gradeNum(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='n' && answered && !el('answerInput').matches(':focus')) newQuestion();
+});
+el('resetStats').onclick = ()=>{
+  if(!confirm('Reset all session stats?')) return;
+  stats = defaultStats(); saveStats(); renderStats();
+};
+
+buildSeg();
+renderStats();
+newQuestion();
+</script>
+</body>
+</html>
