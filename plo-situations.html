@@ -383,11 +383,11 @@ const QUIZ = [
     e:{en:"<b>Raise.</b> Shorthanded, a second-to-last-position bettor doesn't need much. Top two plus a flush draw rates to be best — raise the max and expect to take it down.",
        th:"<b>Raise</b> เล่นคนน้อย คน bet ที่อยู่เกือบท้ายไม่จำเป็นต้องมีมือแข็ง top two บวก flush draw น่าจะดีที่สุด — raise max และคาดว่าจะเก็บ pot ได้เลย"} },
 
-  { hole:"QdJh9d8s", board:"Js9s4s", o:"FCRR", a:0,
-    ctx:{en:"<b>$0.25/$0.50.</b> You call a button raise from the big blind and flop <b>top two pair</b> (J-9) — but the board is <b>three spades</b>. You bet $2.25 and get <b>raised to $9</b> ($90+ behind).",
-         th:"<b>$0.25/$0.50</b> คุณ call raise ของปุ่มจาก big blind และ flop <b>top two pair</b> (J-9) — แต่ board เป็น <b>สามดอก spade</b> คุณ bet $2.25 แล้วโดน <b>raise เป็น $9</b> (เหลือ $90+)"},
-    e:{en:"<b>Fold.</b> Top two on a three-flush board with few clean improvers. You're often behind a flush, a set, or a big wrap-plus-flush-draw; calling a raise here is a losing play.",
-       th:"<b>Fold</b> top two บน board สามดอก (flush) ที่มี out พัฒนาน้อย คุณมักตามหลัง flush, set หรือ big wrap+flush draw; การ call raise ตรงนี้คือการเล่นที่ขาดทุน"} },
+  { hole:"QdJh9d8s", board:"Jc9c4s", o:"FCRR", a:0,
+    ctx:{en:"<b>$0.25/$0.50.</b> You call a button raise from the big blind and flop <b>top two pair</b> (J-9) on a <b>two-club board</b> (you have no flush draw). You bet $2.25 and get <b>raised to $9</b> ($90+ behind).",
+         th:"<b>$0.25/$0.50</b> คุณ call raise ของปุ่มจาก big blind และ flop <b>top two pair</b> (J-9) บน <b>board สองดอก club</b> (คุณไม่มี flush draw) คุณ bet $2.25 แล้วโดน <b>raise เป็น $9</b> (เหลือ $90+)"},
+    e:{en:"<b>Fold.</b> Top two pair with few clean improvers. You may be best, but against a raise you're often behind a set or a big draw — a club flush draw with a wrap (you're a 3:2 dog) or an overpair with the flush draw (about even). Calling off is a losing play.",
+       th:"<b>Fold</b> top two pair ที่มี out พัฒนาน้อย คุณอาจดีที่สุด แต่เมื่อเจอ raise คุณมักตามหลัง set หรือ big draw — flush draw (club) พร้อม wrap (คุณเป็นรอง 3:2) หรือ overpair พร้อม flush draw (ราวๆ เสมอ) การ call คือการเล่นที่ขาดทุน"} },
 
   { hole:"9h8s7h6s", board:"9d6h2h", o:"FCR", a:2,
     ctx:{en:"<b>$0.50/$1.</b> Six-way pot. You flop <b>top two pair, an open-ender, and a flush draw</b> (9-6 on 9-6-2). The blind checks, the limper <b>bets $7 and gets two callers</b>; $7 to you, $32.50 pot, $92 behind.",
@@ -413,11 +413,11 @@ const QUIZ = [
     e:{en:"<b>Raise.</b> This is huge — heads-up you're around 60% even against a made straight, and only slightly behind a straight-plus-flush-draw. Raise; if someone wants to join the party, great.",
        th:"<b>Raise</b> มือนี้ใหญ่มาก — ตัวต่อตัวคุณเป็นต่อราว 60% แม้เจอ straight ที่ติดแล้ว และตามหลังแค่นิดเดียวเมื่อเจอ straight+flush draw raise เลย ถ้าใครอยากร่วมวงก็ดี"} },
 
-  { hole:"QdJsTd7h", board:"Ks9s8s", o:"FCR", a:2,
-    ctx:{en:"<b>$1/$2.</b> Limped pot. You flop a <b>16-card wrap</b> (Q-J-T-7 on K-9-8). The small blind <b>bets $10</b>, one caller, folds to you; $10 to call, ~$200 stacks.",
-         th:"<b>$1/$2</b> pot ที่มีแต่ limp คุณ flop <b>wrap 16 ใบ</b> (Q-J-T-7 บน K-9-8) small blind <b>bet $10</b>, มีคน call หนึ่งคน, fold มาหาคุณ; $10 ที่ต้อง call, stack ~$200"},
-    e:{en:"<b>Raise the pot.</b> The action is weak — a stab and a flat call — so you have a good shot to take it down now, and even if called you're only about 1.8-to-1 to make the straight by the turn.",
-       th:"<b>Raise the pot</b> action อ่อน — stab กับ flat call — คุณจึงมีโอกาสดีที่จะเก็บ pot เลย และต่อให้โดน call ก็เป็นรองแค่ราว 1.8 ต่อ 1 ที่จะติด straight ภายใน turn"} },
+  { hole:"QdJsTd7h", board:"Ks9s8c", o:"FCR", a:2,
+    ctx:{en:"<b>$1/$2.</b> Limped pot. You flop a <b>16-card nut wrap</b> (Q-J-T-7 on K-9-8, two spades). The small blind <b>bets $10</b>, one caller, folds to you; $10 to call, ~$200 stacks.",
+         th:"<b>$1/$2</b> pot ที่มีแต่ limp คุณ flop <b>16-card nut wrap</b> (Q-J-T-7 บน K-9-8, สองดอก spade) small blind <b>bet $10</b>, มีคน call หนึ่งคน, fold มาหาคุณ; $10 ที่ต้อง call, stack ~$200"},
+    e:{en:"<b>Raise the pot.</b> The action is weak — a small stab and a flat call — so you have a good shot to take it down now, and even if called you're only about 1.8-to-1 to make the straight by the turn. The two-flush board is no deterrent with a wrap this big.",
+       th:"<b>Raise the pot</b> action อ่อน — stab เล็กๆ กับ flat call — คุณจึงมีโอกาสดีที่จะเก็บ pot เลย และต่อให้โดน call ก็เป็นรองแค่ราว 1.8 ต่อ 1 ที่จะติด straight ภายใน turn board สองดอกไม่ใช่อุปสรรคเมื่อมี wrap ใหญ่ขนาดนี้"} },
 
   { hole:"AcKsQhJh", board:"Ts9h2d", o:"CB", a:1,
     ctx:{en:"<b>$1/$2.</b> You raise from the SB and get two callers. The flop gives you a <b>13-card nut straight draw</b> (A-K-Q-J on T-9-2). Three players, $38 pot, your action.",
