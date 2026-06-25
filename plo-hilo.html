@@ -237,13 +237,13 @@ const QUIZ = [
     e:{en:"<b>Most money goes in post-flop.</b> In limit, the many pre-flop bets create an overlay, so even a quartered river often profits. In pot-limit the big money goes in after the flop and more rivers are heads-up — get quartered and you net-lose.",th:"<b>เงินส่วนใหญ่เข้าหลัง flop</b> ใน limit เดิมพันก่อน flop จำนวนมากสร้าง overlay ทำให้ต่อให้โดน quarter ที่ river ก็มักกำไร แต่ใน pot-limit เงินก้อนใหญ่เข้าหลัง flop และ river มักเล่นตัวต่อตัว — โดน quarter แล้วขาดทุนสุทธิ"} },
 
   { hole:"KsKcQsJd", board:"Kh8c4d3d",
-    q:{en:"You flop <b>top set</b> (the high nuts), but the board is low and two-flush, and you're deep with money behind. What's the play?",th:"คุณ flop <b>top set</b> (nut ฝั่ง high) แต่ board เป็นไพ่ต่ำและมีสองดอก (two-flush) และ stack ลึกมีเงินเหลือ จะเล่นยังไง?"},
-    opts:[{en:"Bet for value",th:"Bet เอา value"},{en:"Raise",th:"Raise"},{en:"Check-fold / fold",th:"Check-fold / fold"}], a:2,
-    e:{en:"<b>Fold (or check-fold).</b> 'Sometimes you fold the nuts.' Any low card makes a straight and any diamond a flush — you're freerolled and playing for half at best. Deep with money behind, give it up.",th:"<b>Fold (หรือ check-fold)</b> 'บางครั้งก็ต้อง fold nut' ไพ่ต่ำใบไหนก็ทำ straight ได้ และข้าวหลามตัดใบไหนก็ทำ flush — คุณถูก freeroll และเล่นเพื่อครึ่งเดียวอย่างมาก stack ลึกมีเงินเหลือ ปล่อยไป"} },
+    q:{en:"You have <b>top set</b> (the current high nuts) on a <b>K-8-4-3 board</b> — three low cards, two of them diamonds (so a flush is one card away). You're deep, money behind, and an opponent <b>bets</b>. The play?",th:"คุณถือ <b>top set</b> (nut ฝั่ง high ในตอนนี้) บน <b>board K-8-4-3</b> — มีไพ่ต่ำสามใบ สองใบเป็น diamond (อีกใบเดียวก็เป็น flush) คุณ stack ลึก มีเงินเหลือ และคู่ต่อสู้ <b>bet</b> จะเล่นยังไง?"},
+    opts:[{en:"Fold",th:"Fold"},{en:"Call",th:"Call"},{en:"Raise",th:"Raise"}], a:0,
+    e:{en:"<b>Fold.</b> 'Sometimes you fold the nuts.' You hold the current high nuts, but you're freerolled — any low card makes a low (and a straight), and any diamond makes a flush, so you win half at best while opponents redraw to scoop. Deep with money behind, fold (or check-and-fold).",th:"<b>Fold</b> 'บางครั้งก็ต้อง fold nut' คุณถือ nut ฝั่ง high ในตอนนี้ แต่ถูก freeroll — ไพ่ต่ำใบไหนก็ทำ low (และ straight) ได้ และ diamond ใบไหนก็ทำ flush ได้ คุณจึงชนะแค่ครึ่งเดียวอย่างมาก ขณะที่คู่ต่อสู้ redraw เพื่อ scoop stack ลึกมีเงินเหลือ ก็ fold (หรือ check-and-fold)"} },
 
-  { hole:"JdJh5d4s", board:"7c6s3d",
-    q:{en:"From the big blind you make a straight (7-6-5-4-3) on a low, two-flush flop — but with no redraw. A bet comes. Play?",th:"จาก big blind คุณติด straight (7-6-5-4-3) บน flop ไพ่ต่ำที่มีสองดอก — แต่ไม่มี redraw มี bet มา จะเล่นยังไง?"},
-    opts:[{en:"Bet",th:"Bet"},{en:"Call",th:"Call"},{en:"Fold",th:"Fold"}], a:2,
+  { hole:"JdJh5h4s", board:"7d6s3d",
+    q:{en:"From the big blind you make a straight (7-6-5-4-3) with <b>no redraw</b>, on a low board where two diamonds mean a flush is live. An opponent <b>bets</b>. Play?",th:"จาก big blind คุณติด straight (7-6-5-4-3) แบบ <b>ไม่มี redraw</b> บน board ไพ่ต่ำที่มี diamond สองใบ (flush มีโอกาส) คู่ต่อสู้ <b>bet</b> จะเล่นยังไง?"},
+    opts:[{en:"Fold",th:"Fold"},{en:"Call",th:"Call"},{en:"Raise",th:"Raise"}], a:0,
     e:{en:"<b>Fold.</b> A bare straight with no redraw, a low already possible, and a two-flush board — you're playing for half at best and can be freerolled. A fold here is a no-brainer in Hi/Lo.",th:"<b>Fold</b> straight เปล่าๆ ไม่มี redraw, low เป็นไปได้แล้ว และ board สองดอก — เล่นเพื่อครึ่งเดียวอย่างมากและถูก freeroll ได้ ใน Hi/Lo นี่คือ fold แบบไม่ต้องคิด"} },
 
   { q:{en:"When you are facing action (a bet or raise), you should only draw to...?",th:"เมื่อเจอ action (bet หรือ raise) คุณควร draw ไปหาอะไรเท่านั้น?"},
@@ -319,9 +319,9 @@ const QUIZ = [
     e:{en:"<b>Raise.</b> In late position the raising range widens to any Broadway-wrap or wheel-wrap with a suited ace — even a weak-low hand like A-K-Q-4 suited is a raise, thanks to position and implied odds.",th:"<b>Raise</b> ในตำแหน่งหลัง ช่วงการ raise กว้างขึ้นถึงทุก Broadway-wrap หรือ wheel-wrap ที่มี suited ace — แม้มือ low อ่อนอย่าง A-K-Q-4 suited ก็ raise ได้ ด้วยตำแหน่งและ implied odds"} },
 
   { hole:"As2d4s6s", board:"Ts5c3d",
-    q:{en:"Deep. You flop the <b>nut low + nut flush draw + a wrap</b> (A-2-4-6 on T-5-3). Ideal flop action?",th:"stack ลึก คุณ flop <b>nut low + nut flush draw + wrap</b> (A-2-4-6 บน T-5-3) action บน flop ที่ดีที่สุด?"},
-    opts:[{en:"Check-call",th:"Check-call"},{en:"Fold",th:"Fold"},{en:"Jam / bet big — get it in",th:"Jam / bet ใหญ่ — เอาเงินเข้า"}], a:2,
-    e:{en:"<b>Jam.</b> The lock low with the nut flush draw and a straight draw is a hand you want to get in — you're freerolling for the high and can scoop. These two-way monsters are get-it-in hands.",th:"<b>Jam</b> low ที่ล็อกพร้อม nut flush draw และ straight draw คือมือที่อยากเอาเงินเข้า — คุณ freeroll ฝั่ง high และ scoop ได้ มือสองทางระดับ monster แบบนี้คือมือที่ทุ่มเข้าไป"} },
+    q:{en:"Deep, and it's your action. You flop the <b>nut low + nut flush draw + a wrap</b> (A-2-4-6 on T-5-3). Best flop play?",th:"stack ลึก และถึงตาคุณ คุณ flop <b>nut low + nut flush draw + wrap</b> (A-2-4-6 บน T-5-3) เล่นบน flop ยังไงดีที่สุด?"},
+    opts:[{en:"Check (pot control)",th:"Check (คุม pot)"},{en:"Bet small for protection",th:"Bet เล็กเพื่อ protect"},{en:"Bet big — get it in",th:"Bet ใหญ่ — เอาเงินเข้า"}], a:2,
+    e:{en:"<b>Bet big — get it in.</b> The lock low with the nut flush draw and a straight draw is a hand you want to play fast — you're freerolling for the high and can scoop. These two-way monsters are get-it-in hands, not pot-control hands.",th:"<b>Bet ใหญ่ — เอาเงินเข้า</b> low ที่ล็อกพร้อม nut flush draw และ straight draw คือมือที่ควรเล่นเร็ว — คุณ freeroll ฝั่ง high และ scoop ได้ มือสองทางระดับ monster แบบนี้คือมือที่ทุ่มเข้าไป ไม่ใช่มือไว้คุม pot"} },
 
   { q:{en:"Three low cards are out, you hold top set (bare high) and no low. An opponent bets. Generally you...?",th:"มีไพ่ต่ำสามใบบน board คุณถือ top set (high เปล่าๆ) ไม่มี low คู่ต่อสู้ bet โดยทั่วไปคุณ...?"},
     opts:[{en:"Raise for value",th:"Raise เอา value"},{en:"Call to draw",th:"Call เพื่อ draw"},{en:"Fold / proceed very cautiously",th:"Fold / เล่นระวังมาก"}], a:2,

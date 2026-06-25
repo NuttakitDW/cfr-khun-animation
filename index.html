@@ -225,8 +225,8 @@ footer a:hover { color: var(--accent); }
 
 <main>
   <section class="panel">
-    <h2>Projects</h2>
-    <h3>Pick something to explore</h3>
+    <h2>Poker Trainers</h2>
+    <h3>Drills &amp; quizzes for real-table skills</h3>
 
     <div class="tile-grid">
       <a class="tile" href="/outs-drill">
@@ -243,11 +243,11 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/stack-journey →</span>
       </a>
 
-      <a class="tile" href="/plo-hilo">
+      <a class="tile" href="/plo-starting-hands">
         <span class="label poker">Quiz</span>
-        <p class="name">PLO Hi/Lo Split</p>
-        <p class="desc">24 questions on Pot-Limit Omaha Hi/Lo strategy and starting hands — scoop-or-fold, suited-ace two-way hands, position, "fold the nuts" spots, and which hand values shift from limit. Built on the key concepts from Chapter 9. Bilingual: English / ไทย.</p>
-        <span class="arrow">/plo-hilo →</span>
+        <p class="name">PLO Starting Hands</p>
+        <p class="desc">Classify Pot-Limit Omaha hands as premium, speculative, marginal, or trash, then make preflop decisions in a $2/$5 game — built on Jeff Hwang's "Big Play" framework. Two self-grading quizzes with full explanations, rendered poker cards, and a primer on the four tiers and the structural flaws (danglers, top gaps, non-nut draws) that demote a hand. Bilingual: English / ไทย.</p>
+        <span class="arrow">/plo-starting-hands →</span>
       </a>
 
       <a class="tile" href="/plo-situations">
@@ -257,11 +257,11 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/plo-situations →</span>
       </a>
 
-      <a class="tile" href="/plo-starting-hands">
+      <a class="tile" href="/plo-hilo">
         <span class="label poker">Quiz</span>
-        <p class="name">PLO Starting Hands</p>
-        <p class="desc">Classify Pot-Limit Omaha hands as premium, speculative, marginal, or trash, then make preflop decisions in a $2/$5 game — built on Jeff Hwang's "Big Play" framework. Two self-grading quizzes with full explanations, rendered poker cards, and a primer on the four tiers and the structural flaws (danglers, top gaps, non-nut draws) that demote a hand. Bilingual: English / ไทย.</p>
-        <span class="arrow">/plo-starting-hands →</span>
+        <p class="name">PLO Hi/Lo Split</p>
+        <p class="desc">24 questions on Pot-Limit Omaha Hi/Lo strategy and starting hands — scoop-or-fold, suited-ace two-way hands, position, "fold the nuts" spots, and which hand values shift from limit. Built on the key concepts from Chapter 9. Bilingual: English / ไทย.</p>
+        <span class="arrow">/plo-hilo →</span>
       </a>
 
       <a class="tile" href="/mixed-game-quizzes">
@@ -271,6 +271,22 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/mixed-game-quizzes →</span>
       </a>
 
+      <a class="tile" href="/badugi">
+        <span class="label poker">Poker</span>
+        <p class="name">Badugi Tutorial</p>
+        <p class="desc">Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
+        <span class="arrow">/badugi →</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <section class="panel">
+    <h2>Tabular CFR</h2>
+    <h3>Counterfactual Regret Minimization on Kuhn poker</h3>
+
+    <div class="tile-grid">
       <a class="tile" href="/cfr-simulation">
         <span class="label cfr">CFR</span>
         <p class="name">CFR Simulation</p>
@@ -278,6 +294,50 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/cfr-simulation →</span>
       </a>
 
+      <a class="tile" href="/cfr-plus">
+        <span class="label cfr">CFR+</span>
+        <p class="name">CFR+ on Kuhn Poker</p>
+        <p class="desc">Floor cumulative regret at zero and use weighted strategy averaging — converges roughly an order of magnitude faster than vanilla CFR. Tammelin, 2014.</p>
+        <span class="arrow">/cfr-plus →</span>
+      </a>
+
+      <a class="tile" href="/dcfr">
+        <span class="label cfr">DCFR</span>
+        <p class="name">Discounted CFR</p>
+        <p class="desc">Discount past regret and strategy contributions with α/β/γ weights. The modern default for tabular CFR. Brown &amp; Sandholm, 2019.</p>
+        <span class="arrow">/dcfr →</span>
+      </a>
+
+      <a class="tile" href="/mccfr">
+        <span class="label mccfr">MCCFR</span>
+        <p class="name">External Sampling MCCFR</p>
+        <p class="desc">Sample a single chance outcome per iteration instead of walking all 6 deals. Trades variance for speed. Lanctot et al., 2009.</p>
+        <span class="arrow">/mccfr →</span>
+      </a>
+
+      <a class="tile" href="/mccfr-variants">
+        <span class="label mccfr">Sampling</span>
+        <p class="name">MCCFR Variants</p>
+        <p class="desc">Side-by-side comparison of Chance, External, and Outcome sampling — three ways to sample the tree, one clear winner in practice.</p>
+        <span class="arrow">/mccfr-variants →</span>
+      </a>
+
+      <a class="tile" href="/convergence-metrics">
+        <span class="label metric">Metrics</span>
+        <p class="name">Convergence Metrics</p>
+        <p class="desc">Exploitability, average-strategy distance, and other indicators of how CFR approaches Nash equilibrium.</p>
+        <span class="arrow">/convergence-metrics →</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <section class="panel">
+    <h2>Scaling Up: Leduc Hold&rsquo;em</h2>
+    <h3>From Kuhn toward No-Limit</h3>
+
+    <div class="tile-grid">
       <a class="tile" href="/leduc-cfr">
         <span class="label cfr">Leduc</span>
         <p class="name">Leduc Hold'em — Tabular CFR</p>
@@ -299,55 +359,22 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/leduc-nl-resolver →</span>
       </a>
 
-      <a class="tile" href="/leduc-deepstack">
-        <span class="label deep">DeepStack</span>
-        <p class="name">Leduc DeepStack — Value Network</p>
-        <p class="desc">Train a small MLP to predict round-2 counterfactual values, replacing the blueprint entirely. Compare neural-net predictions against an exact CFR solver. Validates DeepStack-style depth-limited solving at toy scale.</p>
-        <span class="arrow">/leduc-deepstack →</span>
-      </a>
-
       <a class="tile" href="/isomorphism">
         <span class="label deep">Concept</span>
         <p class="name">Card Isomorphism</p>
         <p class="desc">Why suits don't matter (until they do) and how poker solvers exploit suit symmetry for a free 24× speedup. Includes an interactive canonicalizer — type any hand+board and see its equivalence class size live.</p>
         <span class="arrow">/isomorphism →</span>
       </a>
+    </div>
+  </section>
 
-      <a class="tile" href="/cfr-plus">
-        <span class="label cfr">CFR+</span>
-        <p class="name">CFR+ on Kuhn Poker</p>
-        <p class="desc">Floor cumulative regret at zero and use weighted strategy averaging — converges roughly an order of magnitude faster than vanilla CFR. Tammelin, 2014.</p>
-        <span class="arrow">/cfr-plus →</span>
-      </a>
+  <div class="section-spacer"></div>
 
-      <a class="tile" href="/dcfr">
-        <span class="label cfr">DCFR</span>
-        <p class="name">Discounted CFR</p>
-        <p class="desc">Discount past regret and strategy contributions with α/β/γ weights. The modern default for tabular CFR. Brown &amp; Sandholm, 2019.</p>
-        <span class="arrow">/dcfr →</span>
-      </a>
+  <section class="panel">
+    <h2>Neural &amp; Deep CFR</h2>
+    <h3>Replacing the regret table with a network</h3>
 
-      <a class="tile" href="/postflop-solver">
-        <span class="label deep">Engine</span>
-        <p class="name">Inside postflop-solver</p>
-        <p class="desc">Code walk through the open-source Rust NLH solver that the author claims beats PioSOLVER and GTO+. Customized DCFR (α=1.5, β=0, γ=3, with a power-of-4 strategy reset), no card abstraction, SIMD-tuned. ~10k lines.</p>
-        <span class="arrow">/postflop-solver →</span>
-      </a>
-
-      <a class="tile" href="/mccfr">
-        <span class="label mccfr">MCCFR</span>
-        <p class="name">External Sampling MCCFR</p>
-        <p class="desc">Sample a single chance outcome per iteration instead of walking all 6 deals. Trades variance for speed. Lanctot et al., 2009.</p>
-        <span class="arrow">/mccfr →</span>
-      </a>
-
-      <a class="tile" href="/mccfr-variants">
-        <span class="label mccfr">Sampling</span>
-        <p class="name">MCCFR Variants</p>
-        <p class="desc">Side-by-side comparison of Chance, External, and Outcome sampling — three ways to sample the tree, one clear winner in practice.</p>
-        <span class="arrow">/mccfr-variants →</span>
-      </a>
-
+    <div class="tile-grid">
       <a class="tile" href="/deep-cfr-explained">
         <span class="label deep">Concept</span>
         <p class="name">Deep CFR Explained</p>
@@ -362,18 +389,18 @@ footer a:hover { color: var(--accent); }
         <span class="arrow">/deep-cfr →</span>
       </a>
 
-      <a class="tile" href="/convergence-metrics">
-        <span class="label metric">Metrics</span>
-        <p class="name">Convergence Metrics</p>
-        <p class="desc">Exploitability, average-strategy distance, and other indicators of how CFR approaches Nash equilibrium.</p>
-        <span class="arrow">/convergence-metrics →</span>
+      <a class="tile" href="/leduc-deepstack">
+        <span class="label deep">DeepStack</span>
+        <p class="name">Leduc DeepStack — Value Network</p>
+        <p class="desc">Train a small MLP to predict round-2 counterfactual values, replacing the blueprint entirely. Compare neural-net predictions against an exact CFR solver. Validates DeepStack-style depth-limited solving at toy scale.</p>
+        <span class="arrow">/leduc-deepstack →</span>
       </a>
 
-      <a class="tile" href="/badugi">
-        <span class="label poker">Poker</span>
-        <p class="name">Badugi Tutorial</p>
-        <p class="desc">Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
-        <span class="arrow">/badugi →</span>
+      <a class="tile" href="/postflop-solver">
+        <span class="label deep">Engine</span>
+        <p class="name">Inside postflop-solver</p>
+        <p class="desc">Code walk through the open-source Rust NLH solver that the author claims beats PioSOLVER and GTO+. Customized DCFR (α=1.5, β=0, γ=3, with a power-of-4 strategy reset), no card abstraction, SIMD-tuned. ~10k lines.</p>
+        <span class="arrow">/postflop-solver →</span>
       </a>
     </div>
   </section>
