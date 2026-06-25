@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLO Hi/Lo Split Quiz</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg-2: #0f1424; --panel: #131826; --panel-2: #1a2030; --panel-3: #232b3f;
+  --border: #2a3245; --text: #e4e9f2; --muted: #7a8499; --dim: #4a5266;
+  --accent: #5b9eff; --green: #3fdf8e; --red: #ff5e7a; --purple: #bf8cff;
+  --gold: #ffd54a; --orange: #ff8c42; --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%), var(--bg);
+  background-attachment: fixed; color: var(--text); line-height: 1.5; min-height: 100vh;
+}
+header {
+  padding: 18px 28px; border-bottom: 1px solid var(--border); background: rgba(10,14,26,0.72);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.head-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.lang-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.lang-toggle button { font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; background: var(--panel-2); color: var(--muted); border: none; padding: 5px 11px; cursor: pointer; transition: color .14s, background .14s; }
+.lang-toggle button + button { border-left: 1px solid var(--border); }
+.lang-toggle button:hover { color: var(--text); }
+.lang-toggle button.active { background: var(--accent); color: #04122e; }
+header .home { color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
+.content-panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15); overflow: hidden;
+}
+.content-head { padding: 22px 24px 0; border-bottom: 1px solid var(--border); }
+.content-head .eyebrow {
+  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  font-family: "SF Mono", Menlo, monospace; padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
+  background: rgba(63,200,212,0.15); color: var(--cyan);
+}
+.content-head h3 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text); }
+.content-head p.lead { margin: 0 0 16px; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted); border-radius: 8px 8px 0 0; padding: 9px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+.content-body { padding: 24px; }
+.tut-section { margin-bottom: 20px; }
+.tut-section:last-child { margin-bottom: 0; }
+.tut-section h4 { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--accent); }
+.tut-section p { margin: 0 0 8px; font-size: 14px; color: var(--text); line-height: 1.65; }
+.tut-section p b { color: var(--text); }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.callout {
+  display: flex; gap: 11px; align-items: flex-start; background: rgba(91,158,255,0.06);
+  border: 1px solid rgba(91,158,255,0.28); border-radius: 9px; padding: 11px 13px; margin: 10px 0 0;
+}
+.callout .tag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  background: rgba(91,158,255,0.18); color: var(--accent);
+}
+.callout .text { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.callout .text b { color: var(--text); }
+.deal { display: flex; flex-wrap: wrap; gap: 22px; margin: 2px 0 14px; align-items: flex-end; }
+.cg { display: flex; flex-direction: column; gap: 6px; }
+.cglabel { font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--dim); }
+.hand { display: flex; gap: 7px; }
+.card {
+  width: 44px; height: 60px; background: linear-gradient(180deg, #f7f9fd 0%, #e9edf6 100%);
+  border: 1px solid #c4ccdb; border-radius: 7px; box-shadow: 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace; position: relative; flex-shrink: 0;
+}
+.card .rank { font-size: 19px; font-weight: 700; line-height: 1; color: #11151f; }
+.card .suit { font-size: 16px; line-height: 1.1; margin-top: 2px; }
+.card.red .rank, .card.red .suit, .card.red .corner { color: #c8203a; }
+.card.black .rank, .card.black .suit, .card.black .corner { color: #11151f; }
+.card .corner { position: absolute; top: 3px; left: 4px; font-size: 9px; font-weight: 700; line-height: 1; }
+.quiz-wrap { max-width: 740px; }
+.quiz-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.quiz-top .qprog b { color: var(--text); }
+.score-pill { margin-left: auto; font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
+.bar-track { height: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; flex-basis: 100%; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.q-num { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+.q-text { margin: 6px 0 14px; font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.55; }
+.q-text b { color: var(--gold); }
+.opt {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; font: inherit; font-size: 14px;
+  color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px;
+  padding: 13px 15px; margin-bottom: 9px; cursor: pointer; transition: border-color .14s, background .14s, transform .08s;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.opt:disabled { cursor: default; }
+.opt .key { width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center; font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; border-radius: 5px; background: var(--panel-3); color: var(--muted); }
+.opt.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.opt.correct .key { background: var(--green); color: #06210f; }
+.opt.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.opt.wrong .key { background: var(--red); color: #2a0510; }
+.opt.dim { opacity: 0.5; }
+.explain { margin: 4px 0 0; padding: 12px 14px; background: var(--panel-2); border: 1px solid var(--border); border-left-width: 3px; border-radius: 8px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.explain.ok { border-left-color: var(--green); }
+.explain.no { border-left-color: var(--red); }
+.explain b { color: var(--text); }
+.explain .verdict { font-weight: 700; }
+.explain.ok .verdict { color: var(--green); }
+.explain.no .verdict { color: var(--red); }
+.quiz-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn { font: inherit; font-size: 13px; font-weight: 600; border-radius: 8px; padding: 10px 20px; cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); transition: border-color .14s, background .14s, opacity .14s; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #04122e; }
+.btn.primary:hover { background: #74adff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.results { text-align: center; padding: 14px 0; }
+.results .ring { width: 132px; height: 132px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; position: relative; }
+.results .ring .pct { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--text); }
+.results h4 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
+.results p { margin: 0 auto 18px; font-size: 13.5px; color: var(--muted); max-width: 52ch; }
+.results .verdict-pass { color: var(--green); }
+.results .verdict-near { color: var(--gold); }
+.results .verdict-fail { color: var(--red); }
+.review-line { display: flex; align-items: center; gap: 10px; text-align: left; font-size: 12.5px; color: var(--muted); padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 7px; background: var(--panel-2); }
+.review-line .ic { font-family: "SF Mono", Menlo, monospace; font-weight: 700; flex-shrink: 0; }
+.review-line .ic.ok { color: var(--green); }
+.review-line .ic.no { color: var(--red); }
+.review-list { max-width: 640px; margin: 18px auto 0; }
+footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); line-height: 1.7; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+@media (max-width: 560px) { .card { width: 38px; height: 52px; } .card .rank { font-size: 16px; } .head-right { width: 100%; margin-left: 0; } }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<header>
+  <div class="title-row">
+    <h1>PLO Hi/Lo Split</h1>
+    <span class="sub" id="subEl"></span>
+    <div class="head-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="th">ไทย</button>
+      </div>
+      <a class="home" id="homeEl" href="/"></a>
+    </div>
+  </div>
+</header>
+<main>
+  <section class="content-panel">
+    <div class="content-head">
+      <span class="eyebrow">Pot-Limit Omaha Hi/Lo · Chapter 9</span>
+      <h3 id="modeTitle"></h3>
+      <p class="lead" id="modeLead"></p>
+      <nav class="tabs" id="tabNav">
+        <button data-tab="primer" class="active"></button>
+        <button data-tab="quiz"></button>
+      </nav>
+    </div>
+    <div class="content-body" id="contentBody"></div>
+  </section>
+</main>
+<footer id="footerEl"></footer>
+
+<script>
+let LANG = localStorage.getItem('plo_lang') || 'en';
+function L(v){ return (v && typeof v === 'object' && 'en' in v) ? v[LANG] : v; }
+
+const SUIT = { s:'♠', h:'♥', d:'♦', c:'♣' }, RED = new Set(['h','d']);
+function parse(s){ const c=s.replace(/\s+/g,''); const o=[]; for(let i=0;i<c.length;i+=2) o.push([c[i],c[i+1].toLowerCase()]); return o; }
+function renderHand(str){ let h='<div class="hand">'; parse(str).forEach(([r,s])=>{ const red=RED.has(s),g=SUIT[s]; h+=`<div class="card ${red?'red':'black'}"><span class="corner">${r}${g}</span><span class="rank">${r}</span><span class="suit">${g}</span></div>`; }); return h+'</div>'; }
+
+const UI = {
+  sub:{ en:'Strategy and starting-hand drills from Jeff Hwang\'s Chapter 9 on Pot-Limit Omaha Hi/Lo', th:'แบบฝึกกลยุทธ์และมือเริ่มต้นจาก Chapter 9 ของ Jeff Hwang เรื่อง Pot-Limit Omaha Hi/Lo' },
+  home:{ en:'← home', th:'← หน้าแรก' },
+  footer:{ en:'The strategic principles and starting-hand guidance are from Jeff Hwang, <i>Pot-Limit Omaha Poker: The Big Play Strategy</i>, Chapter 9. The questions and explanations here are original.<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.',
+           th:'หลักกลยุทธ์และแนวทางมือเริ่มต้นมาจาก Jeff Hwang, <i>Pot-Limit Omaha Poker: The Big Play Strategy</i>, Chapter 9 ส่วนคำถามและคำอธิบายเป็นต้นฉบับของผมเอง<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> สงวนลิขสิทธิ์' },
+  yourhand:{ en:'Your hand', th:'มือคุณ' },
+  board:{ en:'Board', th:'Board' },
+  score:{ en:'Score', th:'คะแนน' },
+  correct:{ en:'Correct.', th:'ถูกต้อง' },
+  notquite:{ en:'Not quite.', th:'ยังไม่ใช่' },
+  prev:{ en:'← Previous', th:'← ก่อนหน้า' },
+  next:{ en:'Next →', th:'ถัดไป →' },
+  seeRes:{ en:'See results →', th:'ดูผล →' },
+  retake:{ en:'Retake', th:'ทำใหม่' },
+  reviewPrimer:{ en:'Review primer', th:'ทบทวนพื้นฐาน' }
+};
+const TAB = { primer:{ en:'Primer', th:'พื้นฐาน' }, quiz:{ en:'Quiz', th:'แบบทดสอบ' } };
+
+const PRIMER = [
+  { h:{en:"Scoop or fold",th:"Scoop หรือ fold"}, p:[
+    { en:"PLO Hi/Lo is <b>not a sharing game</b>. The goal is to scoop the whole pot — you don't play for the high when a low is out, and you don't play for the low when you can't win the whole thing. Getting <b>quartered</b> in pot-limit is a real net loss, because most of the money goes in after the flop.",
+      th:"PLO Hi/Lo <b>ไม่ใช่เกมแบ่งกัน</b> เป้าหมายคือ scoop ทั้ง pot — ไม่เล่นฝั่ง high เมื่อ low ออก และไม่เล่นฝั่ง low เมื่อชนะทั้ง pot ไม่ได้ การโดน <b>quarter</b> ใน pot-limit คือการขาดทุนสุทธิจริง เพราะเงินส่วนใหญ่เข้าหลัง flop" } ]},
+  { h:{en:"Suited ace + two-way potential",th:"Suited ace + ศักยภาพสองทาง"}, p:[
+    { en:"Almost every hand you play should hold a <b>suited ace</b> — the most valuable component in the game. The best hands win <b>both directions</b>: wheel-wraps with a suited ace (A-2-3-K), Broadway-wraps with a suited ace and a wheel card (A-2-K-Q), and premium AA hands that also have low potential.",
+      th:"เกือบทุกมือที่เล่นควรมี <b>suited ace</b> — องค์ประกอบที่มีค่าที่สุดในเกม มือที่ดีที่สุดชนะ <b>ทั้งสองทาง</b>: wheel-wrap พร้อม suited ace (A-2-3-K), Broadway-wrap พร้อม suited ace และ wheel card (A-2-K-Q), และมือ AA premium ที่มี low potential ด้วย" } ]},
+  { h:{en:"Position is king",th:"ตำแหน่งคือพระราชา"}, p:[
+    { en:"Position matters even more than in PLO high. <b>Last to act</b>, the bare nut low becomes a weapon — when checked to, a full pot-sized bet pressures everyone and scoops uncontested pots. <b>Out of position</b>, stick to premium hands and rarely raise up front.",
+      th:"ตำแหน่งสำคัญยิ่งกว่าใน PLO high <b>เป็นคนสุดท้าย</b> bare nut low กลายเป็นอาวุธ — เมื่อ check มาหา การ bet เต็ม pot กดดันทุกคนและ scoop pot ที่ไม่มีใครสู้ <b>นอกตำแหน่ง</b> เล่นแต่มือ premium และแทบไม่ raise จากตำแหน่งหน้า" } ]},
+  { h:{en:"Only draw to the nuts — and bet the pot",th:"draw ไปหา nut เท่านั้น — และ bet เต็ม pot"}, p:[
+    { en:"When facing action, draw <b>only to the nuts</b>. Don't draw at the bare nut low, and don't draw at the bare high when a low is out. When you bet, it's almost always the <b>full pot</b> — you bet to win the whole thing, not for thin value.",
+      th:"เมื่อเจอ action ให้ draw <b>ไปหา nut เท่านั้น</b> อย่า draw หา bare nut low และอย่า draw หา high เปล่าๆ เมื่อ low ออก เวลา bet ก็แทบจะ <b>เต็ม pot</b> เสมอ — คุณ bet เพื่อชนะทั้ง pot ไม่ใช่เพื่อ value บางๆ" } ]},
+  { h:{en:"Sometimes you fold the nuts",th:"บางครั้งก็ต้อง fold nut"}, p:[
+    { en:"Top set or a naked straight on a low, two-flush board is <b>freerolled</b> — you're playing for half at best while opponents redraw to scoop. Deep with money behind, these are often check-and-fold spots.",
+      th:"top set หรือ straight เปล่าๆ บน board ไพ่ต่ำที่มีสองดอก ถูก <b>freeroll</b> — คุณเล่นเพื่อครึ่งเดียวอย่างมาก ขณะที่คู่ต่อสู้ redraw เพื่อ scoop stack ลึกมีเงินเหลือ จุดพวกนี้มักเป็น check-and-fold" } ]},
+  { h:{en:"Hand values shift from limit",th:"ค่ามือเปลี่ยนจาก limit"}, p:[
+    { en:"<b>AA hands</b> and <b>big pairs with two small cards</b> (K-K-4-3) go UP in value — pot-betting lets you thin the field when you flop a set. <b>High-only hands</b> and <b>middle wraps</b> are suspect: any straight you make also puts a low on the board, so you scoop far less often.",
+      th:"<b>มือ AA</b> และ <b>big pair พร้อมไพ่เล็กสองใบ</b> (K-K-4-3) มีค่า <b>เพิ่มขึ้น</b> — การ pot-bet ช่วยไล่คนออกเมื่อ flop set ส่วน <b>มือ high อย่างเดียว</b> และ <b>middle wrap</b> น่าสงสัย: straight ที่คุณติดก็ทำให้เกิด low บน board ด้วย จึง scoop ได้น้อยลงมาก" } ],
+    callout:{ tag:{en:'source',th:'ที่มา'}, text:{
+      en:"These principles are from Hwang's Chapter 9 on PLO Hi/Lo. The quiz questions and explanations are written here originally to drill them.",
+      th:"หลักการเหล่านี้มาจาก Chapter 9 ของ Hwang เรื่อง PLO Hi/Lo ส่วนคำถามและคำอธิบายในแบบทดสอบเขียนขึ้นเองเพื่อฝึกหลักการนั้น" } } }
+];
+
+const QUIZ = [
+  { q:{en:"What is the primary objective in PLO Hi/Lo?",th:"เป้าหมายหลักของ PLO Hi/Lo คืออะไร?"},
+    opts:[{en:"Win the low half safely",th:"เก็บ low half ให้ปลอดภัย"},{en:"Scoop the whole pot",th:"Scoop ทั้ง pot"},{en:"Avoid getting quartered",th:"เลี่ยงการโดน quarter"},{en:"Always make the nut low",th:"ทำ nut low ให้ได้เสมอ"}], a:1,
+    e:{en:"<b>Scoop the whole pot.</b> The whole approach is built around scooping — winning entire pots, and ultimately entire stacks — not settling for half.",th:"<b>Scoop ทั้ง pot</b> แนวทางทั้งหมดสร้างขึ้นรอบการ scoop — ชนะทั้ง pot และสุดท้ายคือทั้ง stack — ไม่ใช่พอใจแค่ครึ่งเดียว"} },
+
+  { q:{en:"Why is getting 'quartered' far more costly in pot-limit than in limit Hi/Lo?",th:"ทำไมการโดน 'quarter' ถึงแพงกว่ามากใน pot-limit เทียบกับ limit Hi/Lo?"},
+    opts:[{en:"The blinds are bigger",th:"blind ใหญ่กว่า"},{en:"Most of the money goes in after the flop",th:"เงินส่วนใหญ่เข้า pot หลัง flop"},{en:"You can't fold for half",th:"fold เอาครึ่งไม่ได้"},{en:"There are antes",th:"มี ante"}], a:1,
+    e:{en:"<b>Most money goes in post-flop.</b> In limit, the many pre-flop bets create an overlay, so even a quartered river often profits. In pot-limit the big money goes in after the flop and more rivers are heads-up — get quartered and you net-lose.",th:"<b>เงินส่วนใหญ่เข้าหลัง flop</b> ใน limit เดิมพันก่อน flop จำนวนมากสร้าง overlay ทำให้ต่อให้โดน quarter ที่ river ก็มักกำไร แต่ใน pot-limit เงินก้อนใหญ่เข้าหลัง flop และ river มักเล่นตัวต่อตัว — โดน quarter แล้วขาดทุนสุทธิ"} },
+
+  { hole:"KsKcQsJd", board:"Kh8c4d3d",
+    q:{en:"You flop <b>top set</b> (the high nuts), but the board is low and two-flush, and you're deep with money behind. What's the play?",th:"คุณ flop <b>top set</b> (nut ฝั่ง high) แต่ board เป็นไพ่ต่ำและมีสองดอก (two-flush) และ stack ลึกมีเงินเหลือ จะเล่นยังไง?"},
+    opts:[{en:"Bet for value",th:"Bet เอา value"},{en:"Raise",th:"Raise"},{en:"Check-fold / fold",th:"Check-fold / fold"}], a:2,
+    e:{en:"<b>Fold (or check-fold).</b> 'Sometimes you fold the nuts.' Any low card makes a straight and any diamond a flush — you're freerolled and playing for half at best. Deep with money behind, give it up.",th:"<b>Fold (หรือ check-fold)</b> 'บางครั้งก็ต้อง fold nut' ไพ่ต่ำใบไหนก็ทำ straight ได้ และข้าวหลามตัดใบไหนก็ทำ flush — คุณถูก freeroll และเล่นเพื่อครึ่งเดียวอย่างมาก stack ลึกมีเงินเหลือ ปล่อยไป"} },
+
+  { hole:"JdJh5d4s", board:"7c6s3d",
+    q:{en:"From the big blind you make a straight (7-6-5-4-3) on a low, two-flush flop — but with no redraw. A bet comes. Play?",th:"จาก big blind คุณติด straight (7-6-5-4-3) บน flop ไพ่ต่ำที่มีสองดอก — แต่ไม่มี redraw มี bet มา จะเล่นยังไง?"},
+    opts:[{en:"Bet",th:"Bet"},{en:"Call",th:"Call"},{en:"Fold",th:"Fold"}], a:2,
+    e:{en:"<b>Fold.</b> A bare straight with no redraw, a low already possible, and a two-flush board — you're playing for half at best and can be freerolled. A fold here is a no-brainer in Hi/Lo.",th:"<b>Fold</b> straight เปล่าๆ ไม่มี redraw, low เป็นไปได้แล้ว และ board สองดอก — เล่นเพื่อครึ่งเดียวอย่างมากและถูก freeroll ได้ ใน Hi/Lo นี่คือ fold แบบไม่ต้องคิด"} },
+
+  { q:{en:"When you are facing action (a bet or raise), you should only draw to...?",th:"เมื่อเจอ action (bet หรือ raise) คุณควร draw ไปหาอะไรเท่านั้น?"},
+    opts:[{en:"Any flush",th:"flush อะไรก็ได้"},{en:"The nuts",th:"nut"},{en:"The low",th:"low"},{en:"Top pair",th:"top pair"}], a:1,
+    e:{en:"<b>The nuts.</b> Drawing to non-nut hands costs money in any Omaha; in Hi/Lo, chasing a non-nut low or non-nut flush into action bleeds your stack.",th:"<b>nut</b> การ draw ไปหามือที่ไม่ใช่ nut เสียเงินใน Omaha ทุกแบบ; ใน Hi/Lo การไล่ non-nut low หรือ non-nut flush เมื่อเจอ action ทำให้เสีย stack"} },
+
+  { q:{en:"Why is a <b>bare nut low</b> (no high, no redraw) a weak holding against a bet?",th:"ทำไม <b>bare nut low</b> (ไม่มี high ไม่มี redraw) ถึงเป็นมืออ่อนเมื่อเจอ bet?"},
+    opts:[{en:"It can't make a straight",th:"ทำ straight ไม่ได้"},{en:"You play for half at best and risk getting quartered",th:"เล่นเพื่อครึ่งเดียวอย่างมากและเสี่ยงโดน quarter"},{en:"It isn't really the nuts",th:"จริงๆ ไม่ใช่ nut"},{en:"Aces always beat it",th:"aces ชนะเสมอ"}], a:1,
+    e:{en:"<b>Half + quartered risk.</b> A bare nut low plays for half the pot at best, and getting quartered in pot-limit is costly. Don't draw at it, and don't bet it into a field.",th:"<b>ครึ่งเดียว + เสี่ยง quarter</b> bare nut low เล่นเพื่อครึ่ง pot อย่างมาก และการโดน quarter ใน pot-limit แพง อย่า draw หามัน และอย่า bet มันใส่ field"} },
+
+  { q:{en:"In which spot is the bare nut low actually a <b>powerful weapon</b>?",th:"ในจุดไหนที่ bare nut low กลายเป็น <b>อาวุธทรงพลัง</b>?"},
+    opts:[{en:"Out of position into the field",th:"นอกตำแหน่งใส่ field"},{en:"When checked to you and last to act",th:"เมื่อ check มาหาคุณและคุณเป็นคนสุดท้าย"},{en:"On a paired board",th:"บน board ที่มี pair"},{en:"Heads-up all-in",th:"ตัวต่อตัว all-in"}], a:1,
+    e:{en:"<b>Checked to you, last to act.</b> With everyone checking, a full pot-sized bet pressures weak hands — nobody can comfortably call, and the ambiguity (are you betting high or low?) lets you scoop uncontested pots.",th:"<b>Check มาหาคุณ และเป็นคนสุดท้าย</b> เมื่อทุกคน check การ bet เต็ม pot กดดันมืออ่อน — ไม่มีใคร call ได้สบายใจ และความกำกวม (คุณ bet high หรือ low?) ทำให้คุณ scoop pot ที่ไม่มีใครสู้"} },
+
+  { q:{en:"When you do bet, what size is almost always correct in PLO Hi/Lo?",th:"เมื่อคุณ bet ขนาดไหนที่แทบจะถูกเสมอใน PLO Hi/Lo?"},
+    opts:[{en:"A small value bet",th:"bet value เล็กๆ"},{en:"Half pot",th:"ครึ่ง pot"},{en:"The full size of the pot",th:"เต็ม pot"},{en:"A min-bet",th:"bet ขั้นต่ำ"}], a:2,
+    e:{en:"<b>Full pot.</b> It's rarely correct to bet less than the pot — you bet the nut low to win the whole pot, not for thin value, so you make it a full pot-sized bet.",th:"<b>เต็ม pot</b> แทบไม่มีครั้งไหนที่ควร bet น้อยกว่าเต็ม pot — คุณ bet nut low เพื่อชนะทั้ง pot ไม่ใช่เพื่อ value บางๆ จึง bet เต็ม pot"} },
+
+  { q:{en:"Three low cards flop. You have no low, only the bare nut-flush draw (high only). It's bet to you. Play?",th:"flop ไพ่ต่ำสามใบ คุณไม่มี low มีแค่ bare nut-flush draw (high อย่างเดียว) มี bet มาหาคุณ จะเล่นยังไง?"},
+    opts:[{en:"Raise",th:"Raise"},{en:"Call and draw to the flush",th:"Call แล้ว draw flush"},{en:"Fold — don't draw",th:"Fold — อย่า draw"}], a:2,
+    e:{en:"<b>Fold — don't draw.</b> With three low cards out and no low yourself, you're likely freerolled and playing for half. Don't draw at the bare high (even the nut flush) when a low is out and you have none.",th:"<b>Fold — อย่า draw</b> เมื่อมีไพ่ต่ำสามใบและคุณไม่มี low คุณมักถูก freeroll และเล่นเพื่อครึ่งเดียว อย่า draw หา high เปล่าๆ (แม้แต่ nut flush) เมื่อ low ออกแล้วและคุณไม่มี"} },
+
+  { q:{en:"Which card is 'the most valuable component' of a good PLO Hi/Lo hand?",th:"ไพ่ใบไหนที่เป็น 'องค์ประกอบที่มีค่าที่สุด' ของมือ PLO Hi/Lo ที่ดี?"},
+    opts:[{en:"A suited king",th:"suited king"},{en:"A suited ace",th:"suited ace"},{en:"A deuce",th:"เลข 2"},{en:"A pair",th:"pair"}], a:1,
+    e:{en:"<b>A suited ace.</b> Almost every hand you play should contain one — it's the nut-flush component and it pairs with the nut-low cards. All premium Hi/Lo hands have a suited ace.",th:"<b>suited ace</b> เกือบทุกมือที่คุณเล่นควรมี — เป็นองค์ประกอบของ nut flush และเข้าคู่กับไพ่ nut low ทุกมือ premium Hi/Lo มี suited ace"} },
+
+  { q:{en:"Which hand type makes the BEST two-way / big-pot hands?",th:"มือประเภทไหนเป็นมือสองทาง / big-pot ที่ดีที่สุด?"},
+    opts:[{en:"Middle rundowns",th:"middle rundown"},{en:"Wheel-wrap & Broadway-wrap hands with a suited ace",th:"wheel-wrap และ Broadway-wrap พร้อม suited ace"},{en:"High-only AA",th:"AA high อย่างเดียว"},{en:"Bare nut-low draws",th:"bare nut-low draw"}], a:1,
+    e:{en:"<b>Wheel-wraps / Broadway-wraps with a suited ace.</b> A-2-3-K or A-2-K-Q (suited ace, wheel card) can scoop both ways — the best big-play hands in the game.",th:"<b>Wheel-wrap / Broadway-wrap พร้อม suited ace</b> A-2-3-K หรือ A-2-K-Q (suited ace + wheel card) scoop ได้ทั้งสองทาง — มือ big-play ที่ดีที่สุดในเกม"} },
+
+  { q:{en:"'Middle wraps are still trash.' Why is 8-7-5-3 on a J-6-4 flop bad in Hi/Lo (though great in PLO high)?",th:"'middle wrap ยังเป็น trash' ทำไม 8-7-5-3 บน flop J-6-4 ถึงแย่ใน Hi/Lo (ทั้งที่เยี่ยมใน PLO high)?"},
+    opts:[{en:"No flush draw",th:"ไม่มี flush draw"},{en:"Any straight you make also puts a low on the board — you split at best",th:"straight ที่คุณติดก็ทำให้เกิด low บน board — ได้แค่ split อย่างดี"},{en:"It isn't a real wrap",th:"ไม่ใช่ wrap จริง"},{en:"Aces are out",th:"aces ออกไปแล้ว"}], a:1,
+    e:{en:"<b>Your straight also completes a low.</b> Every card that fills your wrap also makes a low, so you draw to half the pot at best — and a two-suited board can even lose you the whole pot to a flush.",th:"<b>straight ของคุณก็เติม low</b> ทุกใบที่เติม wrap ก็ทำ low ด้วย คุณจึง draw เพื่อครึ่ง pot อย่างดี — และ board สองดอกอาจทำให้เสียทั้ง pot ให้ flush"} },
+
+  { q:{en:"From <b>early position</b>, you play few hands — and they should all contain...?",th:"จาก <b>ตำแหน่งหน้า</b> คุณเล่นมือน้อย — และทุกมือควรมี...?"},
+    opts:[{en:"A pair",th:"pair"},{en:"A suited ace",th:"suited ace"},{en:"A king",th:"king"},{en:"Two Broadway cards",th:"ไพ่ Broadway สองใบ"}], a:1,
+    e:{en:"<b>A suited ace.</b> Out of position the disadvantage is large, so stick to premium hands — all containing at least a suited ace — and rarely raise from up front.",th:"<b>suited ace</b> นอกตำแหน่งเสียเปรียบมาก จึงเล่นแต่มือ premium — ทุกมือมี suited ace อย่างน้อย — และแทบไม่ raise จากตำแหน่งหน้า"} },
+
+  { q:{en:"Why avoid habitually <b>raising</b> premium low hands (like A-2-3-x) from early position?",th:"ทำไมควรเลี่ยงการ <b>raise</b> มือ low premium (เช่น A-2-3-x) จากตำแหน่งหน้าเป็นนิสัย?"},
+    opts:[{en:"They're weak hands",th:"เป็นมืออ่อน"},{en:"Premium lows hold three low cards, so you less often flop a hand you can comfortably bet out of position",th:"low premium มีไพ่ต่ำสามใบ จึงไม่ค่อย flop มือที่ bet ได้สบายนอกตำแหน่ง"},{en:"Aces beat them",th:"aces ชนะมัน"},{en:"They can't flush",th:"ทำ flush ไม่ได้"}], a:1,
+    e:{en:"<b>Three low cards → hard to flop a bettable hand OOP.</b> It's hard to bet a bare low into a field, and a premium low holds three low cards, so you rarely flop something you can comfortably bet up front. The exception is A-A-2-x with a suited ace.",th:"<b>ไพ่ต่ำสามใบ → flop มือที่ bet ได้ยากเมื่อนอกตำแหน่ง</b> การ bet bare low ใส่ field ยาก และ low premium มีไพ่ต่ำสามใบ จึงไม่ค่อย flop มือที่ bet ได้สบายจากตำแหน่งหน้า ข้อยกเว้นคือ A-A-2-x ที่มี suited ace"} },
+
+  { q:{en:"Compared with limit Omaha Hi/Lo, <b>premium AA hands</b> in PLO Hi/Lo are...?",th:"เทียบกับ limit Omaha Hi/Lo มือ <b>AA premium</b> ใน PLO Hi/Lo เป็นยังไง?"},
+    opts:[{en:"Weaker",th:"อ่อนกว่า"},{en:"About the same",th:"พอๆ กัน"},{en:"Even stronger",th:"แข็งกว่าอีก"},{en:"Unplayable",th:"เล่นไม่ได้"}], a:2,
+    e:{en:"<b>Even stronger.</b> Every premium Hi/Lo hand contains an ace, so all are dominated by AA — and AA with low potential is rarely far behind. AA plays much stronger here than in PLO high.",th:"<b>แข็งกว่าอีก</b> ทุกมือ premium Hi/Lo มี ace ดังนั้นทุกมือถูก AA ครอบงำ — และ AA ที่มี low potential แทบไม่เป็นรองมาก AA เล่นแข็งกว่าใน PLO high มาก"} },
+
+  { q:{en:"A 'big pair with two small cards' like K-K-4-3 — how does its value change going to PLO Hi/Lo?",th:"'big pair พร้อมไพ่เล็กสองใบ' อย่าง K-K-4-3 — ค่าของมันเปลี่ยนยังไงเมื่อมาเล่น PLO Hi/Lo?"},
+    opts:[{en:"Drops to trash",th:"ตกเป็น trash"},{en:"Increases — you can pot-bet to thin the field when you flop a set",th:"เพิ่มขึ้น — pot-bet ไล่คนออกได้เมื่อ flop set"},{en:"No change",th:"ไม่เปลี่ยน"},{en:"Only good heads-up",th:"ดีแค่ตัวต่อตัว"}], a:1,
+    e:{en:"<b>Increases.</b> Near-trash in the limit game, but in PLO Hi/Lo (especially late) you can pot-bet to thin the field when you flop a set, and the weak low gains value heads-up.",th:"<b>เพิ่มขึ้น</b> เกือบ trash ในเกม limit แต่ใน PLO Hi/Lo (โดยเฉพาะตำแหน่งหลัง) คุณ pot-bet ไล่คนออกได้เมื่อ flop set และ low อ่อนๆ มีค่าขึ้นเมื่อเล่นตัวต่อตัว"} },
+
+  { hole:"As2d3hKs",
+    q:{en:"<b>Early position.</b> A-2-3-K with a suited ace (a wheel-wrap). Is it playable from up front?",th:"<b>ตำแหน่งหน้า</b> A-2-3-K พร้อม suited ace (wheel-wrap) เล่นจากตำแหน่งหน้าได้ไหม?"},
+    opts:[{en:"Fold it",th:"Fold"},{en:"Playable (limp) — a premium two-way hand",th:"เล่นได้ (limp) — มือสองทาง premium"},{en:"Only on the button",th:"เฉพาะบนปุ่ม"}], a:1,
+    e:{en:"<b>Playable.</b> A-2-3-K with a suited ace is a premium wheel-wrap that can flop the nut-low draw and also make the high — exactly the two-way hand you can play even up front.",th:"<b>เล่นได้</b> A-2-3-K พร้อม suited ace เป็น wheel-wrap premium ที่ flop nut-low draw ได้และทำ high ได้ด้วย — เป็นมือสองทางที่เล่นจากตำแหน่งหน้าได้"} },
+
+  { hole:"AsAh8c7d",
+    q:{en:"A-A-8-7 (no real low — essentially a one-way hand). Best play?",th:"A-A-8-7 (ไม่มี low จริง เป็นมือทางเดียว) เล่นยังไงดีที่สุด?"},
+    opts:[{en:"Raise from any position",th:"Raise จากทุกตำแหน่ง"},{en:"Limp and play strong",th:"Limp แล้วเล่นแรง"},{en:"Fold",th:"Fold"}], a:2,
+    e:{en:"<b>Fold.</b> Unsuited AA with no low potential is trash here — a one-way hand that gets freerolled when an ace flops. A-A-8-7 (even suited) should be folded.",th:"<b>Fold</b> AA ที่ไม่มี low potential เป็น trash ที่นี่ — มือทางเดียวที่ถูก freeroll เมื่อ ace ลง flop A-A-8-7 (แม้ suited) ควร fold"} },
+
+  { hole:"AcAdJcTd",
+    q:{en:"A-A-J-T double-suited — a monster high-only AA. Best play from early position?",th:"A-A-J-T double-suited — AA high อย่างเดียวระดับ monster เล่นยังไงจากตำแหน่งหน้า?"},
+    opts:[{en:"Fold",th:"Fold"},{en:"Limp",th:"Limp"},{en:"Pot-raise to isolate",th:"Pot-raise เพื่อ isolate"}], a:1,
+    e:{en:"<b>Limp.</b> It's a monster, but with no low it's still one-way — limp it rather than raising and announcing you hold aces with no low.",th:"<b>Limp</b> เป็น monster แต่ไม่มี low ก็ยังเป็นมือทางเดียว — limp แทนที่จะ raise แล้วประกาศว่าถือ aces ที่ไม่มี low"} },
+
+  { q:{en:"Which is the STRONGEST premium AA hand for Hi/Lo?",th:"มือ AA premium ไหนแข็งที่สุดสำหรับ Hi/Lo?"},
+    opts:[{en:"A-A-8-7",th:"A-A-8-7"},{en:"A-A-J-6",th:"A-A-J-6"},{en:"A-A-2-3 with a suited ace",th:"A-A-2-3 พร้อม suited ace"},{en:"A-A-Q-J",th:"A-A-Q-J"}], a:2,
+    e:{en:"<b>A-A-2-3 suited.</b> The best AA hands win both ways — A-A-2-3 can flop a set of aces with a low draw, or a strong low with an overpair. Low potential is what makes a premium AA.",th:"<b>A-A-2-3 suited</b> AA ที่ดีที่สุดชนะได้สองทาง — A-A-2-3 flop set ของ aces พร้อม low draw หรือ low ที่แข็งพร้อม overpair ได้ low potential คือสิ่งที่ทำให้ AA เป็น premium"} },
+
+  { hole:"As4cKhQs",
+    q:{en:"<b>Late position</b>, folded to you: A-K-Q-4 with a suited ace (Broadway wrap, weak low). Play?",th:"<b>ตำแหน่งหลัง</b> fold มาหาคุณ: A-K-Q-4 พร้อม suited ace (Broadway wrap, low อ่อน) จะเล่นยังไง?"},
+    opts:[{en:"Fold",th:"Fold"},{en:"Raise",th:"Raise"},{en:"Check it down",th:"Check ยันจบ"}], a:1,
+    e:{en:"<b>Raise.</b> In late position the raising range widens to any Broadway-wrap or wheel-wrap with a suited ace — even a weak-low hand like A-K-Q-4 suited is a raise, thanks to position and implied odds.",th:"<b>Raise</b> ในตำแหน่งหลัง ช่วงการ raise กว้างขึ้นถึงทุก Broadway-wrap หรือ wheel-wrap ที่มี suited ace — แม้มือ low อ่อนอย่าง A-K-Q-4 suited ก็ raise ได้ ด้วยตำแหน่งและ implied odds"} },
+
+  { hole:"As2d4s6s", board:"Ts5c3d",
+    q:{en:"Deep. You flop the <b>nut low + nut flush draw + a wrap</b> (A-2-4-6 on T-5-3). Ideal flop action?",th:"stack ลึก คุณ flop <b>nut low + nut flush draw + wrap</b> (A-2-4-6 บน T-5-3) action บน flop ที่ดีที่สุด?"},
+    opts:[{en:"Check-call",th:"Check-call"},{en:"Fold",th:"Fold"},{en:"Jam / bet big — get it in",th:"Jam / bet ใหญ่ — เอาเงินเข้า"}], a:2,
+    e:{en:"<b>Jam.</b> The lock low with the nut flush draw and a straight draw is a hand you want to get in — you're freerolling for the high and can scoop. These two-way monsters are get-it-in hands.",th:"<b>Jam</b> low ที่ล็อกพร้อม nut flush draw และ straight draw คือมือที่อยากเอาเงินเข้า — คุณ freeroll ฝั่ง high และ scoop ได้ มือสองทางระดับ monster แบบนี้คือมือที่ทุ่มเข้าไป"} },
+
+  { q:{en:"Three low cards are out, you hold top set (bare high) and no low. An opponent bets. Generally you...?",th:"มีไพ่ต่ำสามใบบน board คุณถือ top set (high เปล่าๆ) ไม่มี low คู่ต่อสู้ bet โดยทั่วไปคุณ...?"},
+    opts:[{en:"Raise for value",th:"Raise เอา value"},{en:"Call to draw",th:"Call เพื่อ draw"},{en:"Fold / proceed very cautiously",th:"Fold / เล่นระวังมาก"}], a:2,
+    e:{en:"<b>Fold / caution.</b> With three low cards out and no low of your own, a high-only hand is freerolled and plays for half at best — the 'fold the nuts' idea applies. Don't stack off.",th:"<b>Fold / ระวัง</b> เมื่อมีไพ่ต่ำสามใบและคุณไม่มี low มือ high อย่างเดียวถูก freeroll และเล่นเพื่อครึ่งเดียวอย่างดี — หลัก 'fold nut' ใช้ได้ที่นี่ อย่าทุ่มหมด"} },
+
+  { q:{en:"From early position, which is NOT one of the four playable hand types?",th:"จากตำแหน่งหน้า อันไหน NOT ใช่หนึ่งในสี่ประเภทมือที่เล่นได้?"},
+    opts:[{en:"Wheel-wrap with a suited ace",th:"Wheel-wrap พร้อม suited ace"},{en:"Broadway-wrap with a suited ace + wheel card",th:"Broadway-wrap พร้อม suited ace + wheel card"},{en:"A bare middle rundown like 8-7-6-5",th:"middle rundown เปล่าๆ อย่าง 8-7-6-5"},{en:"Big pair with a suited ace + wheel card",th:"big pair พร้อม suited ace + wheel card"}], a:2,
+    e:{en:"<b>A bare middle rundown.</b> The four up-front types are wheel-wraps, Broadway-wraps with a suited ace + wheel card, big pairs with a suited ace + wheel card, and premium two-way AA. A middle rundown with no ace or low is exactly what you avoid.",th:"<b>middle rundown เปล่าๆ</b> สี่ประเภทจากตำแหน่งหน้าคือ wheel-wrap, Broadway-wrap พร้อม suited ace + wheel card, big pair พร้อม suited ace + wheel card และ AA สองทาง premium ส่วน middle rundown ที่ไม่มี ace หรือ low คือสิ่งที่ต้องเลี่ยง"} }
+];
+
+const bodyEl=document.getElementById('contentBody'), titleEl=document.getElementById('modeTitle'),
+      leadEl=document.getElementById('modeLead'), subEl=document.getElementById('subEl'),
+      homeEl=document.getElementById('homeEl'), footerEl=document.getElementById('footerEl'),
+      tabBtns=[...document.querySelectorAll('#tabNav button')], langBtns=[...document.querySelectorAll('#langToggle button')];
+const MODES = {
+  primer:{ title:TAB.primer, lead:{en:"The core ideas that make PLO Hi/Lo different — scoop-or-fold, two-way hands, position, and which hand values shift.",th:"แนวคิดหลักที่ทำให้ PLO Hi/Lo ต่างออกไป — scoop หรือ fold, มือสองทาง, ตำแหน่ง และค่ามือที่เปลี่ยนไป"} },
+  quiz:{ title:TAB.quiz, lead:{en:"24 questions on Hi/Lo strategy and starting hands. Read the question, pick the play.",th:"24 ข้อ เรื่องกลยุทธ์และมือเริ่มต้นของ Hi/Lo อ่านคำถามแล้วเลือกคำตอบ"} }
+};
+let currentTab='primer'; const quizState={ idx:0, answers:[], done:false };
+
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  subEl.textContent=L(UI.sub); homeEl.textContent=L(UI.home); footerEl.innerHTML=L(UI.footer);
+  langBtns.forEach(b=>b.classList.toggle('active', b.dataset.lang===LANG));
+  tabBtns.forEach(b=>b.textContent=L(TAB[b.dataset.tab]));
+}
+function syncHead(){ titleEl.textContent=L(MODES[currentTab].title); leadEl.textContent=L(MODES[currentTab].lead); }
+function setLang(l){ LANG=l; localStorage.setItem('plo_lang',l); applyStatic(); syncHead(); render(); }
+langBtns.forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+function setTab(t){ currentTab=t; tabBtns.forEach(b=>b.classList.toggle('active', b.dataset.tab===t)); syncHead(); render(); }
+tabBtns.forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+function render(){ currentTab==='primer'?renderPrimer():renderQuiz(); }
+
+function renderPrimer(){
+  let html='';
+  PRIMER.forEach(sec=>{
+    html+=`<div class="tut-section"><h4>${L(sec.h)}</h4>`;
+    if(sec.p) sec.p.forEach(p=>html+=`<p>${L(p)}</p>`);
+    if(sec.callout){ const c=sec.callout; html+=`<div class="callout"><span class="tag">${L(c.tag)}</span><span class="text">${L(c.text)}</span></div>`; }
+    html+='</div>';
+  });
+  bodyEl.innerHTML=html;
+}
+
+function renderQuiz(){
+  const qs=QUIZ, st=quizState;
+  if(st.done){ renderResults(); return; }
+  const item=qs[st.idx], opts=item.opts;
+  const answered=st.answers[st.idx]!=null;
+  const score=st.answers.filter((a,i)=>a===qs[i].a).length;
+  const pct=Math.round(st.idx/qs.length*100);
+  const qof = LANG==='th' ? `ข้อ <b>${st.idx+1}</b> จาก ${qs.length}` : `Question <b>${st.idx+1}</b> of ${qs.length}`;
+
+  let html=`<div class="quiz-wrap">
+    <div class="quiz-top">
+      <span class="qprog">${qof}</span>
+      <span class="score-pill">${L(UI.score)} ${score}/${st.answers.filter(a=>a!=null).length}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-num">Q${st.idx+1}</div>`;
+  if(item.hole){
+    html+=`<div class="deal"><div class="cg"><span class="cglabel">${L(UI.yourhand)}</span>${renderHand(item.hole)}</div>`;
+    if(item.board) html+=`<div class="cg"><span class="cglabel">${L(UI.board)}</span>${renderHand(item.board)}</div>`;
+    html+=`</div>`;
+  }
+  html+=`<div class="q-text">${L(item.q)}</div>`;
+
+  const keys=['A','B','C','D','E'];
+  opts.forEach((opt,i)=>{
+    let cls='opt';
+    if(answered){ if(i===item.a) cls+=' correct'; else if(i===st.answers[st.idx]) cls+=' wrong'; else cls+=' dim'; }
+    html+=`<button class="${cls}" data-opt="${i}" ${answered?'disabled':''}><span class="key">${keys[i]}</span><span>${L(opt)}</span></button>`;
+  });
+  if(answered){
+    const ok=st.answers[st.idx]===item.a;
+    html+=`<div class="explain ${ok?'ok':'no'}"><span class="verdict">${ok?L(UI.correct):L(UI.notquite)}</span> ${L(item.e)}</div>`;
+  }
+  html+=`<div class="quiz-actions">`;
+  if(st.idx>0) html+=`<button class="btn" data-act="prev">${L(UI.prev)}</button>`;
+  if(answered) html+= st.idx<qs.length-1 ? `<button class="btn primary" data-act="next">${L(UI.next)}</button>` : `<button class="btn primary" data-act="finish">${L(UI.seeRes)}</button>`;
+  html+=`</div></div>`;
+  bodyEl.innerHTML=html;
+
+  bodyEl.querySelectorAll('.opt:not(:disabled)').forEach(b=>b.addEventListener('click',()=>{ st.answers[st.idx]=+b.dataset.opt; renderQuiz(); }));
+  bodyEl.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>{
+    const a=b.dataset.act; if(a==='next') st.idx++; else if(a==='prev') st.idx--; else if(a==='finish') st.done=true; renderQuiz();
+  }));
+}
+
+const VERD = {
+  pass:{ vc:'verdict-pass', ring:'var(--green)', label:{en:'Scoop master',th:'เซียน scoop'},
+    msg:{en:"You think two-way, fold the second-best, and respect the quartering math — that's winning Hi/Lo.",th:"คุณคิดแบบสองทาง, fold มืออันดับสอง และเคารพคณิตศาสตร์ของการ quarter — นี่คือ Hi/Lo ที่ชนะ"} },
+  near:{ vc:'verdict-near', ring:'var(--gold)', label:{en:'Getting there',th:'ใกล้แล้ว'},
+    msg:{en:"Close. The leaks are usually playing one-way hands too hard or drawing at non-nut/bare-low — review the misses.",th:"ใกล้แล้ว จุดรั่วมักเป็นการเล่นมือทางเดียวแรงไป หรือ draw หา non-nut/bare-low — ทบทวนข้อที่พลาด"} },
+  fail:{ vc:'verdict-fail', ring:'var(--red)', label:{en:'Back to the primer',th:'กลับไปอ่านพื้นฐาน'},
+    msg:{en:"Re-read the primer: scoop or fold, suited ace + two-way, only draw to the nuts.",th:"อ่านพื้นฐานอีกรอบ: scoop หรือ fold, suited ace + สองทาง, draw ไปหา nut เท่านั้น"} }
+};
+function renderResults(){
+  const qs=QUIZ, st=quizState;
+  const score=st.answers.filter((a,i)=>a===qs[i].a).length;
+  const pct=Math.round(score/qs.length*100);
+  const v= pct>=80?VERD.pass : pct>=60?VERD.near : VERD.fail;
+  const line = LANG==='th'
+    ? `คุณได้ <b style="color:var(--text)">${score} / ${qs.length}</b> ${L(v.msg)}`
+    : `You scored <b style="color:var(--text)">${score} / ${qs.length}</b>. ${L(v.msg)}`;
+  let html=`<div class="results">
+    <div class="ring" style="background:conic-gradient(${v.ring} ${pct*3.6}deg, var(--panel-3) 0)">
+      <div style="position:absolute;inset:9px;border-radius:50%;background:var(--panel);display:grid;place-items:center"><span class="pct">${pct}%</span></div>
+    </div>
+    <h4 class="${v.vc}">${L(v.label)}</h4>
+    <p>${line}</p>
+    <div class="review-list">`;
+  qs.forEach((item,i)=>{
+    const ok=st.answers[i]===item.a;
+    html+=`<div class="review-line"><span class="ic ${ok?'ok':'no'}">${ok?'✓':'✕'}</span><span>${L(item.opts[item.a])}</span></div>`;
+  });
+  html+=`</div><div class="quiz-actions" style="justify-content:center;margin-top:20px">
+      <button class="btn primary" data-act="retake">${L(UI.retake)}</button>
+      <button class="btn" data-act="toprimer">${L(UI.reviewPrimer)}</button>
+    </div></div>`;
+  bodyEl.innerHTML=html;
+  bodyEl.querySelector('[data-act="retake"]').addEventListener('click',()=>{ quizState.idx=0; quizState.answers=[]; quizState.done=false; renderQuiz(); });
+  bodyEl.querySelector('[data-act="toprimer"]').addEventListener('click',()=>setTab('primer'));
+}
+
+applyStatic();
+setTab('primer');
+</script>
+</body>
+</html>
