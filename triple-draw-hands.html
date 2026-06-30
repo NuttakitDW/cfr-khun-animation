@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triple Draw Starting Hands</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg-2: #0f1424; --panel: #131826; --panel-2: #1a2030; --panel-3: #232b3f;
+  --border: #2a3245; --text: #e4e9f2; --muted: #7a8499; --dim: #4a5266;
+  --accent: #5b9eff; --green: #3fdf8e; --red: #ff5e7a; --purple: #bf8cff;
+  --gold: #ffd54a; --orange: #ff8c42; --cyan: #3fc8d4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%), var(--bg);
+  background-attachment: fixed; color: var(--text); line-height: 1.5; min-height: 100vh;
+}
+header {
+  padding: 18px 28px; border-bottom: 1px solid var(--border); background: rgba(10,14,26,0.72);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 20;
+}
+.title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+header h1 {
+  margin: 0; font-size: 22px; font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.3px;
+}
+header .sub { color: var(--muted); font-size: 12px; }
+.head-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.lang-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.lang-toggle button { font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; background: var(--panel-2); color: var(--muted); border: none; padding: 5px 11px; cursor: pointer; transition: color .14s, background .14s; }
+.lang-toggle button + button { border-left: 1px solid var(--border); }
+.lang-toggle button:hover { color: var(--text); }
+.lang-toggle button.active { background: var(--accent); color: #04122e; }
+header .home { color: var(--muted); font-size: 12px; text-decoration: none; }
+header .home:hover { color: var(--accent); }
+main { padding: 26px 28px 40px; max-width: 920px; margin: 0 auto; }
+.content-panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15); overflow: hidden;
+}
+.content-head { padding: 22px 24px 0; border-bottom: 1px solid var(--border); }
+.content-head .eyebrow {
+  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  font-family: "SF Mono", Menlo, monospace; padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
+  background: rgba(63,200,212,0.15); color: var(--cyan);
+}
+.content-head h3 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text); }
+.content-head p.lead { margin: 0 0 16px; font-size: 13.5px; color: var(--muted); max-width: 74ch; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button {
+  font: inherit; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); border-bottom: none;
+  background: var(--panel-2); color: var(--muted); border-radius: 8px 8px 0 0; padding: 9px 18px; cursor: pointer;
+  margin-bottom: -1px; transition: color .15s, background .15s, border-color .15s;
+}
+.tabs button:hover { color: var(--text); }
+.tabs button.active { background: var(--panel); color: var(--text); border-color: var(--accent); border-bottom: 1px solid var(--panel); }
+.content-body { padding: 24px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ---- summary ---- */
+.sec { margin-bottom: 26px; }
+.sec:last-child { margin-bottom: 0; }
+.sec .klabel { margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--accent); }
+.sec h4 { margin: 0 0 12px; font-size: 18px; font-weight: 700; color: var(--text); }
+.sec p { margin: 0 0 10px; font-size: 14px; color: var(--text); line-height: 1.65; }
+.sec p.note { color: var(--muted); font-size: 13px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.hl-b { color: var(--accent); font-weight: 600; }
+
+.callout {
+  display: flex; gap: 11px; align-items: flex-start; background: rgba(91,158,255,0.06);
+  border: 1px solid rgba(91,158,255,0.28); border-radius: 9px; padding: 12px 14px; margin: 12px 0;
+}
+.callout .tag {
+  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  background: rgba(91,158,255,0.18); color: var(--accent);
+}
+.callout .text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.callout .text b { color: var(--text); }
+
+.cbox { background: rgba(191,140,255,0.06); border: 1px solid rgba(191,140,255,0.28); border-radius: 10px; padding: 14px 16px; margin: 12px 0; }
+.cbox h5 { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--purple); }
+.cbox ul { margin: 0; padding-left: 18px; }
+.cbox li { font-size: 13.5px; color: var(--text); line-height: 1.7; }
+.cbox li .mono { color: var(--gold); }
+.cbox p.cintro { margin: 0 0 8px; font-size: 13.5px; color: var(--muted); }
+
+/* charts */
+.chart { margin: 6px 0 4px; }
+.chart-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+.chart-row .clabel { width: 250px; flex-shrink: 0; font-size: 12.5px; color: var(--text); }
+.chart-row .ctrack { flex: 1; height: 16px; background: rgba(255,255,255,0.04); border-radius: 5px; overflow: hidden; }
+.chart-row .cfill { height: 100%; border-radius: 5px; width: 0; transition: width .9s cubic-bezier(.4,0,.2,1); }
+.chart-row .cfill.blue { background: linear-gradient(90deg, var(--accent), var(--purple)); }
+.chart-row .cfill.gold { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+.chart-row .cval { width: 66px; flex-shrink: 0; text-align: right; font-family: "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); }
+.chart-cap { font-size: 11px; color: var(--dim); margin: 6px 0 0; }
+.chart-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--accent); margin-bottom: 8px; }
+.stackbar { display: flex; height: 30px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); margin: 10px 0 9px; background: var(--panel-3); }
+.stackbar .seg { display: flex; align-items: center; justify-content: center; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; width: 0; transition: width .9s cubic-bezier(.4,0,.2,1); }
+.stackbar .seg.s3 { background: linear-gradient(90deg, #5b9eff, #74adff); color: #04122e; }
+.stackbar .seg.scall { background: linear-gradient(90deg, #3fdf8e, #5be8a3); color: #06210f; }
+.stackbar .seg.sfold { background: var(--panel-3); color: var(--muted); }
+.bb-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+.bb-legend .lg { display: flex; align-items: center; gap: 6px; }
+.bb-legend .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* tables */
+.dtable { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 0; }
+.dtable th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); padding: 9px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.dtable td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.5; }
+.dtable tr:last-child td { border-bottom: none; }
+.pos { font-family: "SF Mono", Menlo, monospace; font-weight: 700; color: var(--gold); white-space: nowrap; }
+.tdmono { font-family: "SF Mono", Menlo, monospace; }
+.table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; overflow-x: auto; }
+.tnote { font-size: 11.5px; color: var(--dim); margin: 9px 0 0; line-height: 1.55; }
+.dn { color: var(--orange); font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; white-space: nowrap; }
+
+ul.keypts { margin: 4px 0 0; padding-left: 18px; }
+ul.keypts li { font-size: 14px; color: var(--text); line-height: 1.8; }
+
+/* cards */
+.hand { display: flex; gap: 8px; flex-wrap: wrap; }
+.card {
+  width: 50px; height: 68px; background: linear-gradient(180deg, #f7f9fd 0%, #e9edf6 100%);
+  border: 1px solid #c4ccdb; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace; position: relative; flex-shrink: 0;
+}
+.card .rank { font-size: 21px; font-weight: 700; line-height: 1; color: #11151f; }
+.card .suit { font-size: 17px; line-height: 1.1; margin-top: 2px; }
+.card.red .rank, .card.red .suit, .card.red .corner { color: #c8203a; }
+.card.black .rank, .card.black .suit, .card.black .corner { color: #11151f; }
+.card .corner { position: absolute; top: 4px; left: 5px; font-size: 10px; font-weight: 700; line-height: 1; }
+
+/* drill */
+.drill-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.drill-bar .game-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); align-self: center; margin-right: 2px; }
+.pill-group { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.pill-group button { font: inherit; font-size: 12px; font-weight: 700; background: var(--panel-2); color: var(--muted); border: none; padding: 8px 14px; cursor: pointer; transition: color .14s, background .14s; }
+.pill-group button + button { border-left: 1px solid var(--border); }
+.pill-group button:hover { color: var(--text); }
+.pill-group button.active { background: var(--accent); color: #04122e; }
+.btn { font: inherit; font-size: 13px; font-weight: 600; border-radius: 8px; padding: 9px 18px; cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); transition: border-color .14s, background .14s, opacity .14s; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #04122e; }
+.btn.primary:hover { background: #74adff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stat-block { margin-left: auto; display: flex; gap: 16px; }
+.stat-block .st { text-align: right; }
+.stat-block .st .lab { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--dim); }
+.stat-block .st .num { font-family: "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--text); }
+
+.drill-stage { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.gtag { display: inline-block; font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; margin-bottom: 4px; }
+.gtag.a5 { background: rgba(91,158,255,0.15); color: var(--accent); }
+.gtag.s27 { background: rgba(255,140,66,0.15); color: var(--orange); }
+.gtag.badugi { background: rgba(191,140,255,0.15); color: var(--purple); }
+.drill-prompt { font-size: 14.5px; font-weight: 600; color: var(--text); margin: 6px 0 16px; }
+.drill-prompt .sm { font-size: 12.5px; font-weight: 400; color: var(--muted); }
+.drill-hand { margin: 10px 0 18px; }
+.drill-hand .card { cursor: pointer; transition: transform .1s, box-shadow .12s, opacity .12s; }
+.drill-hand.locked .card { cursor: default; }
+.drill-hand .card.toss { opacity: 0.38; transform: translateY(6px); }
+.drill-hand .card.toss::after { content: attr(data-tosslab); position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-size: 7px; font-weight: 700; letter-spacing: 0.5px; color: var(--red); font-family: "SF Mono", Menlo, monospace; white-space: nowrap; }
+.drill-hand .card.keep-best { box-shadow: 0 0 0 2px var(--green), 0 2px 6px rgba(0,0,0,0.35); }
+.drill-hand .card.toss-best { box-shadow: 0 0 0 2px var(--red), 0 2px 6px rgba(0,0,0,0.35); opacity: 0.55; }
+.drill-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; align-items: center; }
+.scen-line { font-size: 14.5px; font-weight: 600; color: var(--text); margin: 6px 0 2px; line-height: 1.55; }
+.scen-line b { color: var(--gold); }
+.btn.act-correct { border-color: var(--green); background: rgba(63,223,142,0.12); color: var(--green); }
+.btn.act-wrong { border-color: var(--red); background: rgba(255,94,122,0.12); color: var(--red); }
+.btn.act-dim { opacity: 0.45; }
+.drill-feedback { margin-top: 16px; padding: 13px 15px; border: 1px solid var(--border); border-left-width: 3px; border-radius: 9px; font-size: 13px; color: var(--muted); line-height: 1.65; }
+.drill-feedback.ok { border-left-color: var(--green); background: rgba(63,223,142,0.07); }
+.drill-feedback.no { border-left-color: var(--red); background: rgba(255,94,122,0.07); }
+.drill-feedback .verdict { font-weight: 700; }
+.drill-feedback.ok .verdict { color: var(--green); }
+.drill-feedback.no .verdict { color: var(--red); }
+.drill-feedback b { color: var(--text); }
+
+/* quiz */
+.quiz-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.quiz-top .qprog b { color: var(--text); }
+.score-pill { margin-left: auto; font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
+.bar-track { height: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; flex-basis: 100%; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.q-num { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+.q-text { margin: 6px 0 14px; font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.55; }
+.q-text b { color: var(--gold); }
+.opt {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; font: inherit; font-size: 14px;
+  color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px;
+  padding: 13px 15px; margin-bottom: 9px; cursor: pointer; transition: border-color .14s, background .14s, transform .08s;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.opt:disabled { cursor: default; }
+.opt .key { width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center; font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; border-radius: 5px; background: var(--panel-3); color: var(--muted); }
+.opt.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.opt.correct .key { background: var(--green); color: #06210f; }
+.opt.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.opt.wrong .key { background: var(--red); color: #2a0510; }
+.opt.dim { opacity: 0.5; }
+.explain { margin: 4px 0 0; padding: 12px 14px; background: var(--panel-2); border: 1px solid var(--border); border-left-width: 3px; border-radius: 8px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.explain.ok { border-left-color: var(--green); }
+.explain.no { border-left-color: var(--red); }
+.explain b { color: var(--text); }
+.explain .verdict { font-weight: 700; }
+.explain.ok .verdict { color: var(--green); }
+.explain.no .verdict { color: var(--red); }
+.quiz-actions { display: flex; gap: 10px; margin-top: 18px; }
+.results { text-align: center; padding: 14px 0; }
+.results h4 { margin: 0 0 6px; font-size: 22px; font-weight: 700; }
+.results .big { font-family: "SF Mono", Menlo, monospace; font-size: 40px; font-weight: 700; color: var(--text); }
+.results p { margin: 8px auto 18px; font-size: 13.5px; color: var(--muted); max-width: 52ch; }
+.results .pass { color: var(--green); } .results .near { color: var(--gold); } .results .fail { color: var(--red); }
+
+footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); line-height: 1.7; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+@media (max-width: 620px) {
+  .chart-row .clabel { width: 150px; font-size: 11.5px; }
+  .stat-block { width: 100%; margin-left: 0; justify-content: flex-start; }
+  .card { width: 44px; height: 60px; } .card .rank { font-size: 18px; }
+  .head-right { width: 100%; margin-left: 0; }
+}
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<header>
+  <div class="title-row">
+    <h1>Triple Draw Starting Hands</h1>
+    <span class="sub" id="subEl"></span>
+    <div class="head-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="th">ไทย</button>
+      </div>
+      <a class="home" id="homeEl" href="/"></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="content-panel">
+    <div class="content-head">
+      <span class="eyebrow" id="eyebrowEl"></span>
+      <h3 id="headTitle"></h3>
+      <p class="lead" id="headLead"></p>
+      <nav class="tabs" id="tabNav">
+        <button data-tab="summary" class="active"></button>
+        <button data-tab="quiz"></button>
+        <button data-tab="drill"></button>
+      </nav>
+    </div>
+    <div class="content-body">
+      <div class="tab-pane active" id="pane-summary"></div>
+      <div class="tab-pane" id="pane-quiz"><div id="quizRoot"></div></div>
+      <div class="tab-pane" id="pane-drill">
+        <div id="drillIntro"></div>
+        <div class="drill-bar">
+          <span class="game-lab" id="modeLab"></span>
+          <div class="pill-group" id="modePills">
+            <button data-mode="mix" class="active" id="mMix"></button>
+            <button data-mode="firstin" id="mFirst"></button>
+            <button data-mode="facing" id="mFace"></button>
+          </div>
+          <div class="stat-block">
+            <div class="st"><div class="lab" id="corLab"></div><div class="num" id="stCorrect">0 / 0</div></div>
+            <div class="st"><div class="lab" id="strLab"></div><div class="num" id="stStreak">0</div></div>
+          </div>
+        </div>
+        <div class="drill-stage" id="drillStage"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="footerEl"></footer>
+
+<script>
+/* ---------------- i18n ---------------- */
+let LANG = localStorage.getItem('td_lang') || 'en';
+function L(v){ return (v && typeof v === 'object' && 'en' in v) ? (v[LANG] ?? v.en) : v; }
+
+const T = {
+  sub:    { en:'Pre-draw decisions for A-5, 2-7, and Badugi', th:'การตัดสินใจก่อนจั่ว (pre-draw) สำหรับ A-5, 2-7 และ Badugi' },
+  home:   { en:'← home', th:'← หน้าแรก' },
+  eyebrow:{ en:'Ace-to-Five Triple Draw · Chapter 4 — Pre-Draw', th:'Ace-to-Five Triple Draw · บทที่ 4 — ก่อนจั่ว (Pre-Draw)' },
+  title:  { en:'What to Do with Your Starting Hand', th:'จะทำอย่างไรกับมือเริ่มต้นของคุณ' },
+  lead:   { en:'The pre-draw phase: deciding whether to enter the pot before any draws begin. Learn the probabilities and position-based ranges, test yourself, then drill the keep-or-toss decision across the major draw games.',
+            th:'ช่วงก่อนจั่ว: ตัดสินใจว่าจะเข้าเล่น pot หรือไม่ ก่อนที่จะมีการจั่วใดๆ เรียนรู้ความน่าจะเป็นและช่วงมือตามตำแหน่ง ทดสอบตัวเอง แล้วฝึกการตัดสินใจ เก็บ/ทิ้ง ไพ่ในเกมจั่วหลักๆ' },
+  tabSummary:{ en:'Summary & Charts', th:'สรุป & กราฟ' },
+  tabQuiz:{ en:'Quiz', th:'แบบทดสอบ' },
+  tabDrill:{ en:'Draw Drill', th:'แบบฝึกจั่ว' },
+  // quiz UI
+  question:{ en:'Question', th:'คำถาม' },
+  score:  { en:'Score', th:'คะแนน' },
+  next:   { en:'Next →', th:'ถัดไป →' },
+  seeRes: { en:'See results →', th:'ดูผล →' },
+  correct:{ en:'Correct.', th:'ถูกต้อง' },
+  notquite:{ en:'Not quite.', th:'ยังไม่ใช่' },
+  retake: { en:'Retake quiz', th:'ทำแบบทดสอบใหม่' },
+  resCorrect:{ en:'correct', th:'ถูก' },
+  msgPass:{ en:'Strong grasp of pre-draw entry strategy.', th:'เข้าใจกลยุทธ์การเข้าเล่นก่อนจั่วได้อย่างดี' },
+  msgNear:{ en:'Close — revisit ranges and 3-bet defense.', th:'ใกล้แล้ว — ทบทวนช่วงมือและการรับมือ 3-bet' },
+  msgFail:{ en:'Review the Summary tab and try again.', th:'ทบทวนแท็บสรุปแล้วลองใหม่' },
+  // drill UI
+  modeLab:{ en:'Scenario', th:'สถานการณ์' },
+  mMix:   { en:'Mixed', th:'รวม' },
+  mFirst: { en:'First-in', th:'เปิดก่อน' },
+  mFace:  { en:'Facing open', th:'เจอคนเปิด' },
+  corLab: { en:'Correct', th:'ถูก' },
+  strLab: { en:'Streak', th:'ติดต่อกัน' },
+  newHand:{ en:'New hand →', th:'มือใหม่ →' },
+  actOpen:{ en:'Open', th:'Open' },
+  actFold:{ en:'Fold', th:'Fold' },
+  act3bet:{ en:'3-bet', th:'3-bet' },
+  actCall:{ en:'Call', th:'Call' },
+  dOk:    { en:'Correct!', th:'ถูกต้อง!' },
+  dNo:    { en:'Not quite.', th:'ยังไม่ใช่' },
+  drillHow:{ tag:{ en:'How to play', th:'วิธีเล่น' },
+    text:{ en:'A starting hand and a table situation are dealt for A-5 Triple Draw. Decide the correct action — <b>open or fold</b> when it folds to you, or <b>3-bet / call / fold</b> when facing an open. Graded against the position ranges in the Summary tab.',
+           th:'จะมีการแจกมือเริ่มต้นพร้อมสถานการณ์บนโต๊ะสำหรับ A-5 Triple Draw ตัดสินใจแอ็คชันที่ถูกต้อง — <b>open หรือ fold</b> เมื่อวนมาถึงคุณ หรือ <b>3-bet / call / fold</b> เมื่อเจอคนเปิด ตรวจกับช่วงมือตามตำแหน่งในแท็บสรุป' } },
+  footer: { en:'Strategy and ranges adapted from a chapter on Ace-to-Five Triple Draw pre-draw play; quiz questions, the draw drill, and explanations are original.<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.',
+            th:'กลยุทธ์และช่วงมือดัดแปลงจากบทเรื่องการเล่นก่อนจั่วของ Ace-to-Five Triple Draw; คำถามแบบทดสอบ แบบฝึกจั่ว และคำอธิบายเป็นต้นฉบับของผมเอง<br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> สงวนลิขสิทธิ์' }
+};
+
+/* ---------------- cards ---------------- */
+const SUIT = { s:'♠', h:'♥', d:'♦', c:'♣' }, RED = new Set(['h','d']);
+function cardHTML(c) {
+  const red = RED.has(c.s), g = SUIT[c.s];
+  return `<div class="card ${red?'red':'black'}"><span class="corner">${c.r}${g}</span><span class="rank">${c.r}</span><span class="suit">${g}</span></div>`;
+}
+
+/* ---------------- summary data ---------------- */
+const PROB = [
+  { l:{ en:'5-low (Wheel)', th:'โลว์ 5 (Wheel)' }, v:0.0394 },
+  { l:{ en:'6-low (pat)', th:'โลว์ 6 (pat)' }, v:0.197 },
+  { l:{ en:'7-5 low or better (pat)', th:'7-5 low หรือดีกว่า (pat)' }, v:0.197 },
+  { l:{ en:'7-low (pat)', th:'โลว์ 7 (pat)' }, v:0.591 },
+  { l:{ en:'Four-card six-under (1-card draw)', th:'สี่ใบ six-under (จั่ว 1 ใบ)' }, v:4.43 },
+  { l:{ en:'Three-card six-under (2-card draw)', th:'สามใบ six-under (จั่ว 2 ใบ)' }, v:25.6 }
+];
+const OPEN = [
+  { l:'UTG / UTG+1', v:22 }, { l:'HJ', v:31 }, { l:'CO', v:33 }, { l:'BTN / SB', v:47 }
+];
+
+let BB_STATS = null;
+function bbDefenseStats() {
+  if (BB_STATS) return BB_STATS;
+  let t=0, c=0, f=0; const N = 200000;
+  for (let i=0;i<N;i++){ const a = facingDecision('BTN','BB',evalA5(deal(5))); if (a==='3bet') t++; else if (a==='call') c++; else f++; }
+  BB_STATS = { threebet:t/N*100, call:c/N*100, fold:f/N*100 };
+  return BB_STATS;
+}
+
+function renderSummary() {
+  const lo = Math.log10(0.03), hi = Math.log10(30);
+  const probRows = PROB.map(d => {
+    const w = Math.max(2, (Math.log10(d.v) - lo) / (hi - lo) * 100);
+    return `<div class="chart-row"><div class="clabel">${L(d.l)}</div><div class="ctrack"><div class="cfill blue" data-w="${w}"></div></div><div class="cval">${d.v}%</div></div>`;
+  }).join('');
+  const openRows = OPEN.map(d => `<div class="chart-row"><div class="clabel">${d.l}</div><div class="ctrack"><div class="cfill gold" data-w="${d.v*2}"></div></div><div class="cval">${d.v}%</div></div>`).join('');
+
+  const tx = {
+    k1:{en:'First, know the probabilities',th:'อย่างแรก รู้ความน่าจะเป็นก่อน'},
+    h1:{en:'How often do you get a strong starting hand?',th:'คุณได้มือเริ่มต้นที่แข็งบ่อยแค่ไหน?'},
+    n1:{en:'Being dealt a completed hand off the deal almost never happens. The chart below is on a log scale so the rare pat hands stay visible next to the common draws.',
+        th:'การได้มือสำเร็จรูปตั้งแต่แจกแทบไม่เกิดขึ้นเลย กราฟด้านล่างใช้สเกล log เพื่อให้มือ pat ที่หายากยังมองเห็นได้ข้างๆ มือจั่วที่พบบ่อย'},
+    cap1:{en:'Bars use a logarithmic scale (0.03% → 30%). Exact frequency shown at right.',
+          th:'แท่งกราฟใช้สเกลลอการิทึม (0.03% → 30%) ความถี่จริงแสดงทางขวา'},
+    take:{en:'Takeaway',th:'ประเด็นสำคัญ'},
+    take1:{en:'A <b>6-low or better pat hand is only ~0.2%</b>. Even including 7-lows it stays under 1%. If you only entered with an 8-low-or-better pat, 1-card draws would outdraw you more than half the time — so you <b>must enter with draws too</b>. Usable 1-card draws (four-card six-under) come only ~4.4% of the time, so to hit a 20–40% open frequency, <b>most of your entries are 2-card draws</b>.',
+           th:'มือ pat ระดับ <b>6-low หรือดีกว่ามีแค่ ~0.2%</b> แม้รวม 7-low ก็ยังไม่ถึง 1% ถ้าเข้าเล่นเฉพาะมือ pat 8-low ขึ้นไป มือจั่ว 1 ใบจะแซงคุณได้มากกว่าครึ่งหนึ่งของเวลา — ดังนั้น <b>ต้องเข้าด้วยมือจั่วด้วย</b> มือจั่ว 1 ใบที่ใช้ได้ (สี่ใบ six-under) มาแค่ ~4.4% ของเวลา เพื่อให้ได้ความถี่เปิด 20–40% <b>การเข้าส่วนใหญ่จึงเป็นมือจั่ว 2 ใบ</b>'},
+    k2:{en:'First-in open ranges by position',th:'ช่วงมือเปิดเกม (first-in) ตามตำแหน่ง'},
+    h2:{en:'Which hands to open depends on position',th:'จะเปิดด้วยมือไหนขึ้นอยู่กับตำแหน่ง'},
+    n2:{en:'Later positions (BTN, SB) can open a wider range of hands. Guideline ranges for A-5 Triple Draw:',
+        th:'ตำแหน่งหลัง (BTN, SB) เปิดได้ด้วยช่วงมือที่กว้างกว่า แนวทางช่วงมือสำหรับ A-5 Triple Draw:'},
+    thPos:{en:'Position',th:'ตำแหน่ง'}, thFreq:{en:'Open Freq.',th:'ความถี่เปิด'},
+    thPat:{en:'Pat',th:'Pat'}, th1:{en:'1-Card Draw',th:'จั่ว 1 ใบ'}, th2:{en:'2-Card Draw',th:'จั่ว 2 ใบ'}, th3:{en:'3-Card Draw',th:'จั่ว 3 ใบ'},
+    p75:{en:'7-5 low or better',th:'7-5 low หรือดีกว่า'},
+    p7:{en:'7-low or better',th:'7-low หรือดีกว่า'},
+    f6:{en:'Four-card six-under',th:'สี่ใบ six-under'},
+    t6:{en:'Three-card six-under',th:'สามใบ six-under'},
+    a2cell:{en:'<span class="dn">A-2</span>',th:'<span class="dn">A-2</span>'},
+    tc4:{en:'<span class="dn">Two-card four-under</span>',th:'<span class="dn">สองใบ four-under</span>'},
+    dash:{en:'—',th:'—'},
+    tableNote:{en:'Each draw column is named for how many cards you draw: Pat = stand pat (draw 0), then draw 1, 2, or 3. The <b style="color:var(--muted)">3-Card Draw</b> hands — A-2 and two-card four-unders — are speculative and reserved for late position.',
+               th:'ชื่อคอลัมน์จั่วบอกจำนวนใบที่จั่ว: Pat = อยู่ pat (จั่ว 0) จากนั้นจั่ว 1, 2 หรือ 3 ใบ มือ <b style="color:var(--muted)">จั่ว 3 ใบ</b> — A-2 และสองใบ four-under — เป็นมือเก็งกำไรที่เล่นเฉพาะตำแหน่งหลัง'},
+    b643:{en:'6-4-3 or better',th:'6-4-3 หรือดีกว่า'},
+    openTitle:{en:'Open frequency by position',th:'ความถี่เปิดตามตำแหน่ง'},
+    cb1h:{en:'What does &ldquo;6-4-3 or better&rdquo; mean?',th:'&ldquo;6-4-3 หรือดีกว่า&rdquo; หมายความว่าอย่างไร?'},
+    cb1i:{en:'Three of your cards form 6-4-3 or a stronger combination. Specifically:',th:'ไพ่สามใบของคุณประกอบเป็น 6-4-3 หรือชุดที่แข็งกว่า โดยเฉพาะ:'},
+    anyfive:{en:'Any three-card <b>five-under</b>',th:'สามใบ <b>five-under</b> ใดๆ'},
+    cb2h:{en:'Why does the entry range change by position?',th:'ทำไมช่วงมือที่เข้าเล่นจึงเปลี่ยนตามตำแหน่ง?'},
+    cb2a:{en:'<b>Early position (UTG)</b> must act first in every betting round, including post-draw — more players behind can enter, which is a disadvantage, so you only enter with strong hands.',
+          th:'<b>ตำแหน่งต้น (UTG)</b> ต้องลงมือก่อนในทุกรอบเดิมพัน รวมถึงหลังจั่ว — มีคนข้างหลังที่จะเข้าได้มากกว่า ซึ่งเสียเปรียบ จึงเข้าเฉพาะมือที่แข็ง'},
+    cb2b:{en:'<b>Late position (BTN)</b> acts last every round — you gain critical information (opponents\' draw counts and bets) before deciding.',
+          th:'<b>ตำแหน่งหลัง (BTN)</b> ลงมือเป็นคนสุดท้ายทุกรอบ — ได้ข้อมูลสำคัญ (จำนวนใบที่คู่ต่อสู้จั่วและการเดิมพัน) ก่อนตัดสินใจ'},
+    cb2c:{en:'From the <b>SB</b>, if it folds to you only the BB remains, so you can open wide to attack the big blind.',
+          th:'จาก <b>SB</b> ถ้าวนมาถึงคุณโดยทุกคนหมอบ เหลือแค่ BB คนเดียว จึงเปิดกว้างเพื่อโจมตี big blind ได้'},
+    k3:{en:'Responding to an opponent\'s open',th:'การตอบโต้เมื่อคู่ต่อสู้เปิดเกม'},
+    h3:{en:'3-bet, call, or fold',th:'3-bet, call หรือ fold'},
+    n3:{en:'3-bet aggressively with strong hands, call with medium hands, and fold the weak ones.',
+        th:'3-bet อย่างดุดันด้วยมือแข็ง, call ด้วยมือปานกลาง และ fold มืออ่อน'},
+    thOpener:{en:'Opener\'s Pos.',th:'ตำแหน่งคนเปิด'}, thYour:{en:'Your Pos.',th:'ตำแหน่งคุณ'},
+    th3b:{en:'3-Bet',th:'3-Bet'}, thCall:{en:'Call',th:'Call'},
+    any:{en:'Any',th:'ใดๆ'},
+    r3a:{en:'7-5 low or better / four-card six-under',th:'7-5 low หรือดีกว่า / สี่ใบ six-under'},
+    t5:{en:'Three-card five-under',th:'สามใบ five-under'},
+    same:{en:'Same as above',th:'เหมือนด้านบน'},
+    r3b:{en:'Above + 7-low and three-card six-under',th:'ด้านบน + 7-low และ สามใบ six-under'},
+    tc5:{en:'Two-card five-under',th:'สองใบ five-under'},
+    bbTag:{en:'BB defense',th:'การป้องกัน BB'},
+    bbText:{en:'The BB has already posted one small bet, so calling adds only one more — the <b>pot odds let you enter wider</b> than from other positions. But don\'t defend everything: a <b>lone Ace or 8-7 is a fold even from the BB</b>. Defend with qualifying hands only.',
+            th:'BB ได้วาง small bet ไปแล้วหนึ่งหน่วย การ call จึงเพิ่มอีกแค่หน่วยเดียว — <b>pot odds ทำให้เข้าได้กว้างกว่า</b>ตำแหน่งอื่น แต่อย่าป้องกันทุกมือ: <b>Ace เดี่ยวหรือ 8-7 คือ fold แม้จาก BB</b> ป้องกันเฉพาะมือที่ผ่านเกณฑ์เท่านั้น'},
+    bbChartTitle:{en:'BB defense vs a Button steal',th:'การป้องกันของ BB เมื่อเจอ Button ขโมย blind'},
+    bb3:{en:'3-bet',th:'3-bet'}, bbcall:{en:'Call',th:'Call'}, bbfold:{en:'Fold',th:'Fold'},
+    bbCap:{en:'Simulated from the response ranges above over many random deals. The BB defends (3-bet + call) about {D}% — wider than any seat opens (max ~47% on the button), because it has already posted a blind so a call costs just one more bet.',
+           th:'จำลองจากช่วงตอบโต้ด้านบนจากการแจกแบบสุ่มจำนวนมาก BB ป้องกัน (3-bet + call) ราว {D}% — กว้างกว่าทุกตำแหน่งที่เปิด (สูงสุด ~47% บนปุ่ม) เพราะวาง blind ไปแล้ว การ call จึงเสียเพิ่มแค่เดิมพันเดียว'},
+    k4:{en:'When facing a 3-bet',th:'เมื่อเจอ 3-bet'},
+    h4:{en:'It almost never folds after you\'ve opened',th:'แทบจะไม่ fold เลยหลังจากที่คุณเปิดไปแล้ว'},
+    cb3h:{en:'When a 3-bet is already in front of you',th:'เมื่อมี 3-bet อยู่ข้างหน้าคุณแล้ว'},
+    cb3a:{en:'7-5 low or better pat / four-card six-under → <b>4-bet back</b>',th:'7-5 low หรือดีกว่า (pat) / สี่ใบ six-under → <b>4-bet กลับ</b>'},
+    cb3b:{en:'With a 7-low pat, consider <b>breaking it</b> (discarding the 7) if your opponent stands pat.',th:'ถ้ามี 7-low (pat) ลองพิจารณา <b>ทุบมือ</b> (ทิ้ง 7) ถ้าคู่ต่อสู้ stand pat'},
+    cb4h:{en:'When you opened and face a 3-bet',th:'เมื่อคุณเปิดไปแล้วเจอ 3-bet'},
+    cb4a:{en:'Pat hand → <b>4-bet back</b>',th:'มือ pat → <b>4-bet กลับ</b>'},
+    cb4b:{en:'Draw hand → <b>calling is also an option</b> if it\'s the last action',th:'มือจั่ว → <b>call ก็เป็นทางเลือก</b> ถ้าเป็น action สุดท้าย'},
+    cb4c:{en:'7-low pat → consider breaking it down to a four-card six-under',th:'7-low (pat) → พิจารณาทุบลงเป็นสี่ใบ six-under'},
+    flTag:{en:'Fixed Limit',th:'Fixed Limit'},
+    flText:{en:'A 3-bet costs only <b>one additional betting unit</b> to call. Once you\'ve put in the open amount, the extra cost is small — which is why <b>folding after you open and face a 3-bet is almost never the right play</b>.',
+            th:'3-bet เสียแค่ <b>หน่วยเดิมพันเพิ่มอีกหนึ่งหน่วย</b> เพื่อ call เมื่อลงเงินเปิดไปแล้ว ส่วนที่เพิ่มน้อยมาก — นี่คือเหตุผลว่าทำไม <b>การ fold หลังจากเปิดแล้วเจอ 3-bet จึงแทบไม่เคยถูกต้อง</b>'},
+    k5:{en:'Table reading',th:'การอ่านโต๊ะ'},
+    h5:{en:'Understanding opponents\' entry patterns',th:'เข้าใจรูปแบบการเข้าเล่นของคู่ต่อสู้'},
+    n5:{en:'Start by watching how often each player enters and how many cards they draw on the first draw.',
+        th:'เริ่มจากสังเกตว่าผู้เล่นแต่ละคนเข้าเล่นบ่อยแค่ไหน และจั่วกี่ใบในการจั่วครั้งแรก'},
+    cb5a:{en:'<b>Enters frequently + often draws 1 card</b> → they may be entering with a four-card <i>eight</i>-under, not just six-under → a wide range means weaker holdings.',
+          th:'<b>เข้าบ่อย + มักจั่ว 1 ใบ</b> → อาจกำลังเข้าด้วยสี่ใบ <i>eight</i>-under ไม่ใช่แค่ six-under → ช่วงมือกว้างหมายถึงมือที่อ่อนกว่า'},
+    cb5b:{en:'<b>Above-average open frequency</b> → if you enter with a standard range, you take the positional advantage more easily → more chances to extract value aggressively.',
+          th:'<b>ความถี่เปิดสูงกว่าค่าเฉลี่ย</b> → ถ้าเข้าด้วยช่วงมือมาตรฐาน คุณจะคว้าความได้เปรียบด้านตำแหน่งได้ง่ายกว่า → มีโอกาสรีดมูลค่าอย่างดุดันมากขึ้น'},
+    k6:{en:'Summary',th:'สรุป'},
+    h6:{en:'Key takeaways',th:'ประเด็นสำคัญที่ต้องจำ'},
+    s1:{en:'Strong hands rarely appear, so <b class="hl-b">most entries are 2-card draws</b>.',th:'มือแข็งเจอได้ยาก ดังนั้น <b class="hl-b">การเข้าส่วนใหญ่เป็นมือจั่ว 2 ใบ</b>'},
+    s2:{en:'Later positions can enter with a <b class="hl-b">wider range</b>.',th:'ตำแหน่งหลังเข้าได้ด้วย <b class="hl-b">ช่วงมือที่กว้างกว่า</b>'},
+    s3:{en:'<b class="hl-b">3-bet</b> with strong hands, <b class="hl-b">call</b> with medium hands, <b class="hl-b">fold</b> the weak ones.',th:'<b class="hl-b">3-bet</b> ด้วยมือแข็ง, <b class="hl-b">call</b> ด้วยมือปานกลาง, <b class="hl-b">fold</b> มืออ่อน'},
+    s4:{en:'After opening and facing a 3-bet, <b class="hl-b">folding is almost never correct</b>.',th:'หลังจากเปิดแล้วเจอ 3-bet, <b class="hl-b">การ fold แทบไม่เคยถูกต้อง</b>'}
+  };
+  const X = k => L(tx[k]);
+
+  const bb = bbDefenseStats();
+  const r3 = Math.round(bb.threebet), rc = Math.round(bb.call), rf = Math.round(bb.fold), defend = r3 + rc;
+  const bbChart = `
+      <p class="klabel" style="margin-top:22px">${X('bbChartTitle')}</p>
+      <div class="stackbar">
+        <div class="seg s3" data-w="${bb.threebet}">${r3}%</div>
+        <div class="seg scall" data-w="${bb.call}">${rc}%</div>
+        <div class="seg sfold" data-w="${bb.fold}">${rf}%</div>
+      </div>
+      <div class="bb-legend">
+        <span class="lg"><span class="dot" style="background:#5b9eff"></span>${X('bb3')} ${r3}%</span>
+        <span class="lg"><span class="dot" style="background:#3fdf8e"></span>${X('bbcall')} ${rc}%</span>
+        <span class="lg"><span class="dot" style="background:var(--panel-3)"></span>${X('bbfold')} ${rf}%</span>
+      </div>
+      <p class="chart-cap">${X('bbCap').replace('{D}', defend)}</p>`;
+
+  document.getElementById('pane-summary').innerHTML = `
+    <div class="callout"><span class="tag">${LANG==='th'?'ก่อนจั่ว':'Pre-Draw'}</span>
+      <p class="text">${LANG==='th'?'นี่คือช่วงที่คุณตัดสินใจว่าจะ <b>เข้าเล่น pot</b> หรือไม่ — การตัดสินใจหลังจากเห็นมือเริ่มต้น ก่อนที่จะมีการจั่วใดๆ':'This is the phase where you decide whether to <b>enter the pot</b> or not — the decisions you make after seeing your starting hand, before any draws begin.'}</p>
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k1')}</p><h4>${X('h1')}</h4>
+      <p class="note">${X('n1')}</p>
+      <div class="chart" id="probChart">${probRows}</div>
+      <p class="chart-cap">${X('cap1')}</p>
+      <div class="callout"><span class="tag">${X('take')}</span><p class="text">${X('take1')}</p></div>
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k2')}</p><h4>${X('h2')}</h4>
+      <p class="note">${X('n2')}</p>
+      <div class="table-wrap"><table class="dtable">
+        <thead><tr><th>${X('thPos')}</th><th>${X('thFreq')}</th><th>${X('thPat')}</th><th>${X('th1')}</th><th>${X('th2')}</th><th>${X('th3')}</th></tr></thead>
+        <tbody>
+          <tr><td class="pos">UTG / UTG+1</td><td class="tdmono">22%</td><td>${X('p75')}</td><td>${X('f6')}</td><td>${X('b643')}</td><td>${X('dash')}</td></tr>
+          <tr><td class="pos">HJ</td><td class="tdmono">31%</td><td>${X('p75')}</td><td>${X('f6')}</td><td>${X('t6')}</td><td>${X('dash')}</td></tr>
+          <tr><td class="pos">CO</td><td class="tdmono">33%</td><td>${X('p75')}</td><td>${X('f6')}</td><td>${X('t6')}</td><td>${X('a2cell')}</td></tr>
+          <tr><td class="pos">BTN / SB</td><td class="tdmono">47%</td><td>${X('p7')}</td><td>${X('f6')}</td><td>${X('t6')}</td><td>${X('tc4')}</td></tr>
+        </tbody></table></div>
+      <p class="tnote">${X('tableNote')}</p>
+      <div class="chart" id="openChart" style="margin-top:16px"><div class="chart-title">${X('openTitle')}</div>${openRows}</div>
+      <div class="cbox">
+        <h5>${X('cb1h')}</h5>
+        <p class="cintro">${X('cb1i')}</p>
+        <ul>
+          <li><span class="mono">6-4-3</span>, <span class="mono">6-4-2</span>, <span class="mono">6-4-A</span></li>
+          <li><span class="mono">6-3-2</span>, <span class="mono">6-3-A</span>, <span class="mono">6-2-A</span></li>
+          <li>${X('anyfive')}</li>
+        </ul>
+      </div>
+      <div class="cbox"><h5>${X('cb2h')}</h5><ul><li>${X('cb2a')}</li><li>${X('cb2b')}</li><li>${X('cb2c')}</li></ul></div>
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k3')}</p><h4>${X('h3')}</h4>
+      <p class="note">${X('n3')}</p>
+      <div class="table-wrap"><table class="dtable">
+        <thead><tr><th>${X('thOpener')}</th><th>${X('thYour')}</th><th>${X('th3b')}</th><th>${X('thCall')}</th></tr></thead>
+        <tbody>
+          <tr><td class="pos">UTG–HJ</td><td>${X('any')}</td><td>${X('r3a')}</td><td>${X('t5')}</td></tr>
+          <tr><td class="pos">CO</td><td>${X('any')}</td><td>${X('same')}</td><td>${X('b643')}</td></tr>
+          <tr><td class="pos">BTN</td><td>SB</td><td>${X('r3b')}</td><td>—</td></tr>
+          <tr><td class="pos">BTN</td><td>BB</td><td>${X('same')}</td><td>${X('tc5')}</td></tr>
+          <tr><td class="pos">SB</td><td>BB</td><td>${X('same')}</td><td>${X('tc5')}</td></tr>
+        </tbody></table></div>
+      <div class="callout"><span class="tag">${X('bbTag')}</span><p class="text">${X('bbText')}</p></div>
+      ${bbChart}
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k4')}</p><h4>${X('h4')}</h4>
+      <div class="cbox"><h5>${X('cb3h')}</h5><ul><li>${X('cb3a')}</li><li>${X('cb3b')}</li></ul></div>
+      <div class="cbox"><h5>${X('cb4h')}</h5><ul><li>${X('cb4a')}</li><li>${X('cb4b')}</li><li>${X('cb4c')}</li></ul></div>
+      <div class="callout"><span class="tag">${X('flTag')}</span><p class="text">${X('flText')}</p></div>
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k5')}</p><h4>${X('h5')}</h4>
+      <p class="note">${X('n5')}</p>
+      <div class="cbox"><ul><li>${X('cb5a')}</li><li>${X('cb5b')}</li></ul></div>
+    </div>
+
+    <div class="sec">
+      <p class="klabel">${X('k6')}</p><h4>${X('h6')}</h4>
+      <ul class="keypts"><li>${X('s1')}</li><li>${X('s2')}</li><li>${X('s3')}</li><li>${X('s4')}</li></ul>
+    </div>`;
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#pane-summary .cfill, #pane-summary .stackbar .seg').forEach(f => { f.style.width = f.dataset.w + '%'; });
+  });
+}
+
+/* ---------------- quiz ---------------- */
+const QUIZ = [
+  { q:{en:"In A-5 Triple Draw, roughly how often are you dealt a pat <b>6-low or better</b>?",
+       th:"ใน A-5 Triple Draw โดยประมาณคุณถูกแจกมือ pat <b>6-low หรือดีกว่า</b> บ่อยแค่ไหน?"},
+    o:[{en:"~0.04%",th:"~0.04%"},{en:"~0.2%",th:"~0.2%"},{en:"~2%",th:"~2%"},{en:"~5%",th:"~5%"}], a:1,
+    e:{en:"A 6-low-or-better pat is only about <b>0.2%</b>. Even including 7-lows it stays under 1% — completed hands off the deal are extremely rare.",
+       th:"มือ pat <b>6-low หรือดีกว่ามีแค่ราว 0.2%</b> แม้รวม 7-low ก็ยังไม่ถึง 1% — มือสำเร็จรูปตั้งแต่แจกหายากมาก"} },
+
+  { q:{en:"Why must <b>most of your entering hands be 2-card draws</b>?",th:"ทำไม <b>มือที่คุณเข้าเล่นส่วนใหญ่จึงต้องเป็นมือจั่ว 2 ใบ</b>?"},
+    o:[{en:"2-card draws make the strongest hands",th:"มือจั่ว 2 ใบสร้างมือที่แข็งที่สุด"},
+       {en:"Pat hands and strong 1-card draws are too rare to fill a 20–40% range",th:"มือ pat และมือจั่ว 1 ใบที่แข็งหายากเกินกว่าจะเติมช่วง 20–40% ได้"},
+       {en:"You can never enter with a made hand",th:"คุณเข้าด้วยมือสำเร็จไม่ได้เลย"},
+       {en:"The rules require drawing two",th:"กติกาบังคับให้จั่วสองใบ"}], a:1,
+    e:{en:"Pat hands come under 1% and usable 1-card draws (four-card six-under) about 4.4%. To reach a 20–40% open frequency, <b>2-card draws must make up the rest</b>.",
+       th:"มือ pat มาไม่ถึง 1% และมือจั่ว 1 ใบที่ใช้ได้ (สี่ใบ six-under) ราว 4.4% เพื่อให้ได้ความถี่เปิด 20–40% <b>มือจั่ว 2 ใบจึงต้องเป็นส่วนที่เหลือ</b>"} },
+
+  { q:{en:"How does the first-in open range change as you move to <b>later position</b>?",th:"ช่วงมือเปิดเกม (first-in) เปลี่ยนอย่างไรเมื่อขยับไป <b>ตำแหน่งหลัง</b>?"},
+    o:[{en:"It gets tighter",th:"แคบลง"},{en:"It stays the same",th:"เท่าเดิม"},{en:"It gets wider",th:"กว้างขึ้น"},{en:"It only changes in the blinds",th:"เปลี่ยนเฉพาะใน blinds"}], a:2,
+    e:{en:"Later positions (BTN, SB) act last and gain information, so they can <b>open a wider range</b> — about 47% on the button vs 22% under the gun.",
+       th:"ตำแหน่งหลัง (BTN, SB) ลงมือเป็นคนสุดท้ายและได้ข้อมูล จึง <b>เปิดได้กว้างขึ้น</b> — ราว 47% บนปุ่ม เทียบกับ 22% ที่ UTG"} },
+
+  { q:{en:"Approximately what is the <b>open frequency from the Button / SB</b>?",th:"ความถี่เปิดจาก <b>Button / SB</b> โดยประมาณคือเท่าไร?"},
+    o:[{en:"22%",th:"22%"},{en:"31%",th:"31%"},{en:"47%",th:"47%"},{en:"70%",th:"70%"}], a:2,
+    e:{en:"The button is the most advantageous seat, so you open around <b>47%</b> — including hands as weak as a two-card four-under (e.g. A-2).",
+       th:"ปุ่มคือตำแหน่งได้เปรียบที่สุด คุณจึงเปิดราว <b>47%</b> — รวมมือที่อ่อนถึงขั้นสองใบ four-under (เช่น A-2)"} },
+
+  { q:{en:"Which hand qualifies as &ldquo;<b>6-4-3 or better</b>&rdquo;?",th:"มือใดเข้าข่าย &ldquo;<b>6-4-3 หรือดีกว่า</b>&rdquo;?"},
+    o:[{en:"6-5-4",th:"6-5-4"},{en:"6-4-2",th:"6-4-2"},{en:"6-5-A",th:"6-5-A"},{en:"7-3-2",th:"7-3-2"}], a:1,
+    e:{en:"&ldquo;6-4-3 or better&rdquo; means 6-4-3 / 6-4-2 / 6-4-A / 6-3-2 / 6-3-A / 6-2-A, or any three-card five-under. <b>6-4-2</b> qualifies; 6-5-x is worse than 6-4-3, and 7-3-2 is a seven.",
+       th:"&ldquo;6-4-3 หรือดีกว่า&rdquo; หมายถึง 6-4-3 / 6-4-2 / 6-4-A / 6-3-2 / 6-3-A / 6-2-A หรือสามใบ five-under ใดๆ <b>6-4-2</b> เข้าข่าย; 6-5-x แย่กว่า 6-4-3 และ 7-3-2 เป็นเจ็ด"} },
+
+  { q:{en:"An opponent opens from UTG–HJ. With which holding do you <b>3-bet</b> (rather than just call)?",th:"คู่ต่อสู้เปิดจาก UTG–HJ คุณจะ <b>3-bet</b> (แทนที่จะแค่ call) ด้วยมือใด?"},
+    o:[{en:"A three-card five-under",th:"สามใบ five-under"},{en:"A 7-5 low or better pat / four-card six-under",th:"7-5 low หรือดีกว่า (pat) / สี่ใบ six-under"},{en:"A lone Ace",th:"Ace เดี่ยว"},{en:"Any two-card draw",th:"มือจั่ว 2 ใบใดๆ"}], a:1,
+    e:{en:"3-bet with strong hands: <b>7-5 low or better pat, or a four-card six-under</b>. A three-card five-under is a call, not a 3-bet.",
+       th:"3-bet ด้วยมือแข็ง: <b>7-5 low หรือดีกว่า (pat) หรือสี่ใบ six-under</b> สามใบ five-under คือ call ไม่ใช่ 3-bet"} },
+
+  { q:{en:"Why can the <b>BB defend a wider range</b> against a steal?",th:"ทำไม <b>BB จึงป้องกันได้ด้วยช่วงมือที่กว้างกว่า</b> เมื่อเจอการขโมย blind?"},
+    o:[{en:"The BB acts last after the draw",th:"BB ลงมือเป็นคนสุดท้ายหลังจั่ว"},{en:"It has already posted one small bet, so calling costs only one more",th:"BB วาง small bet ไปแล้วหนึ่ง การ call จึงเสียเพิ่มแค่หนึ่ง"},{en:"The BB always gets to draw first",th:"BB ได้จั่วก่อนเสมอ"},{en:"Blinds don't count toward the pot",th:"blinds ไม่นับรวมใน pot"}], a:1,
+    e:{en:"The BB has already committed one small bet, so calling adds only one more. The <b>pot odds let you enter wider</b> than from other positions.",
+       th:"BB ลงทุน small bet ไปแล้วหนึ่งหน่วย การ call จึงเพิ่มแค่หน่วยเดียว <b>pot odds ทำให้เข้าได้กว้างกว่า</b>ตำแหน่งอื่น"} },
+
+  { q:{en:"Which hand should the <b>BB still fold</b> even when getting a price?",th:"มือใดที่ <b>BB ก็ยังควร fold</b> แม้จะได้ราคา?"},
+    o:[{en:"A three-card five-under",th:"สามใบ five-under"},{en:"A two-card four-under",th:"สองใบ four-under"},{en:"A lone Ace or 8-7",th:"Ace เดี่ยว หรือ 8-7"},{en:"A four-card seven-under",th:"สี่ใบ seven-under"}], a:2,
+    e:{en:"Don't defend everything just because you're in the BB. A <b>lone Ace or 8-7 is a fold</b> — defend only with qualifying hands.",
+       th:"อย่าป้องกันทุกมือเพียงเพราะอยู่ใน BB <b>Ace เดี่ยวหรือ 8-7 คือ fold</b> — ป้องกันเฉพาะมือที่ผ่านเกณฑ์"} },
+
+  { q:{en:"You opened, then face a 3-bet, holding a <b>draw hand</b>, and it's the last action. What's a sound option?",th:"คุณเปิดไปแล้วเจอ 3-bet ถือ <b>มือจั่ว</b> และเป็น action สุดท้าย ทางเลือกที่สมเหตุสมผลคือ?"},
+    o:[{en:"Fold — you're beaten",th:"Fold — คุณแพ้แล้ว"},{en:"Calling is fine; you rarely fold here",th:"Call ได้; แทบไม่ fold ตรงนี้"},{en:"Always 4-bet the draw",th:"4-bet มือจั่วเสมอ"},{en:"Muck unless it's a wheel draw",th:"ทิ้งเว้นแต่เป็นมือจั่ว wheel"}], a:1,
+    e:{en:"With a draw hand and the action closing, <b>calling is a fine option</b>. (With a pat hand you'd 4-bet back.) Folding after opening is almost never right.",
+       th:"เมื่อถือมือจั่วและ action กำลังจะปิด <b>การ call เป็นทางเลือกที่ดี</b> (ถ้าเป็นมือ pat จะ 4-bet กลับ) การ fold หลังเปิดแทบไม่เคยถูกต้อง"} },
+
+  { q:{en:"In <b>Fixed Limit</b>, after you open and face a 3-bet, folding is…",th:"ใน <b>Fixed Limit</b> หลังจากคุณเปิดแล้วเจอ 3-bet การ fold คือ…"},
+    o:[{en:"Usually correct — protect your stack",th:"มักถูกต้อง — รักษา stack"},{en:"Almost never correct — it's only one more unit to call",th:"แทบไม่เคยถูกต้อง — เสียแค่หน่วยเดียวเพื่อ call"},{en:"Correct only with draws",th:"ถูกต้องเฉพาะกับมือจั่ว"},{en:"Correct only out of position",th:"ถูกต้องเฉพาะตอนเสียตำแหน่ง"}], a:1,
+    e:{en:"A 3-bet costs only <b>one additional betting unit</b>. Since you've already invested the open, the extra cost is small, so <b>folding is almost never the right play</b>.",
+       th:"3-bet เสียแค่ <b>หน่วยเดิมพันเพิ่มอีกหนึ่งหน่วย</b> เมื่อลงเงินเปิดไปแล้ว ส่วนที่เพิ่มน้อยมาก <b>การ fold จึงแทบไม่เคยถูกต้อง</b>"} },
+
+  { q:{en:"Facing a 3-bet with a <b>7-low pat</b> while your opponent stands pat, a reasonable adjustment is to…",th:"เมื่อเจอ 3-bet ถือ <b>7-low (pat)</b> ขณะที่คู่ต่อสู้ stand pat การปรับที่สมเหตุสมผลคือ…"},
+    o:[{en:"Snow and bet every street",th:"snow แล้ว bet ทุก street"},{en:"Break it — discard the 7 and draw at a six-under",th:"ทุบมือ — ทิ้ง 7 แล้วจั่วหา six-under"},{en:"Always fold the 7-low",th:"fold 7-low เสมอ"},{en:"Stand pat and check it down",th:"อยู่ pat แล้ว check ยันจบ"}], a:1,
+    e:{en:"A 7-low can be behind a pat opponent. <b>Breaking it</b> (tossing the 7) to draw at a four-card six-under improves your equity.",
+       th:"7-low อาจตามหลังคู่ต่อสู้ที่ pat อยู่ <b>การทุบมือ</b> (ทิ้ง 7) เพื่อจั่วหาสี่ใบ six-under ช่วยเพิ่ม equity"} },
+
+  { q:{en:"An opponent <b>enters frequently and often draws one card</b>. What does this most likely indicate?",th:"คู่ต่อสู้ <b>เข้าบ่อยและมักจั่วหนึ่งใบ</b> สิ่งนี้น่าจะบ่งบอกอะไรมากที่สุด?"},
+    o:[{en:"They only play premium pat hands",th:"เขาเล่นเฉพาะมือ pat ระดับพรีเมียม"},{en:"They have a wide range — e.g. four-card eight-unders — so weaker holdings",th:"เขามีช่วงมือกว้าง — เช่นสี่ใบ eight-under — จึงมีมือที่อ่อนกว่า"},{en:"They are about to leave the table",th:"เขากำลังจะลุกจากโต๊ะ"},{en:"They never have a low draw",th:"เขาไม่เคยมีมือจั่ว low"}], a:1,
+    e:{en:"Drawing one card often while entering a lot suggests a <b>wide range</b> (four-card eight-under, not just six-under) — weaker holdings you can exploit with position.",
+       th:"การจั่วหนึ่งใบบ่อยขณะเข้าเล่นมากบ่งชี้ <b>ช่วงมือกว้าง</b> (สี่ใบ eight-under ไม่ใช่แค่ six-under) — มือที่อ่อนกว่าซึ่งคุณใช้ตำแหน่งกดได้"} }
+];
+let quizStarted = false, qi = 0, qScore = 0, qPick = null;
+const quizRoot = document.getElementById('quizRoot');
+function startQuiz() { quizStarted = true; qi = 0; qScore = 0; qPick = null; renderQ(); }
+function renderQ() {
+  const item = QUIZ[qi];
+  const pct = Math.round(qi / QUIZ.length * 100);
+  const answered = qPick !== null;
+  quizRoot.innerHTML = `
+    <div class="quiz-top">
+      <span class="qprog">${L(T.question)} <b>${qi+1}</b> / ${QUIZ.length}</span>
+      <span class="score-pill">${L(T.score)} ${qScore}/${QUIZ.length}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-num">Q${qi+1}</div>
+    <div class="q-text">${L(item.q)}</div>
+    <div id="optWrap">${item.o.map((t,i)=>`<button class="opt" data-i="${i}"><span class="key">${'ABCD'[i]}</span><span>${L(t)}</span></button>`).join('')}</div>
+    <div id="exWrap"></div>
+    <div class="quiz-actions" id="qActions"></div>`;
+  if (answered) showAnswered();
+  else quizRoot.querySelector('#optWrap').addEventListener('click', onAnswer);
+}
+function onAnswer(e) {
+  const b = e.target.closest('.opt'); if (!b) return;
+  qPick = +b.dataset.i;
+  if (qPick === QUIZ[qi].a) qScore++;
+  showAnswered();
+}
+function showAnswered() {
+  const item = QUIZ[qi], correct = qPick === item.a;
+  [...quizRoot.querySelectorAll('.opt')].forEach((o,i) => {
+    o.disabled = true;
+    if (i === item.a) o.classList.add('correct');
+    else if (i === qPick) o.classList.add('wrong');
+    else o.classList.add('dim');
+  });
+  quizRoot.querySelector('#exWrap').innerHTML =
+    `<div class="explain ${correct?'ok':'no'}"><span class="verdict">${correct?L(T.correct):L(T.notquite)}</span> ${L(item.e)}</div>`;
+  const last = qi === QUIZ.length - 1;
+  quizRoot.querySelector('#qActions').innerHTML =
+    `<button class="btn primary" id="nextBtn">${last?L(T.seeRes):L(T.next)}</button>`;
+  quizRoot.querySelector('#nextBtn').onclick = () => { if (last) showResults(); else { qi++; qPick = null; renderQ(); } };
+}
+function showResults() {
+  qPick = 'done';
+  const pct = Math.round(qScore / QUIZ.length * 100);
+  let cls = 'fail', msg = L(T.msgFail);
+  if (pct >= 80) { cls = 'pass'; msg = L(T.msgPass); }
+  else if (pct >= 60) { cls = 'near'; msg = L(T.msgNear); }
+  quizRoot.innerHTML = `
+    <div class="results">
+      <div class="big ${cls}">${pct}%</div>
+      <h4 class="${cls}">${qScore} / ${QUIZ.length} ${L(T.resCorrect)}</h4>
+      <p>${msg}</p>
+      <button class="btn primary" id="retake">${L(T.retake)}</button>
+    </div>`;
+  quizRoot.querySelector('#retake').onclick = startQuiz;
+}
+
+/* ---------------- drill: entry decision (A-5) ---------------- */
+const RANKS = ['A','2','3','4','5','6','7','8','9','T','J','Q','K'];
+const ALLSUITS = ['s','h','d','c'];
+const RDESC = {1:'A',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'T',11:'J',12:'Q',13:'K'};
+function rvA5(r){ return {A:1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,T:10,J:11,Q:12,K:13}[r]; }
+function deal(n) {
+  const deck = [];
+  RANKS.forEach(r => ALLSUITS.forEach(s => deck.push({ r, s })));
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i+1)); [deck[i],deck[j]] = [deck[j],deck[i]]; }
+  return deck.slice(0, n);
+}
+function evalA5(hand) {
+  const seen = new Set(), distinct = [];
+  hand.map(c => rvA5(c.r)).sort((a,b)=>a-b).forEach(v => { if (!seen.has(v)) { seen.add(v); distinct.push(v); } });
+  const u6 = distinct.filter(v=>v<=6), u5 = distinct.filter(v=>v<=5), u4 = distinct.filter(v=>v<=4);
+  const isPat = distinct.length === 5, hi = distinct[distinct.length-1], hi2 = distinct[distinct.length-2];
+  return {
+    distinct, isPat,
+    is7orBetter: isPat && hi <= 7,
+    is75orBetter: isPat && (hi <= 6 || (hi === 7 && hi2 <= 5)),
+    fourCardSixUnder: u6.length >= 4,
+    threeCardSixUnder: u6.length >= 3,
+    threeCardFiveUnder: u5.length >= 3,
+    twoCardFiveUnder: u5.length >= 2,
+    twoCardFourUnder: u4.length >= 2,
+    twoCardSixUnder: u6.length >= 2,
+    hasA2: distinct.includes(1) && distinct.includes(2),
+    is643orBetter: distinct.length >= 3 && (distinct[2] <= 5 || (distinct[2] === 6 && distinct[1] <= 4)),
+    patStr: isPat ? distinct.slice().reverse().map(v=>RDESC[v]).join('-') : '',
+    threeStr: distinct.length>=3 ? [distinct[2],distinct[1],distinct[0]].map(v=>RDESC[v]).join('-') : '',
+    twoStr: distinct.length>=2 ? [distinct[1],distinct[0]].map(v=>RDESC[v]).join('-') : ''
+  };
+}
+function posRangeKey(p){ return (p==='UTG'||p==='UTG+1') ? 'utg' : p==='HJ' ? 'hj' : p==='CO' ? 'co' : 'btnsb'; }
+function openerClass(p){ return (p==='BTN'||p==='SB') ? 'late' : 'early'; }
+function firstInDecision(pos, ev) {
+  const k = posRangeKey(pos); let q;
+  if (k==='utg') q = ev.is75orBetter || ev.fourCardSixUnder || ev.is643orBetter;
+  else if (k==='hj') q = ev.is75orBetter || ev.fourCardSixUnder || ev.threeCardSixUnder;
+  else if (k==='co') q = ev.is75orBetter || ev.fourCardSixUnder || ev.threeCardSixUnder || ev.hasA2;
+  else q = ev.is7orBetter || ev.fourCardSixUnder || ev.threeCardSixUnder || ev.twoCardFourUnder;
+  return q ? 'open' : 'fold';
+}
+function facingDecision(opener, hero, ev) {
+  const threeBet = openerClass(opener)==='late'
+    ? (ev.is7orBetter || ev.fourCardSixUnder || ev.threeCardSixUnder)
+    : (ev.is75orBetter || ev.fourCardSixUnder);
+  if (threeBet) return '3bet';
+  let call = false;
+  if (opener==='UTG'||opener==='UTG+1'||opener==='HJ') call = ev.threeCardFiveUnder;
+  else if (opener==='CO') call = ev.is643orBetter;
+  else if (opener==='BTN' && hero==='SB') call = false;
+  else call = ev.twoCardFiveUnder;
+  return call ? 'call' : 'fold';
+}
+const REQ_FIRST = {
+  utg:{en:'UTG/UTG+1 open 7-5 low+, a four-card six-under, or 6-4-3 or better (~22%)',th:'UTG/UTG+1 เปิดด้วย 7-5 low+, สี่ใบ six-under หรือ 6-4-3 หรือดีกว่า (~22%)'},
+  hj:{en:'HJ opens 7-5 low+, a four-card six-under, or a three-card six-under (~31%)',th:'HJ เปิดด้วย 7-5 low+, สี่ใบ six-under หรือสามใบ six-under (~31%)'},
+  co:{en:'CO opens the HJ range plus the A-2 two-card draw (~33%)',th:'CO เปิดด้วยช่วงของ HJ บวกมือจั่วสองใบ A-2 (~33%)'},
+  btnsb:{en:'BTN/SB open 7-low+, a four-card six-under, a three-card six-under, or any two-card four-under (~47%)',th:'BTN/SB เปิดด้วย 7-low+, สี่ใบ six-under, สามใบ six-under หรือสองใบ four-under ใดๆ (~47%)'}
+};
+const REQ_3BET = {
+  early:{en:'3-bet a 7-5 low+ pat or a four-card six-under',th:'3-bet ด้วย 7-5 low+ (pat) หรือสี่ใบ six-under'},
+  late:{en:'3-bet a 7-low+ pat, a four-card six-under, or a three-card six-under',th:'3-bet ด้วย 7-low+ (pat), สี่ใบ six-under หรือสามใบ six-under'}
+};
+function callReqObj(opener, hero) {
+  if (opener==='UTG'||opener==='UTG+1'||opener==='HJ') return {en:'call a three-card five-under',th:'call ด้วยสามใบ five-under'};
+  if (opener==='CO') return {en:'call 6-4-3 or better',th:'call ด้วย 6-4-3 หรือดีกว่า'};
+  if (opener==='BTN' && hero==='SB') return {en:'there is no calling range — 3-bet or fold',th:'ไม่มีช่วง call — 3-bet หรือ fold'};
+  return {en:'call a two-card five-under',th:'call ด้วยสองใบ five-under'};
+}
+function featureLabel(ev) {
+  if (ev.is75orBetter) return {en:`a 7-5-low-or-better pat hand (${ev.patStr})`,th:`มือ pat 7-5 low หรือดีกว่า (${ev.patStr})`};
+  if (ev.is7orBetter) return {en:`a 7-low pat hand (${ev.patStr})`,th:`มือ pat 7-low (${ev.patStr})`};
+  if (ev.fourCardSixUnder) return {en:'a four-card six-under (1-card draw)',th:'สี่ใบ six-under (จั่ว 1 ใบ)'};
+  if (ev.is643orBetter) return {en:`a three-card ${ev.threeStr} — 6-4-3 or better (2-card draw)`,th:`สามใบ ${ev.threeStr} — 6-4-3 หรือดีกว่า (จั่ว 2 ใบ)`};
+  if (ev.threeCardSixUnder) return {en:`a three-card six-under (${ev.threeStr}, 2-card draw)`,th:`สามใบ six-under (${ev.threeStr}, จั่ว 2 ใบ)`};
+  if (ev.hasA2) return {en:'A-2 — the best two-card draw (3-card draw)',th:'A-2 — มือจั่วสองใบที่ดีที่สุด (จั่ว 3 ใบ)'};
+  if (ev.twoCardFourUnder) return {en:`a two-card four-under (${ev.twoStr}, 3-card draw)`,th:`สองใบ four-under (${ev.twoStr}, จั่ว 3 ใบ)`};
+  if (ev.twoCardFiveUnder) return {en:`a two-card five-under (${ev.twoStr}, 3-card draw)`,th:`สองใบ five-under (${ev.twoStr}, จั่ว 3 ใบ)`};
+  if (ev.isPat) return {en:`a pat ${ev.patStr} — too weak to play`,th:`มือ pat ${ev.patStr} — อ่อนเกินกว่าจะเล่น`};
+  if (ev.twoCardSixUnder) return {en:`only a two-card six-under (${ev.twoStr}) — below every opening range`,th:`แค่สองใบ six-under (${ev.twoStr}) — ต่ำกว่าทุกช่วงเปิด`};
+  return {en:'no usable low — trash',th:'ไม่มี low ที่ใช้ได้ — ไพ่ทิ้ง'};
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+let drillMode = 'mix', drillCur = null;
+let dCorrect = 0, dTotal = 0, dStreak = 0;
+const FIRSTIN = ['UTG','UTG+1','HJ','CO','BTN','SB'].map(p=>({type:'firstin',pos:p}));
+const FACING = [
+  {type:'facing',opener:'UTG',hero:'BB'}, {type:'facing',opener:'HJ',hero:'CO'},
+  {type:'facing',opener:'CO',hero:'BTN'}, {type:'facing',opener:'BTN',hero:'SB'},
+  {type:'facing',opener:'BTN',hero:'BB'}, {type:'facing',opener:'SB',hero:'BB'}
+];
+// Planted setups so the A-2 and two-card four-under rules actually get tested,
+// paired with the seats where they decide the action (open) and contrast (fold).
+const INSTRUCT = [
+  {type:'firstin', pos:'CO',  plant:'a2'},    // CO opens A-2
+  {type:'firstin', pos:'BTN', plant:'a2'},    // BTN opens A-2
+  {type:'firstin', pos:'HJ',  plant:'a2'},    // HJ folds A-2 (contrast)
+  {type:'firstin', pos:'BTN', plant:'two4'},  // BTN opens a two-card four-under
+  {type:'firstin', pos:'CO',  plant:'two4'}   // CO folds a two-card four-under (contrast)
+];
+function dealPlant(cat) {
+  const used = new Set();
+  const card = rank => { let s; do { s = ALLSUITS[Math.floor(Math.random()*4)]; } while (used.has(rank+s)); used.add(rank+s); return { r:rank, s }; };
+  const highs = n => { const pool = ['7','8','9','T','J','Q','K']; const out = []; for (let i=0;i<n;i++) out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); return out; };
+  let lows;
+  if (cat==='a2') lows = ['A','2'];
+  else { const pairs = [['A','3'],['A','4'],['2','3'],['2','4'],['3','4']]; lows = pairs[Math.floor(Math.random()*pairs.length)]; }
+  const hand = lows.concat(highs(5 - lows.length)).map(card);
+  for (let i=hand.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [hand[i],hand[j]]=[hand[j],hand[i]]; }
+  return hand;
+}
+function pickScenario() {
+  if (drillMode !== 'facing' && Math.random() < 0.32) return INSTRUCT[Math.floor(Math.random()*INSTRUCT.length)];
+  const pool = drillMode==='firstin' ? FIRSTIN : drillMode==='facing' ? FACING : FIRSTIN.concat(FACING);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+const drillStage = document.getElementById('drillStage');
+function scenText(cfg) {
+  if (cfg.type==='firstin') {
+    return LANG==='th'
+      ? `<b>วนมาถึงคุณ</b> คุณเป็นคนแรกที่จะเข้า จากตำแหน่ง <b>${cfg.pos}</b> — จะ Open หรือ Fold?`
+      : `<b>Folds to you.</b> You're first to act from the <b>${cfg.pos}</b> — open or fold?`;
+  }
+  const noCall = cfg.opener==='BTN' && cfg.hero==='SB';
+  if (LANG==='th') return `<b>${cfg.opener}</b> เปิด (open) คุณอยู่ <b>${cfg.hero}</b> — ${noCall?'จะ 3-bet หรือ fold?':'จะ 3-bet, call หรือ fold?'}`;
+  return `<b>${cfg.opener}</b> opens. You're in the <b>${cfg.hero}</b> — ${noCall?'3-bet or fold?':'3-bet, call, or fold?'}`;
+}
+function newDrill() {
+  const cfg = pickScenario();
+  const hand = cfg.plant ? dealPlant(cfg.plant) : deal(5);
+  const ev = evalA5(hand);
+  const correct = cfg.type==='firstin' ? firstInDecision(cfg.pos,ev) : facingDecision(cfg.opener,cfg.hero,ev);
+  let btns;
+  if (cfg.type==='firstin') btns = [{a:'fold',t:'actFold'},{a:'open',t:'actOpen'}];
+  else if (cfg.opener==='BTN' && cfg.hero==='SB') btns = [{a:'fold',t:'actFold'},{a:'3bet',t:'act3bet'}];
+  else btns = [{a:'fold',t:'actFold'},{a:'call',t:'actCall'},{a:'3bet',t:'act3bet'}];
+  drillCur = { cfg, hand, ev, correct, btns, answered:false, pick:null };
+  renderDrill();
+}
+function renderDrill() {
+  const d = drillCur;
+  drillStage.innerHTML = `
+    <span class="gtag a5">A-5 Triple Draw</span>
+    <div class="scen-line">${scenText(d.cfg)}</div>
+    <div class="hand" style="margin:14px 0 18px">${d.hand.map(c => cardHTML(c)).join('')}</div>
+    <div class="drill-actions" id="actRow">
+      ${d.btns.map(b => `<button class="btn" data-act="${b.a}">${L(T[b.t])}</button>`).join('')}
+      <button class="btn" id="newBtn" style="margin-left:auto">${L(T.newHand)}</button>
+    </div>
+    <div id="dFeedback"></div>`;
+  document.getElementById('newBtn').onclick = newDrill;
+  if (d.answered) markAnswered();
+  else document.getElementById('actRow').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]'); if (!b || d.answered) return;
+    d.pick = b.dataset.act; d.answered = true;
+    const correct = d.pick === d.correct;
+    dTotal++; if (correct) { dCorrect++; dStreak++; } else dStreak = 0;
+    document.getElementById('stCorrect').textContent = `${dCorrect} / ${dTotal}`;
+    document.getElementById('stStreak').textContent = dStreak;
+    markAnswered();
+  });
+}
+function markAnswered() {
+  const d = drillCur, correct = d.pick === d.correct;
+  [...document.querySelectorAll('#actRow button[data-act]')].forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.act === d.correct) btn.classList.add('act-correct');
+    else if (btn.dataset.act === d.pick) btn.classList.add('act-wrong');
+    else btn.classList.add('act-dim');
+  });
+  const feat = L(featureLabel(d.ev));
+  let exp;
+  if (d.cfg.type==='firstin') {
+    const req = L(REQ_FIRST[posRangeKey(d.cfg.pos)]);
+    const act = d.correct==='open' ? 'Open' : 'Fold';
+    exp = LANG==='th'
+      ? `จาก <b>${d.cfg.pos}</b> มือนี้ควร <b>${act}</b> — ${req} มือคุณคือ ${feat}`
+      : `From the <b>${d.cfg.pos}</b>, this is a <b>${act}</b>. ${req}. Your hand is ${feat}.`;
+  } else {
+    const tb = L(REQ_3BET[openerClass(d.cfg.opener)]);
+    const cb = L(callReqObj(d.cfg.opener, d.cfg.hero));
+    const act = { '3bet':'3-bet', 'call':'Call', 'fold':'Fold' }[d.correct];
+    exp = LANG==='th'
+      ? `เมื่อเจอ <b>${d.cfg.opener}</b> เปิด จากตำแหน่ง <b>${d.cfg.hero}</b> ควร <b>${act}</b> — ${tb}; ${cb} มือคุณคือ ${feat}`
+      : `Vs a <b>${d.cfg.opener}</b> open from the <b>${d.cfg.hero}</b>, the play is <b>${act}</b>. ${cap(tb)}; ${cb}. Your hand is ${feat}.`;
+  }
+  document.getElementById('dFeedback').innerHTML =
+    `<div class="drill-feedback ${correct?'ok':'no'}"><span class="verdict">${correct?L(T.dOk):L(T.dNo)}</span> ${exp}</div>`;
+}
+document.getElementById('modePills').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('active', x === b));
+  drillMode = b.dataset.mode;
+  newDrill();
+});
+
+/* ---------------- tabs & lang ---------------- */
+const tabNav = document.getElementById('tabNav');
+function currentTab() { return document.querySelector('#tabNav button.active').dataset.tab; }
+tabNav.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...tabNav.children].forEach(x => x.classList.toggle('active', x === b));
+  const t = b.dataset.tab;
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + t));
+  if (t === 'quiz' && !quizStarted) startQuiz();
+  if (t === 'drill' && !drillCur) newDrill();
+});
+
+function applyLang() {
+  document.documentElement.lang = LANG === 'th' ? 'th' : 'en';
+  [...document.querySelectorAll('#langToggle button')].forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+  document.getElementById('subEl').textContent = L(T.sub);
+  document.getElementById('homeEl').textContent = L(T.home);
+  document.getElementById('eyebrowEl').innerHTML = L(T.eyebrow);
+  document.getElementById('headTitle').textContent = L(T.title);
+  document.getElementById('headLead').textContent = L(T.lead);
+  tabNav.children[0].textContent = L(T.tabSummary);
+  tabNav.children[1].textContent = L(T.tabQuiz);
+  tabNav.children[2].textContent = L(T.tabDrill);
+  document.getElementById('modeLab').textContent = L(T.modeLab);
+  document.getElementById('mMix').textContent = L(T.mMix);
+  document.getElementById('mFirst').textContent = L(T.mFirst);
+  document.getElementById('mFace').textContent = L(T.mFace);
+  document.getElementById('corLab').textContent = L(T.corLab);
+  document.getElementById('strLab').textContent = L(T.strLab);
+  document.getElementById('drillIntro').innerHTML =
+    `<div class="callout"><span class="tag">${L(T.drillHow.tag)}</span><p class="text">${L(T.drillHow.text)}</p></div>`;
+  document.getElementById('footerEl').innerHTML = L(T.footer);
+  renderSummary();
+  if (quizStarted) renderQ();
+  if (drillCur) renderDrill();
+}
+document.getElementById('langToggle').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  LANG = b.dataset.lang;
+  localStorage.setItem('td_lang', LANG);
+  applyLang();
+});
+
+applyLang();
+</script>
+</body>
+</html>
