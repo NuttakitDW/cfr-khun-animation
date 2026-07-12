@@ -843,12 +843,15 @@ const CHARTS = {
       ['HJ','31%','7-5-low or better','4-card 6-under','3-card 6-under'],
       ['CO','33%','7-5-low or better','4-card 6-under','3-card 6-under · A-2'],
       ['BTN/SB','47%','7-low or better','4-card 6-under','3-card 6-under · 2-card 4-under']],
+    faceCols:[{en:'Opener',th:'ตำแหน่งคนเปิด'},{en:'Your Position',th:'ตำแหน่งของคุณ'},{en:'3-Bet',th:'3-Bet'},{en:'Call',th:'Call'}],
+    facePosCols:2,
     faceRows:[
-      ['UTG–HJ','7-5-low or better / 4-card 6-under','3-card 5-under'],
-      ['CO','Same as above','6-4-3 or better'],
-      ['BTN/SB','Above + 7-low · 3-card 6-under','—'],
-      ['BB (vs BTN/SB)','Same as above','2-card 5-under']],
-    note:{en:'Ace is low; straights and flushes do not count. Draw columns name how many cards you draw.',th:'Ace เป็นไพ่ต่ำ; สเตรทและฟลัชไม่นับ ชื่อคอลัมน์บอกจำนวนใบที่จั่ว'} },
+      ['UTG–HJ','Any','7-5-low or better / 4-card 6-under','3-card 5-under'],
+      ['CO','Any','Same as above','6-4-3 or better'],
+      ['BTN','SB','Above + 7-low · 3-card 6-under','—'],
+      ['BTN','BB','Same as above','2-card 5-under'],
+      ['SB','BB','Same as above','2-card 5-under']],
+    note:{en:'Ace is low; straights and flushes do not count. Draw columns name how many cards you draw. From the SB you have no calling range vs a late open; from the BB you may call a 2-card 5-under vs a BTN or SB open.',th:'Ace เป็นไพ่ต่ำ; สเตรทและฟลัชไม่นับ ชื่อคอลัมน์บอกจำนวนใบที่จั่ว จาก SB ไม่มีช่วง call เมื่อเจอคนเปิดตำแหน่งหลัง; จาก BB สามารถ call สองใบ 5-under เมื่อเจอ BTN หรือ SB เปิด'} },
   d27:{ full:'Deuce-to-Seven Triple Draw', tagClass:'d27',
     openCols:['Position','Open Freq.','Pat','1-Card Draw','2-Card Draw','3-Card Draw'],
     openRows:[
@@ -857,12 +860,15 @@ const CHARTS = {
       ['HJ','23%','9-6-pat or better','4-card 7-under (no open-ender) / 4-card 8-under (no SD)','Above + 2-x-6 · 2-x-8','—'],
       ['CO','31%','9-6-pat or better','Same as above','Above + 3-card 8-under, no straight','2-3 · 2-7'],
       ['BTN/SB','40%','9-pat or better','Same as above','Above + 3-4-5 · 3-4-6 · 3-5-6 · 3-4-7','2-3 through 2-7']],
+    faceCols:[{en:'Opener',th:'ตำแหน่งคนเปิด'},{en:'Your Position',th:'ตำแหน่งของคุณ'},{en:'3-Bet',th:'3-Bet'},{en:'Call',th:'Call'}],
+    facePosCols:2,
     faceRows:[
-      ['UTG–HJ','9-6-pat or better / 8-low no SD','3-card 7-under incl. a Deuce'],
-      ['CO','Same as above','3-card 8-under incl. a Deuce'],
-      ['BTN/SB','Above + 3-card 8-under incl. a Deuce','—'],
-      ['BB (vs BTN/SB)','Same as above','2-3 through 2-7']],
-    note:{en:'Ace is high; straights and flushes count against you. SD = straight draw. Best hand is 7-5-4-3-2.',th:'Ace เป็นไพ่สูง; สเตรทและฟลัชนับเป็นมือเสีย SD = มือจั่วสเตรท มือดีสุดคือ 7-5-4-3-2'} },
+      ['UTG–HJ','Any','9-6-pat or better / 8-low no SD','3-card 7-under incl. a Deuce'],
+      ['CO','Any','Same as above','3-card 8-under incl. a Deuce'],
+      ['BTN','SB','Above + 3-card 8-under incl. a Deuce','—'],
+      ['BTN','BB','Same as above','2-3 through 2-7'],
+      ['SB','BB','Same as above','2-3 through 2-7']],
+    note:{en:'Ace is high; straights and flushes count against you. SD = straight draw. Best hand is 7-5-4-3-2. From the SB you have no calling range vs a late open; from the BB you may call 2-3 through 2-7 vs a BTN or SB open.',th:'Ace เป็นไพ่สูง; สเตรทและฟลัชนับเป็นมือเสีย SD = มือจั่วสเตรท มือดีสุดคือ 7-5-4-3-2 จาก SB ไม่มีช่วง call เมื่อเจอคนเปิดตำแหน่งหลัง; จาก BB สามารถ call 2-3 ถึง 2-7 เมื่อเจอ BTN หรือ SB เปิด'} },
   badugi:{ full:'Badugi', tagClass:'badugi',
     openCols:['Position','Open Freq.','Badugi','1-Card Draw','2-Card Draw'],
     openRows:[
@@ -887,7 +893,9 @@ function renderSummary(){
   const c = CHARTS[sumGame];
   const openHead = c.openCols.map(h=>`<th>${h}</th>`).join('');
   const openBody = c.openRows.map(r=>`<tr><td class="pos">${r[0]}</td><td class="tdmono">${r[1]}</td>${r.slice(2).map(x=>`<td>${x}</td>`).join('')}</tr>`).join('');
-  const faceBody = c.faceRows.map(r=>`<tr><td class="pos">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  const posCols = c.facePosCols || 1;
+  const faceHead = (c.faceCols || [gt.thOpp, gt.th3b, gt.thCall]).map(h=>`<th>${L(h)}</th>`).join('');
+  const faceBody = c.faceRows.map(r=>`<tr>${r.map((x,i)=>`<td${i<posCols?' class="pos"':''}>${x}</td>`).join('')}</tr>`).join('');
   document.getElementById('pane-summary').innerHTML = `
     <div class="callout"><span class="tag">${LANG==='th'?'การเลือกมือ':'Hand Selection'}</span>
       <p class="text">${LANG==='th'?'ชาร์ตอ้างอิงช่วงมือเริ่มต้นสำหรับทั้งสามเกม เลือกเกมด้านล่างเพื่อดูช่วงเปิด (first-in) และช่วงตอบโต้เมื่อเจอคนเปิด แล้วนำไปฝึกในแท็บแบบฝึก':'Starting-hand quick reference for all three games. Pick a game below to see its first-in opening range and its response range when facing an open, then drill them in the Practice tab.'}</p>
@@ -901,7 +909,7 @@ function renderSummary(){
       <h4><span class="gtag ${c.tagClass}" style="vertical-align:middle;margin-right:8px">${c.full}</span></h4>
       <div class="table-wrap"><table class="dtable"><thead><tr>${openHead}</tr></thead><tbody>${openBody}</tbody></table></div>
       <p class="subhead">${L(gt.thPos)}</p>
-      <div class="table-wrap"><table class="dtable"><thead><tr><th>${L(gt.thOpp)}</th><th>${L(gt.th3b)}</th><th>${L(gt.thCall)}</th></tr></thead><tbody>${faceBody}</tbody></table></div>
+      <div class="table-wrap"><table class="dtable"><thead><tr>${faceHead}</tr></thead><tbody>${faceBody}</tbody></table></div>
       <p class="tnote">${L(c.note)}</p>
     </div>`;
   document.getElementById('sumGamePills').addEventListener('click', e=>{
