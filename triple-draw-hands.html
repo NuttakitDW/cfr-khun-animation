@@ -429,6 +429,7 @@ function faceA5(opener, hero, ev){
   let call=false;
   if(opener==='UTG'||opener==='UTG+1'||opener==='HJ') call=ev.three5;
   else if(opener==='CO') call=ev.is643;
+  else if(late && hero==='BB') call=ev.two5;
   return call?'call':'fold';
 }
 function descA5(ev){
@@ -439,6 +440,7 @@ function descA5(ev){
   if(ev.three6) return {en:`a three-card six-under (${ev.threeStr}, 2-card draw)`, th:`สามใบ six-under (${ev.threeStr}, จั่ว 2 ใบ)`};
   if(ev.hasA2) return {en:'A-2 — the best two-card draw', th:'A-2 — มือจั่วสองใบที่ดีที่สุด'};
   if(ev.two4) return {en:`a two-card four-under (${ev.twoStr})`, th:`สองใบ four-under (${ev.twoStr})`};
+  if(ev.two5) return {en:`a two-card five-under (${ev.twoStr})`, th:`สองใบ five-under (${ev.twoStr})`};
   if(ev.isPat) return {en:`a pat ${ev.patStr} — too weak`, th:`มือ pat ${ev.patStr} — อ่อนเกินไป`};
   return {en:'no qualifying low', th:'ไม่มี low ที่ผ่านเกณฑ์'};
 }
@@ -571,7 +573,7 @@ const GAMES = {
     eval:evalA5, first:firstA5, face:faceA5, desc:descA5,
     firstPos:['UTG','UTG+1','HJ','CO','BTN','SB'],
     facing:[{o:'UTG',h:'CO'},{o:'HJ',h:'BTN'},{o:'CO',h:'BTN'},{o:'BTN',h:'BB'},{o:'SB',h:'BB'}],
-    canCall:(o,h)=> !(o==='BTN'||o==='SB') },
+    canCall:(o,h)=> (o==='UTG'||o==='UTG+1'||o==='HJ'||o==='CO') || h==='BB' },
   d27:{ short:{en:'2-7',th:'2-7'}, full:'2-7 Triple Draw', tagClass:'d27', n:5,
     eval:evalD27, first:firstD27, face:faceD27, desc:descD27,
     firstPos:['UTG','UTG+1','HJ','CO','BTN','SB'],
@@ -608,7 +610,10 @@ function reqFaceText(g, opener, hero){
   const late = opener==='BTN'||opener==='SB';
   if(g==='a5'){
     const tb = late ? '3-bet a 7-low+ pat / four-card six-under / three-card six-under' : '3-bet a 7-5-low+ pat / four-card six-under';
-    const call = late ? 'no calling range vs a BTN/SB open' : (opener==='CO' ? 'call 6-4-3 or better' : 'call a three-card five-under');
+    let call;
+    if(opener==='CO') call='call 6-4-3 or better';
+    else if(late) call = hero==='BB' ? 'from the BB, call a two-card five-under' : 'no calling range';
+    else call='call a three-card five-under';
     return {en:`${tb}; ${call}.`, th:`${tb}; ${call}.`};
   }
   if(g==='d27'){
@@ -841,7 +846,8 @@ const CHARTS = {
     faceRows:[
       ['UTG–HJ','7-5-low or better / 4-card 6-under','3-card 5-under'],
       ['CO','Same as above','6-4-3 or better'],
-      ['BTN/SB','Above + 7-low · 3-card 6-under','—']],
+      ['BTN/SB','Above + 7-low · 3-card 6-under','—'],
+      ['BB (vs BTN/SB)','Same as above','2-card 5-under']],
     note:{en:'Ace is low; straights and flushes do not count. Draw columns name how many cards you draw.',th:'Ace เป็นไพ่ต่ำ; สเตรทและฟลัชไม่นับ ชื่อคอลัมน์บอกจำนวนใบที่จั่ว'} },
   d27:{ full:'Deuce-to-Seven Triple Draw', tagClass:'d27',
     openCols:['Position','Open Freq.','Pat','1-Card Draw','2-Card Draw','3-Card Draw'],
