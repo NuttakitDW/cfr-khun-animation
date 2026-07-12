@@ -114,6 +114,8 @@ ul.keypts li { font-size: 14px; color: var(--text); line-height: 1.8; }
 /* ---- drill controls ---- */
 .ctrl-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .ctrl-row .clab { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); width: 62px; flex-shrink: 0; }
+.auto-toggle { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none; }
+.auto-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; margin: 0; }
 .pill-group { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
 .pill-group button { font: inherit; font-size: 12px; font-weight: 700; background: var(--panel-2); color: var(--muted); border: none; padding: 8px 13px; cursor: pointer; transition: color .14s, background .14s; }
 .pill-group button + button { border-left: 1px solid var(--border); }
@@ -302,6 +304,7 @@ footer a:hover { color: var(--accent); }
         <div class="ctrl-row">
           <span class="clab" id="pLab"></span>
           <div class="pill-group pos" id="posPills"></div>
+          <label class="auto-toggle" id="autoNextLbl"><input type="checkbox" id="autoNextChk"><span id="autoNextTxt"></span></label>
         </div>
         <div class="drill-stage" id="drillStage"></div>
         <div class="leak-panel" id="leakPanel"></div>
@@ -350,6 +353,7 @@ const T = {
   mFirst: { en:'First-in', th:'เปิดก่อน' },
   mFace:  { en:'Facing open', th:'เจอคนเปิด' },
   posAny: { en:'Any', th:'ทั้งหมด' },
+  autoNext:{ en:'Auto-next on correct', th:'ไปมือถัดไปเมื่อตอบถูก' },
   corLab: { en:'Correct', th:'ถูก' },
   strLab: { en:'Streak', th:'ติดต่อกัน' },
   newHand:{ en:'Next hand →', th:'มือถัดไป →' },
@@ -679,6 +683,7 @@ function tableViz(cfg){
 
 /* ================= drill ================= */
 let drillGame = localStorage.getItem('td_game') || 'a5';
+let drillAuto = localStorage.getItem('td_auto')==='1';
 let drillMode = 'mix';
 let drillPos = 'any';
 let drillCur = null;
@@ -752,6 +757,10 @@ function renderDrill(){
     localStorage.setItem('td_hist_v2', JSON.stringify(HIST));
     markAnswered();
     renderLeaks();
+    if(correct && drillAuto){
+      const dc = drillCur;
+      setTimeout(()=>{ if(drillCur===dc) newDrill(); }, 900);
+    }
   });
 }
 function markAnswered(){
@@ -832,6 +841,10 @@ document.getElementById('posPills').addEventListener('click', e=>{
   [...e.currentTarget.children].forEach(x=>x.classList.toggle('active', x===b));
   drillPos = b.dataset.pos;
   newDrill();
+});
+document.getElementById('autoNextChk').addEventListener('change', e=>{
+  drillAuto = e.target.checked;
+  localStorage.setItem('td_auto', drillAuto ? '1' : '0');
 });
 
 /* ================= summary (charts) ================= */
@@ -1040,6 +1053,8 @@ function applyLang(){
   document.getElementById('gLab').textContent=L(T.gLab);
   document.getElementById('sLab').textContent=L(T.sLab);
   document.getElementById('pLab').textContent=L(T.pLab);
+  document.getElementById('autoNextTxt').textContent=L(T.autoNext);
+  document.getElementById('autoNextChk').checked=drillAuto;
   document.getElementById('gMix').textContent=L(T.gMix);
   document.getElementById('mMix').textContent=L(T.mMix);
   document.getElementById('mFirst').textContent=L(T.mFirst);
