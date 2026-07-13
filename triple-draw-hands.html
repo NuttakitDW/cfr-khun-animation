@@ -505,8 +505,8 @@ function faceD27(opener, hero, ev){
 function descD27(ev){
   if(ev.pat96) return {en:`a 9-6-or-better pat (${ev.patStr})`, th:`มือ pat 9-6 หรือดีกว่า (${ev.patStr})`};
   if(ev.pat9)  return {en:`a 9-high pat (${ev.patStr})`, th:`มือ pat 9-high (${ev.patStr})`};
-  if(ev.four7noOE||(ev.four7&&ev.has2)||ev.q8653) return {en:'a four-card seven-under (1-card draw)', th:'สี่ใบ seven-under (จั่ว 1 ใบ)'};
-  if(ev.four8noSD) return {en:'a four-card eight-under, no straight draw', th:'สี่ใบ eight-under ไม่มีมือจั่วสเตรท'};
+  if(ev.four7noOE||(ev.four7&&ev.has2)) return {en:'a four-card seven-under (1-card draw)', th:'สี่ใบ seven-under (จั่ว 1 ใบ)'};
+  if(ev.four8noSD||ev.q8653) return {en:'a four-card eight-under, no straight draw (1-card draw)', th:'สี่ใบ eight-under ไม่มีมือจั่วสเตรท (จั่ว 1 ใบ)'};
   if(ev.three7_2) return {en:`a three-card seven-under with a deuce (${ev.lowStr})`, th:`สามใบ seven-under ที่มี 2 (${ev.lowStr})`};
   if(ev.three8_2) return {en:`a three-card eight-under with a deuce (${ev.lowStr})`, th:`สามใบ eight-under ที่มี 2 (${ev.lowStr})`};
   if(ev.two2x) return {en:'a two-card draw (2-x)', th:'มือจั่วสองใบ (2-x)'};
