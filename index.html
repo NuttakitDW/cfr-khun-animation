@@ -135,6 +135,7 @@ section.panel h3 {
 .tile .label.quant  { background: rgba(255,200,87,0.15);  color: #ffc857; }
 .tile .label.review { background: rgba(63,200,212,0.15);  color: var(--cyan); }
 .tile .label.music  { background: rgba(191,140,255,0.15); color: var(--purple); }
+.tile .label.tool   { background: rgba(122,132,153,0.18); color: #9aa6bd; }
 .tile .name {
   font-size: 16px;
   font-weight: 700;
@@ -483,6 +484,22 @@ footer a:hover { color: var(--accent); }
         <p class="name">R&amp;D Investments &amp; Past Returns</p>
         <p class="desc">Maletic 2019 — when high R&amp;D spending predicts higher future stock returns depends on whether you mean the <em>level</em> or the <em>change</em>, and on past performance. Two interactions, opposite signs.</p>
         <span class="arrow">/rd-investments-paper →</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="section-spacer"></div>
+
+  <section class="panel">
+    <h2>Systems &amp; Tooling</h2>
+    <h3>Software architecture studies &amp; reverse-engineering notes</h3>
+
+    <div class="tile-grid">
+      <a class="tile" href="/kholdem">
+        <span class="label tool">Study</span>
+        <p class="name">kHold'em — Architecture &amp; Integration</p>
+        <p class="desc">Read-only teardown of the kHold'em poker-room suite (eShark / LiPoker): the client&nbsp;↔&nbsp;server WCF model where the server owns every write, the SQL Server system of record (145 tables), cloud sync, DPAPI-locked secrets, and the native Bounty/PKO schema. Ends with four ranked integration surfaces — from the .kpl addon SDK to why you should never write raw SQL.</p>
+        <span class="arrow">/kholdem →</span>
       </a>
     </div>
   </section>
