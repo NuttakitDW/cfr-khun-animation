@@ -1,0 +1,763 @@
+<title>kHold'em — Architecture &amp; Integration Study</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-2: #0f1424;
+    --panel: #131826;
+    --panel-2: #1a2030;
+    --panel-3: #232b3f;
+    --border: #2a3245;
+    --text: #e4e9f2;
+    --muted: #7a8499;
+    --dim: #4a5266;
+    --accent: #5b9eff;
+    --green: #3fdf8e;
+    --red: #ff5e7a;
+    --yellow: #ffc857;
+    --purple: #bf8cff;
+    --orange: #ff8c42;
+    --gold: #ffd54a;
+    --mono: "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--text);
+    background:
+      radial-gradient(1100px 700px at 0% 0%, rgba(91,158,255,0.10), transparent 55%),
+      radial-gradient(1000px 700px at 100% 100%, rgba(191,140,255,0.10), transparent 55%),
+      var(--bg);
+    line-height: 1.55;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(10,14,26,0.72);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 26px;
+  }
+  .head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    background: linear-gradient(120deg, var(--accent), var(--purple) 55%, var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .head-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .meta-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .chip .k { color: var(--muted); }
+  .chip.ok { border-color: rgba(63,223,142,0.4); color: var(--green); background: rgba(63,223,142,0.08); }
+
+  /* ---------- Layout ---------- */
+  main {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .panel {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02), 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .eyebrow {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow .num {
+    font-family: var(--mono);
+    color: var(--accent);
+  }
+  h2 {
+    margin: 6px 0 0;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .lead { color: var(--muted); margin: 8px 0 0; font-size: 13.5px; }
+  p { margin: 10px 0; }
+
+  code, .mono { font-family: var(--mono); }
+  p code, li code, td code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: #cdd6ea;
+    white-space: nowrap;
+  }
+
+  /* ---------- Stat tiles ---------- */
+  .stat {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .stat .v {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .l {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .v.accent { color: var(--accent); }
+  .v.green { color: var(--green); }
+  .v.purple { color: var(--purple); }
+  .v.gold { color: var(--gold); }
+
+  /* KO ratio bar */
+  .ratio-track {
+    height: 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .ratio-fill {
+    height: 100%;
+    width: 35.7%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--gold), var(--orange));
+    animation: grow 1.1s cubic-bezier(0.22,1,0.36,1);
+  }
+  @keyframes grow { from { width: 0; } }
+
+  /* ---------- Tables ---------- */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 460px;
+  }
+  th {
+    text-align: left;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(42,50,69,0.55);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(91,158,255,0.045); }
+  td.mono, td .mono { font-family: var(--mono); font-size: 12px; }
+  .col-c { color: var(--accent); }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .b-blue { background: rgba(91,158,255,0.14); color: var(--accent); border: 1px solid rgba(91,158,255,0.35); }
+  .b-purple { background: rgba(191,140,255,0.14); color: var(--purple); border: 1px solid rgba(191,140,255,0.35); }
+  .b-green { background: rgba(63,223,142,0.14); color: var(--green); border: 1px solid rgba(63,223,142,0.35); }
+  .b-yellow { background: rgba(255,200,87,0.14); color: var(--yellow); border: 1px solid rgba(255,200,87,0.35); }
+  .b-red { background: rgba(255,94,122,0.14); color: var(--red); border: 1px solid rgba(255,94,122,0.35); }
+  .b-dim { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
+
+  .port {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(91,158,255,0.10);
+    border: 1px solid rgba(91,158,255,0.28);
+    color: #a9c8ff;
+    margin-right: 4px;
+    display: inline-block;
+  }
+
+  /* ---------- Wiring diagram ---------- */
+  .wire {
+    display: grid;
+    grid-template-columns: 1.1fr auto 1fr auto 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin-top: 14px;
+  }
+  .wire-col { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .node {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    font-size: 12.5px;
+  }
+  .node .t { font-weight: 600; }
+  .node .d { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .node.client { border-color: rgba(91,158,255,0.35); }
+  .node.server {
+    border-color: var(--gold);
+    background: rgba(255,213,74,0.06);
+    box-shadow: 0 0 0 1px rgba(255,213,74,0.15), 0 0 24px rgba(255,213,74,0.10);
+  }
+  .node.db { border-color: rgba(63,223,142,0.4); background: rgba(63,223,142,0.05); }
+  .node.cloud { border-color: rgba(191,140,255,0.4); background: rgba(191,140,255,0.05); }
+  .wire-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    min-width: 96px;
+  }
+  .wire-link .proto {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .wire-link .arrow {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    position: relative;
+  }
+  .wire-link .arrow::after {
+    content: "";
+    position: absolute;
+    right: -1px; top: -3px;
+    border-left: 7px solid var(--gold);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+  }
+  .wire-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+  }
+
+  /* ---------- Options ---------- */
+  .opt-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .opt-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .opt-letter {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .safety {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .opt.a { border-left: 3px solid var(--green); }
+  .opt.b { border-left: 3px solid var(--accent); }
+  .opt.c { border-left: 3px solid var(--yellow); }
+  .opt.d { border-left: 3px solid var(--red); }
+  .opt.a .opt-letter { color: var(--green); }
+  .opt.b .opt-letter { color: var(--accent); }
+  .opt.c .opt-letter { color: var(--yellow); }
+  .opt.d .opt-letter { color: var(--red); }
+  .cost { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .cost b { color: var(--text); font-weight: 600; }
+
+  ul.tight { margin: 10px 0 0; padding-left: 18px; }
+  ul.tight li { margin: 5px 0; }
+  ul.clean { list-style: none; margin: 10px 0 0; padding: 0; }
+  ul.clean li {
+    padding-left: 20px;
+    position: relative;
+    margin: 7px 0;
+  }
+  ul.clean li::before {
+    content: "";
+    position: absolute;
+    left: 2px; top: 8px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  ul.clean li.no::before { background: var(--red); }
+  ul.clean li.yes::before { background: var(--green); }
+
+  /* ---------- Steps ---------- */
+  .step {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(42,50,69,0.55);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-n {
+    flex: 0 0 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 14px;
+    background: rgba(91,158,255,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(91,158,255,0.3);
+  }
+  .step-body { flex: 1; }
+  .step-body .st { font-weight: 600; }
+
+  /* ---------- Callout ---------- */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 11px;
+    background: rgba(63,223,142,0.06);
+    border: 1px solid rgba(63,223,142,0.28);
+    font-size: 13px;
+  }
+  .callout.warn { background: rgba(255,200,87,0.06); border-color: rgba(255,200,87,0.3); }
+  .callout .tag {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--green);
+    flex: 0 0 auto;
+    padding-top: 1px;
+  }
+  .callout.warn .tag { color: var(--yellow); }
+
+  .kicker-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .kicker-list .row { display: flex; gap: 10px; align-items: flex-start; }
+  .kicker-list .dot {
+    flex: 0 0 auto; margin-top: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+  .dot.blue { background: var(--accent); }
+  .dot.green { background: var(--green); }
+  .dot.purple { background: var(--purple); }
+  .dot.gold { background: var(--gold); }
+  .dot.red { background: var(--red); }
+
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 26px; }
+  .quick-grid .qrow { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(42,50,69,0.5); font-size: 12.5px; }
+  .quick-grid .qk { color: var(--muted); }
+  .quick-grid .qv { font-family: var(--mono); color: var(--text); text-align: right; }
+
+  footer {
+    max-width: 1240px;
+    margin: 8px auto 0;
+    padding: 22px 26px 40px;
+    color: var(--dim);
+    font-size: 11.5px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  @media (max-width: 1100px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .wire { grid-template-columns: 1fr; }
+    .wire-link { min-width: 0; padding: 6px 0; flex-direction: row; gap: 8px; }
+    .wire-link .arrow { width: 40px; }
+    .wire-link .proto { margin-bottom: 0; }
+    .quick-grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; }
+  }
+</style>
+
+<header>
+  <div class="head-row">
+    <div>
+      <h1>kHold'em — Architecture &amp; Integration Study</h1>
+      <div class="head-sub">Read-only investigation of the installation on host <code class="mono">EC2AMAZ-OJ656GO</code></div>
+    </div>
+    <div class="meta-chips">
+      <span class="chip"><span class="k">version</span> 3.17 (build 53)</span>
+      <span class="chip"><span class="k">setup</span> Server</span>
+      <span class="chip"><span class="k">date</span> 2026-07-18</span>
+      <span class="chip ok">READ-ONLY · no writes</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- TL;DR -->
+  <section class="panel">
+    <div class="eyebrow"><span class="num">01</span> Executive summary</div>
+    <h2>A client&nbsp;↔&nbsp;server poker-room suite where the server owns every write</h2>
+    <p class="lead">kHold'em (by <em>eShark</em> / <em>LiPoker</em>) is a .NET Framework 4.6 Windows tournament-management suite installed at <code>C:\kHoldem</code>. Clients never touch the database — they speak to a WCF/binary-TCP server that is the only sanctioned path to the data.</p>
+
+    <div class="kicker-list">
+      <div class="row"><span class="dot gold"></span><div><b>Bounty / PKO already ships.</b> It is a first-class tournament type — 144 of 403 live tournaments are already knockout events. You <em>configure</em> it, you don't build it. <a href="#bounty">See §7</a>.</div></div>
+      <div class="row"><span class="dot green"></span><div><b>The server is the sole DB gateway.</b> Business logic, caching, permissions, and sync bookkeeping all live server-side. When SQL briefly dropped, the server — not the client — threw the error.</div></div>
+      <div class="row"><span class="dot blue"></span><div><b>Best way to "write" is to drive the server, not the database.</b> Three integration surfaces exist (Addon SDK, client-protocol side-car, local Web/API). <a href="#options">See §8</a>.</div></div>
+      <div class="row"><span class="dot purple"></span><div><b>Secrets are locked to this machine.</b> DB auth is Windows-integrated (no stored password); cloud tokens in <code>service.json</code> are DPAPI-encrypted and non-portable.</div></div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="grid-4">
+    <div class="stat"><div class="v accent">145</div><div class="l">Tables in <code style="background:none;border:none;padding:0">kHoldem</code> DB</div></div>
+    <div class="stat"><div class="v accent">11</div><div class="l">Stored procedures</div></div>
+    <div class="stat"><div class="v purple">~110</div><div class="l">Cloud-synced tables</div></div>
+    <div class="stat">
+      <div class="v gold">144<span style="color:var(--dim);font-size:18px">/403</span></div>
+      <div class="l">Tournaments already knockout</div>
+      <div class="ratio-track"><div class="ratio-fill"></div></div>
+    </div>
+  </section>
+
+  <!-- Wiring diagram -->
+  <section class="panel">
+    <div class="eyebrow"><span class="num">03</span> How it's wired</div>
+    <h2>Every client funnels through one core server into one database</h2>
+
+    <div class="wire">
+      <div class="wire-col">
+        <div class="node client"><div class="t">kholdem.exe</div><div class="d">operator desktop UI</div></div>
+        <div class="node client"><div class="t">Tablet · clock · display</div><div class="d">floor devices</div></div>
+        <div class="node client"><div class="t">Web viewer</div><div class="d">Angular live results</div></div>
+      </div>
+      <div class="wire-link">
+        <div class="proto">WCF / TCP<br>2505 · 5856 · 7215</div>
+        <div class="arrow"></div>
+      </div>
+      <div class="wire-col">
+        <div class="node server"><div class="t">kHoldemServer</div><div class="d">core app server — business logic, caches, sole DB connection</div></div>
+        <div class="node" style="border-color:rgba(91,158,255,0.3)"><div class="t">kHoldemWebServer</div><div class="d">OWIN + ASP.NET Web API on 5855</div></div>
+      </div>
+      <div class="wire-link">
+        <div class="proto">Trusted<br>SSPI</div>
+        <div class="arrow"></div>
+      </div>
+      <div class="wire-col">
+        <div class="node db"><div class="t">SQL Server 2017</div><div class="d">instance <code style="background:none;border:none;padding:0">.\KHOLDEM</code> · db <code style="background:none;border:none;padding:0">kHoldem</code></div></div>
+        <div class="node cloud"><div class="t">eShark Cloud</div><div class="d">multi-venue sync via <code style="background:none;border:none;padding:0">kholdemsync</code> (HTTPS)</div></div>
+      </div>
+    </div>
+    <div class="wire-note">Siblings <code>kHoldemBackup</code>, <code>kHoldemPrintEngine</code>, and <code>kHoldemPokerLens</code> hang off the same server/DB layer. Every backend service is the <em>same</em> binary — <code>kholdemhost.exe /service &lt;Name&gt;</code> — running as <code>LocalSystem</code>.</div>
+  </section>
+
+  <!-- Services + Data -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="eyebrow"><span class="num">03</span> The services</div>
+      <h2 style="font-size:17px">Backend roles &amp; ports</h2>
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>Service</th><th>Role</th><th>Ports</th></tr></thead>
+          <tbody>
+            <tr><td><b>kHoldemServer</b></td><td>Core app server — logic, SQL connection, serves all clients</td><td><span class="port">2505</span><span class="port">5856</span><span class="port">7215</span></td></tr>
+            <tr><td><b>kHoldemWebServer</b></td><td>Local Web + API (OWIN, Swagger), serves pages &amp; Angular app</td><td><span class="port">5855</span></td></tr>
+            <tr><td><b>kholdemsync</b></td><td>Cloud sync engine — pushes/pulls to eShark</td><td class="mono" style="color:var(--muted)">outbound</td></tr>
+            <tr><td><b>kHoldemBackup</b></td><td>Scheduled DB backups</td><td class="mono" style="color:var(--dim)">—</td></tr>
+            <tr><td><b>kHoldemPrintEngine</b></td><td>Ticket / receipt / report printing</td><td class="mono" style="color:var(--dim)">—</td></tr>
+            <tr><td><b>kHoldemPokerLens</b></td><td>RFID / card-recognition integration</td><td class="mono" style="color:var(--dim)">—</td></tr>
+            <tr><td><b>MSSQL$KHOLDEM</b></td><td>SQL Server instance</td><td><span class="port">UDP 1434</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="eyebrow"><span class="num">04</span> Where data lives</div>
+      <h2 style="font-size:17px">System of record</h2>
+      <ul class="clean">
+        <li><b>Engine:</b> Microsoft SQL Server 2017 (<code>MSSQL14.KHOLDEM</code>), running as <code>NT AUTHORITY\LOCALSERVICE</code>.</li>
+        <li><b>Database:</b> <code>kHoldem</code> — 145 tables, 11 stored procedures.</li>
+        <li><b>Auth:</b> Mixed mode enabled, but the app uses <b>Windows integrated (trusted)</b> — <code>service.json</code> has a Connection block with server + database but no password.</li>
+        <li><b>Keys:</b> nearly every table uses an app-generated <code>uniqueidentifier</code> (GUID) primary key; a <code>sync_lastupdated</code> column drives optimistic concurrency.</li>
+        <li class="no"><b>Collation caveat:</b> columns mix <code>Latin1_General_CI_AS_KS_WS</code> and <code>SQL_Latin1_General_CP1_CI_AS</code> — cross-collation string concatenation throws in ad-hoc SQL.</li>
+      </ul>
+      <p class="lead" style="margin-top:14px"><b style="color:var(--text)">Domain families:</b> Tournament*, Cash*, Player / PlayerClub / VIP*, Ranking / Season / League, Transaction / Payment / Document, Mail / SMS, Server / Device / Domain, BlackList, Permission / Group / User (RBAC).</p>
+    </section>
+  </div>
+
+  <!-- Physical layout -->
+  <section class="panel">
+    <div class="eyebrow"><span class="num">02</span> Physical layout · <code style="background:none;border:none;padding:0;color:var(--muted)">C:\kHoldem</code></div>
+    <h2 style="font-size:17px">What sits on disk</h2>
+    <div class="table-wrap" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Path</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td class="mono col-c">kholdem.exe</td><td>Desktop <b>client</b> — WinForms + DevExpress + WebView2. The operator UI.</td></tr>
+          <tr><td class="mono col-c">kholdemhost.exe</td><td>Service host — one process per backend service.</td></tr>
+          <tr><td class="mono col-c">kholdemmedia.exe</td><td>Media / clock renderer (tournament clock, displays).</td></tr>
+          <tr><td class="mono col-c">Components\</td><td>Application assemblies — <code>LiPoker.*.dll</code> core, DevExpress UI, Twilio, AWS SNS, Chilkat, Google APIs, SignalR, OWIN.</td></tr>
+          <tr><td class="mono col-c">Addons\</td><td><b>Plug-in modules</b> (<code>*.kpl</code>): triton, pslive, barriere, igt, pokerlens, eid, apt, cis, leris, luxon, neon, zino, direpay, ci, spider — evidence of a supported extension mechanism.</td></tr>
+          <tr><td class="mono col-c">Web\</td><td>Local web + API host: legacy ASP.NET (<code>LiPokerWS</code>) pages + <code>Web\v2\</code> compiled Angular SPA (public results / clock viewer).</td></tr>
+          <tr><td class="mono col-c">Configuration\syncengine.json</td><td>Declarative map of every table that participates in multi-site cloud sync.</td></tr>
+          <tr><td class="mono col-c">Database\Release.bak</td><td>Shipped baseline DB backup, used to provision the DB on install.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lead" style="margin-top:14px"><b style="color:var(--text)">Runtime state</b> lives outside the install dir in <code>C:\ProgramData\kHoldem\</code>: <code>service.json</code> (connection + cloud identity), <code>version.json</code>, <code>*.lic</code>, <code>Log\</code>, <code>Data\</code>, and server-side addon binaries under <code>Addons\Server\</code> (Core, Sync, Backup, PokerLens, PrintEngine, Security).</p>
+  </section>
+
+  <!-- Sync + Credentials -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="eyebrow"><span class="num">05</span> Cloud sync &amp; multi-site</div>
+      <h2 style="font-size:17px">Timestamp-based, last-writer-wins delta sync</h2>
+      <ul class="clean">
+        <li><code>syncengine.json</code> declares ~110 replicating tables, each with GUID key(s) and UTC-vs-date-only markers (<code>DateTimeMode</code>).</li>
+        <li><code>Account</code>, <code>Club</code>, <code>Player</code>, <code>Tournament</code> carry <code>NetworkLastUpload</code> / <code>NetworkLastDownload</code> / <code>LastUpdated</code> markers.</li>
+      </ul>
+      <div class="callout warn" style="margin-top:14px">
+        <span class="tag">Why it matters</span>
+        <div>Write to the DB out-of-band and you must respect these markers, or the sync engine will <b>overwrite your change</b> or push a <b>corrupt delta</b> to the cloud. This is the single biggest reason not to bypass the server.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="eyebrow"><span class="num">06</span> Credentials &amp; secrets</div>
+      <h2 style="font-size:17px">What each layer requires</h2>
+      <div class="table-wrap" style="margin-top:12px">
+        <table style="min-width:0">
+          <thead><tr><th>Target</th><th>Credential</th></tr></thead>
+          <tbody>
+            <tr><td><b>SQL DB</b><br><span class="mono" style="font-size:11px;color:var(--muted)">.\KHOLDEM / kHoldem</span></td><td>Windows login on the instance (services run as <code>LocalSystem</code> = sysadmin). No SQL password stored.</td></tr>
+            <tr><td><b>kHoldemServer</b><br><span class="mono" style="font-size:11px;color:var(--muted)">WCF</span></td><td>A kHold'em user account + a registered <b>Device</b>. Identity stored in <code>HKCU\SOFTWARE\kHoldem</code>.</td></tr>
+            <tr><td><b>eShark Cloud</b><br><span class="mono" style="font-size:11px;color:var(--muted)">sync / licensing</span></td><td>Membership account + <b>DPAPI-encrypted</b> token &amp; <code>AccessToken</code>, <code>licenseId</code>, <code>ServerID</code>.</td></tr>
+            <tr><td><b>Local Web/API</b><br><span class="mono" style="font-size:11px;color:var(--muted)">port 5855</span></td><td>App-level auth — returns HTTP 500 to anonymous probes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lead" style="margin-top:12px"><b style="color:var(--text)">DPAPI blobs</b> in <code>service.json</code> start with <code>AQAAANCMnd8B…</code> — decryptable only on this machine, by the account that encrypted them. Not portable, not a liftable API key.</p>
+    </section>
+  </div>
+
+  <!-- Bounty / PKO -->
+  <section class="panel" id="bounty" style="border-color:rgba(255,213,74,0.28)">
+    <div class="eyebrow"><span class="num">07</span> Poker Bounty / PKO</div>
+    <h2>It already exists — you configure it, not build it</h2>
+    <div class="callout" style="margin-top:12px">
+      <span class="tag">Shipped</span>
+      <div>kHold'em ships bounty as a first-class tournament type. <b>144 of 403</b> live tournaments already have <code>KnockOut = 1</code>. Real events today include <b>"NLH Big Bounty: $3,000"</b>, <b>"Speed Racer – NLH Bounty"</b>, and <b>"NLH Mystery Bounty"</b>. Standard bounty, Progressive KO, and Mystery Bounty are all modeled end-to-end.</div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px">
+      <div>
+        <h3><span class="badge b-gold" style="background:rgba(255,213,74,0.14);color:var(--gold);border:1px solid rgba(255,213,74,0.35)">Tournament</span> &nbsp;bounty configuration</h3>
+        <div class="table-wrap">
+          <table style="min-width:0">
+            <thead><tr><th>Column</th><th>Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td class="mono col-c">KnockOut</td><td class="mono" style="color:var(--muted)">bit</td><td>Is this a bounty/KO tournament</td></tr>
+              <tr><td class="mono col-c">KnockOutType</td><td class="mono" style="color:var(--muted)">int</td><td><code>1</code> = standard, <code>3</code> = Mystery Bounty</td></tr>
+              <tr><td class="mono col-c">KnockOutAmount</td><td class="mono" style="color:var(--muted)">float</td><td>Bounty value per player</td></tr>
+              <tr><td class="mono col-c">KnockOutProgressive</td><td class="mono" style="color:var(--muted)">float</td><td><b>PKO</b> — share rolling onto the eliminator</td></tr>
+              <tr><td class="mono col-c">KnockOutProgressiveRoundType</td><td class="mono" style="color:var(--muted)">int</td><td>Rounding rule for the split</td></tr>
+              <tr><td class="mono col-c">KnockOutTax · KnockOutHouse</td><td class="mono" style="color:var(--muted)">bit</td><td>Tax / house-rake on the bounty portion</td></tr>
+              <tr><td class="mono col-c">TotalKnockOut</td><td class="mono" style="color:var(--muted)">decimal</td><td>Roll-up of bounty money in the pool</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3><span class="badge b-purple">TournamentPlayers</span> &nbsp;per-player accounting</h3>
+        <ul class="clean">
+          <li><code>KnockOutCount</code>, <code>KnockOutValue</code>, <code>KnockOutAmount</code></li>
+          <li><code>KnockedOutPlayerID</code>, <code>KnockedOutPlayersIDString</code> — who this player eliminated</li>
+          <li><code>PayoutKnockOutAmount</code>, <code>PayoutAmount</code>, <code>PayoutAssigned</code></li>
+        </ul>
+        <div class="callout" style="margin-top:16px">
+          <span class="tag">Bottom line</span>
+          <div>"Implement PKO" reduces to <b>configure PKO</b>: create a tournament with <code>KnockOut = 1</code>, set <code>KnockOutType</code> and <code>KnockOutAmount</code>, and a non-zero <code>KnockOutProgressive</code>. The UI, schema, and payout engine are already in place.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integration options -->
+  <section id="options">
+    <div class="panel" style="margin-bottom:22px">
+      <div class="eyebrow"><span class="num">08</span> Integration surfaces</div>
+      <h2>Four ways in — ranked by safety and supportability</h2>
+      <p class="lead">Drive the server, not the database. The options below run from most-native to actively-discouraged.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel opt a">
+        <div class="opt-head">
+          <div class="opt-title"><span class="opt-letter">A</span><h3 style="margin:0">Addon (<code>.kpl</code>) plugin</h3></div>
+          <span class="safety" style="color:var(--green)">✅ Most native</span>
+        </div>
+        <p>kHold'em has a first-party plug-in model (<code>triton.kpl</code>, <code>pslive.kpl</code>, <code>direpay.kpl</code>…) with server-side binaries under <code>ProgramData\…\Addons\Server\</code> and a <code>LiPoker.Modules.Base.API.dll</code>. A <code>.kpl</code> runs <b>inside the server process</b>, so it inherits the sanctioned data layer, sync-safe writes, and event hooks for free.</p>
+        <div class="cost"><b>Cost:</b> needs the eShark Addon SDK / partner docs (not on this box) and likely signing.</div>
+      </div>
+
+      <div class="panel opt b">
+        <div class="opt-head">
+          <div class="opt-title"><span class="opt-letter">B</span><h3 style="margin:0">Client-protocol side-car</h3></div>
+          <span class="safety" style="color:var(--accent)">✅ Recommended</span>
+        </div>
+        <p>A standalone service that speaks the same WCF client protocol as <code>kholdem.exe</code>, reusing shipped SDK assemblies (<code>LiPoker.Modules.Base.Client/API.dll</code>, <code>LiPoker.Network.dll</code>). It authenticates as a user + Device and issues the same commands the UI does — <b>every write passes server validation, permissions, and sync bookkeeping.</b></p>
+        <div class="cost"><b>Cost:</b> you must reflect/obtain the command contracts (e.g. <code>AdministrationHandler</code>) — feasible but unofficial.</div>
+      </div>
+
+      <div class="panel opt c">
+        <div class="opt-head">
+          <div class="opt-title"><span class="opt-letter">C</span><h3 style="margin:0">Local Web / API (5855)</h3></div>
+          <span class="safety" style="color:var(--yellow)">⚠ Limited</span>
+        </div>
+        <p><code>kHoldemWebServer</code> self-hosts an ASP.NET Web API (<code>LiPokerWS</code>) with Swagger. Cleanest transport (HTTP/JSON) <b>if</b> the endpoints you need are exposed — but observed surface is live-results / display / cloud-registration oriented and returns 500 to unauthenticated probes.</p>
+        <div class="cost"><b>Cost:</b> enumerate its Swagger doc from an authenticated context before betting on it.</div>
+      </div>
+
+      <div class="panel opt d">
+        <div class="opt-head">
+          <div class="opt-title"><span class="opt-letter">D</span><h3 style="margin:0">Direct SQL writes</h3></div>
+          <span class="safety" style="color:var(--red)">❌ Do not</span>
+        </div>
+        <p>A local process <em>can</em> open a trusted connection and write — but don't, except read-only reporting:</p>
+        <ul class="clean" style="margin-top:8px">
+          <li class="no">Server holds in-memory caches — out-of-band writes go stale/incoherent until reload.</li>
+          <li class="no">Sync engine overwrites hand-written rows or pushes bad deltas.</li>
+          <li class="no">GUID keys, invariants, payout math &amp; permissions are enforced in code — you'll create orphans.</li>
+          <li class="yes">The one safe direct use is <b>READ</b> — ideally against a restored <code>Release.bak</code>, not the live DB.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recommended path -->
+  <section class="panel">
+    <div class="eyebrow"><span class="num">09</span> Recommended path for a PKO / bounty project</div>
+    <h2 style="font-size:17px">Configure first, automate through the server, never write raw</h2>
+    <div style="margin-top:8px">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-body">
+          <div class="st">Confirm the built-in engine is insufficient.</div>
+          Standard bounty, Progressive KO, and Mystery Bounty are already supported end-to-end. For most requirements the deliverable is <b>configuration + a report or skin</b>, not code.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-body">
+          <div class="st">If you need automation or external control…</div>
+          <b>Read side:</b> query a backup/restored copy of the DB (<code>Tournament</code>, <code>TournamentPlayers</code>, payout tables) for dashboards/exports — safe and easy. &nbsp;<b>Write side:</b> implement <span class="badge b-blue">Option B</span> side-car, or pursue <span class="badge b-green">Option A</span> Addon SDK. <b>Never</b> write tournament/player/payout rows straight into the live DB.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-body">
+          <div class="st">Engage eShark for the Addon SDK + API docs.</div>
+          Official contracts turn Options A/B/C from reverse-engineering into a supported build.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick reference -->
+  <section class="panel">
+    <div class="eyebrow"><span class="num">10</span> Quick reference</div>
+    <h2 style="font-size:17px">Everything on one card</h2>
+    <div class="quick-grid" style="margin-top:12px">
+      <div class="qrow"><span class="qk">Install</span><span class="qv">C:\kHoldem</span></div>
+      <div class="qrow"><span class="qk">State / secrets</span><span class="qv">C:\ProgramData\kHoldem</span></div>
+      <div class="qrow"><span class="qk">Logs</span><span class="qv">…\kHoldem\Log</span></div>
+      <div class="qrow"><span class="qk">DB connection</span><span class="qv">.\KHOLDEM · kHoldem · SSPI</span></div>
+      <div class="qrow"><span class="qk">Server (WCF)</span><span class="qv">TCP 2505 / 5856 / 7215</span></div>
+      <div class="qrow"><span class="qk">Local Web + API</span><span class="qv">HTTP 5855</span></div>
+      <div class="qrow"><span class="qk">SQL Browser</span><span class="qv">UDP 1434</span></div>
+      <div class="qrow"><span class="qk">Core assemblies</span><span class="qv">LiPoker.dll · .Network · WS</span></div>
+      <div class="qrow"><span class="qk">Extension points</span><span class="qv">.kpl · client SDK · Web API</span></div>
+      <div class="qrow"><span class="qk">Bounty / PKO</span><span class="qv">Tournament.KnockOut*</span></div>
+      <div class="qrow"><span class="qk">Cloud membership</span><span class="qv">zsop.team@gmail.com</span></div>
+      <div class="qrow"><span class="qk">Secrets</span><span class="qv">DPAPI in service.json · *.lic</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Investigation was strictly read-only — file reads and <code class="mono">SELECT</code> queries only. No kHold'em file, service, registry value, or database row was created, altered, or deleted.
+  <br>© 2026 · kHold'em architecture &amp; integration study
+</footer>
