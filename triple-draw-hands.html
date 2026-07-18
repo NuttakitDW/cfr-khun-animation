@@ -368,8 +368,10 @@ const T = {
   roleFold:{ en:'fold', th:'fold' },
   roleAct:{ en:'to act', th:'รอเล่น' },
   feltFirst:{ en:'folds to you', th:'วนมาถึงคุณ' },
+  feltFirstUTG:{ en:'first to act', th:'คุณเล่นก่อน' },
   feltOpen:{ en:'opens', th:'เปิด' },
   promptFirst:{ en:'It folds to you in the <b>{P}</b>. Open or fold?', th:'วนมาถึงคุณที่ <b>{P}</b> จะ Open หรือ Fold?' },
+  promptFirstUTG:{ en:"You're first to act in the <b>{P}</b>. Open or fold?", th:'คุณเป็นคนแรกที่ <b>{P}</b> จะ Open หรือ Fold?' },
   promptFace:{ en:'<b>{O}</b> opens. You are in the <b>{H}</b>.', th:'<b>{O}</b> เปิด คุณอยู่ที่ <b>{H}</b>' },
   leakTitle:{ en:'Leak tracker', th:'ตัวติดตาม Leak' },
   leakSub:{ en:'Accuracy by spot (saved on this device). Weakest spots are listed first — study those charts.', th:'ความแม่นยำแยกตามสปอต (บันทึกในเครื่องนี้) สปอตที่อ่อนสุดแสดงก่อน — ไปทบทวนชาร์ตเหล่านั้น' },
@@ -676,7 +678,7 @@ function tableViz(cfg){
       <div class="snm">${p}</div><div class="srole">${roleTxt[st]}</div>${dchip}</div>`;
   }).join('');
   const feltLab = cfg.type==='firstin'
-    ? L(T.feltFirst)
+    ? (ORDER.indexOf(cfg.pos)===0 ? L(T.feltFirstUTG) : L(T.feltFirst))
     : `${cfg.opener} ${L(T.feltOpen)}`;
   return `<div class="pt-wrap"><div class="pt"><div class="felt"><div class="felt-lab">${feltLab}</div></div>${seats}</div></div>`;
 }
@@ -726,7 +728,7 @@ function bucketLabel(cfg){
   return cfg.type==='firstin' ? `${gs} · ${cfg.pos} open` : `${gs} · vs ${cfg.opener}`;
 }
 function scenPrompt(cfg){
-  if(cfg.type==='firstin') return L(T.promptFirst).replace('{P}', cfg.pos);
+  if(cfg.type==='firstin') return L(ORDER.indexOf(cfg.pos)===0 ? T.promptFirstUTG : T.promptFirst).replace('{P}', cfg.pos);
   return L(T.promptFace).replace('{O}', cfg.opener).replace('{H}', cfg.hero);
 }
 function renderDrill(){
