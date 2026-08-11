@@ -306,6 +306,7 @@ section.ledger { margin-bottom: 58px; scroll-margin-top: 68px; }
 .tag.note   { color: var(--red);    border-color: rgba(255,75,92,0.30);  background: rgba(255,75,92,0.07); }
 .tag.paper  { color: var(--orange); border-color: rgba(255,138,61,0.30); background: rgba(255,138,61,0.07); }
 .tag.tool   { color: var(--ash-1);  border-color: var(--edge-lit);       background: rgba(232,242,234,0.03); }
+.tag.lesson { color: var(--cyan);   border-color: rgba(53,207,224,0.30); background: rgba(53,207,224,0.07); }
 
 .entry h3 {
   font-family: var(--display);
@@ -452,6 +453,7 @@ section.ledger { animation-delay: 0.3s; }
     <a href="#notes">Notes</a>
     <a href="#quant">Quant</a>
     <a href="#systems">Systems</a>
+    <a href="#lessons">Lessons</a>
     <a href="#music">Music</a>
   </nav>
   <span class="est">nuttakitkundum.com</span>
@@ -462,8 +464,8 @@ section.ledger { animation-delay: 0.3s; }
   <h1>Poker theory, <em>counterfactual regret,</em> and learning experiments.</h1>
   <p class="lede">Interactive solvers that learn Kuhn and Leduc hold'em from scratch, self-grading drills for the nine-game mix, and study notes on the algorithms behind modern poker bots. <strong>Everything runs in the browser.</strong></p>
   <dl class="strip">
-    <div><dt>Pages</dt><dd>30</dd></div>
-    <div><dt>Sections</dt><dd>12</dd></div>
+    <div><dt>Pages</dt><dd>31</dd></div>
+    <div><dt>Sections</dt><dd>13</dd></div>
     <div><dt>Solvers</dt><dd>CFR+ · <span>DCFR</span></dd></div>
     <div><dt>Toy games</dt><dd>Kuhn · Leduc</dd></div>
   </dl>
@@ -818,9 +820,30 @@ section.ledger { animation-delay: 0.3s; }
   </section>
 
   <!-- 11 ------------------------------------------------------------- -->
-  <section class="ledger" id="music">
+  <section class="ledger" id="lessons">
     <div class="ledger-head">
       <span class="idx">11</span>
+      <div>
+        <h2>Coding for Researchers</h2>
+        <p class="sub">Short lessons on building software without the infrastructure</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
+
+    <div class="entries">
+      <a class="entry" href="/mock-api">
+        <span class="tag lesson">Lesson</span>
+        <h3>Mock an API — the whole idea in five minutes</h3>
+        <p>How to build a demo that feels real before any database exists. An app is a restaurant: the frontend is the dining room, the API is the waiter, the backend is the kitchen — and mocking means opening with a fake kitchen. Edit the fake study data in a live editor and watch the screen re-fetch instead of hardcoding what it shows. Ends with a reusable prompt for asking an AI tool to build the same way.</p>
+        <span class="path">/mock-api -&gt;</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 12 ------------------------------------------------------------- -->
+  <section class="ledger" id="music">
+    <div class="ledger-head">
+      <span class="idx">12</span>
       <div>
         <h2>Music</h2>
         <p class="sub">Tools for music notation and input</p>
@@ -838,10 +861,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 12 ------------------------------------------------------------- -->
+  <!-- 13 ------------------------------------------------------------- -->
   <section class="ledger" id="external">
     <div class="ledger-head">
-      <span class="idx">12</span>
+      <span class="idx">13</span>
       <div>
         <h2>Further Reading</h2>
         <p class="sub">External resources worth your time</p>
