@@ -6,24 +6,24 @@
 <title>PLO Post-Flop Situations Quiz</title>
 <style>
 :root {
-  --bg: #0a0e1a; --bg-2: #0f1424; --panel: #131826; --panel-2: #1a2030; --panel-3: #232b3f;
-  --border: #2a3245; --text: #e4e9f2; --muted: #7a8499; --dim: #4a5266;
-  --accent: #5b9eff; --green: #3fdf8e; --red: #ff5e7a; --purple: #bf8cff;
-  --gold: #ffd54a; --orange: #ff8c42; --cyan: #3fc8d4;
+  --bg: #050706; --bg-2: #080c09; --panel: #0b0f0c; --panel-2: #111714; --panel-3: #18201a;
+  --border: #1f2a22; --text: #e8f2ea; --muted: #8a9990; --dim: #55635b;
+  --accent: #00d95f; --green: #8fe64a; --red: #ff4b5c; --purple: #9d7cff;
+  --gold: #ffc53d; --orange: #ff8a3d; --cyan: #35cfe0;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed; color: var(--text); line-height: 1.5; min-height: 100vh;
 }
 header {
   padding: 18px 28px; border-bottom: 1px solid var(--border);
-  background: rgba(10,14,26,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(5,7,6,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 20;
 }
 .title-row { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
@@ -42,7 +42,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 }
 .lang-toggle button + button { border-left: 1px solid var(--border); }
 .lang-toggle button:hover { color: var(--text); }
-.lang-toggle button.active { background: var(--accent); color: #04122e; }
+.lang-toggle button.active { background: var(--accent); color: #03150a; }
 header .home { color: var(--muted); font-size: 12px; text-decoration: none; }
 header .home:hover { color: var(--accent); }
 main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
@@ -54,8 +54,8 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
 .content-head { padding: 22px 24px 0; border-bottom: 1px solid var(--border); }
 .content-head .eyebrow {
   display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
-  font-family: "SF Mono", Menlo, monospace; padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
-  background: rgba(255,140,66,0.15); color: var(--orange);
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; padding: 3px 7px; border-radius: 4px; margin-bottom: 10px;
+  background: rgba(255,138,61,0.15); color: var(--orange);
 }
 .content-head h3 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text); }
 .content-head p.lead { margin: 0 0 16px; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
@@ -73,15 +73,15 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
 .tut-section h4 { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--accent); }
 .tut-section p { margin: 0 0 8px; font-size: 14px; color: var(--text); line-height: 1.65; }
 .tut-section p b { color: var(--text); }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 .callout {
-  display: flex; gap: 11px; align-items: flex-start; background: rgba(91,158,255,0.06);
-  border: 1px solid rgba(91,158,255,0.28); border-radius: 9px; padding: 11px 13px; margin: 10px 0 0;
+  display: flex; gap: 11px; align-items: flex-start; background: rgba(0,217,95,0.06);
+  border: 1px solid rgba(0,217,95,0.28); border-radius: 9px; padding: 11px 13px; margin: 10px 0 0;
 }
 .callout .tag {
-  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
   text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-  background: rgba(91,158,255,0.18); color: var(--accent);
+  background: rgba(0,217,95,0.18); color: var(--accent);
 }
 .callout .text { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
 .callout .text b { color: var(--text); }
@@ -89,20 +89,20 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
 /* cards */
 .deal { display: flex; flex-wrap: wrap; gap: 22px; margin: 2px 0 14px; align-items: flex-end; }
 .cg { display: flex; flex-direction: column; gap: 6px; }
-.cglabel { font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--dim); }
+.cglabel { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--dim); }
 .hand { display: flex; gap: 7px; }
 .card {
   width: 44px; height: 60px;
-  background: linear-gradient(180deg, #f7f9fd 0%, #e9edf6 100%);
-  border: 1px solid #c4ccdb; border-radius: 7px;
+  background: linear-gradient(180deg, #f4f6f1 0%, #e2e7de 100%);
+  border: 1px solid #c3cbc2; border-radius: 7px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-family: "SF Mono", Menlo, Consolas, monospace; position: relative; flex-shrink: 0;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; position: relative; flex-shrink: 0;
 }
-.card .rank { font-size: 19px; font-weight: 700; line-height: 1; color: #11151f; }
+.card .rank { font-size: 19px; font-weight: 700; line-height: 1; color: #080c09; }
 .card .suit { font-size: 16px; line-height: 1.1; margin-top: 2px; }
 .card.red .rank, .card.red .suit, .card.red .corner { color: #c8203a; }
-.card.black .rank, .card.black .suit, .card.black .corner { color: #11151f; }
+.card.black .rank, .card.black .suit, .card.black .corner { color: #080c09; }
 .card .corner { position: absolute; top: 3px; left: 4px; font-size: 9px; font-weight: 700; line-height: 1; }
 .card.board-turn { box-shadow: 0 0 0 2px var(--gold), 0 2px 6px rgba(0,0,0,0.35); }
 
@@ -112,24 +112,24 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
   border-radius: 8px; padding: 11px 13px; margin: 0 0 14px;
 }
 .situation .stag {
-  font-family: "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
   text-transform: uppercase; padding: 3px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-  background: rgba(255,140,66,0.18); color: var(--orange);
+  background: rgba(255,138,61,0.18); color: var(--orange);
 }
 .situation .stext { font-size: 13px; color: var(--text); line-height: 1.6; }
-.situation .stext b { color: var(--gold); font-family: "SF Mono", Menlo, monospace; }
+.situation .stext b { color: var(--gold); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 .quiz-wrap { max-width: 740px; }
 .quiz-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
-.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.quiz-top .qprog { font-size: 12px; color: var(--muted); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 .quiz-top .qprog b { color: var(--text); }
 .score-pill {
-  margin-left: auto; font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+  margin-left: auto; font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
   padding: 5px 11px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
 }
 .bar-track { height: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; flex-basis: 100%; }
-.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
-.q-num { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--signal-deep), var(--signal) 55%, var(--lime)); border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.q-num { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; }
 .q-text { margin: 6px 0 12px; font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.5; }
 .opt {
   display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
@@ -141,12 +141,12 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
 .opt:disabled { cursor: default; }
 .opt .key {
   width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center;
-  font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; border-radius: 5px;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; border-radius: 5px;
   background: var(--panel-3); color: var(--muted);
 }
-.opt.correct { border-color: var(--green); background: rgba(63,223,142,0.10); }
+.opt.correct { border-color: var(--green); background: rgba(143,230,74,0.10); }
 .opt.correct .key { background: var(--green); color: #06210f; }
-.opt.wrong { border-color: var(--red); background: rgba(255,94,122,0.10); }
+.opt.wrong { border-color: var(--red); background: rgba(255,75,92,0.10); }
 .opt.wrong .key { background: var(--red); color: #2a0510; }
 .opt.dim { opacity: 0.5; }
 .explain {
@@ -166,12 +166,12 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
   transition: border-color .14s, background .14s, opacity .14s;
 }
 .btn:hover { border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #04122e; }
-.btn.primary:hover { background: #74adff; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #03150a; }
+.btn.primary:hover { background: #4de88a; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .results { text-align: center; padding: 14px 0; }
 .results .ring { width: 132px; height: 132px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; position: relative; }
-.results .ring .pct { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--text); }
+.results .ring .pct { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--text); }
 .results h4 { margin: 0 0 6px; font-size: 20px; font-weight: 700; }
 .results p { margin: 0 auto 18px; font-size: 13.5px; color: var(--muted); max-width: 50ch; }
 .results .verdict-pass { color: var(--green); }
@@ -181,11 +181,11 @@ main { padding: 26px 28px 40px; max-width: 880px; margin: 0 auto; }
   display: flex; align-items: center; gap: 10px; text-align: left; font-size: 12.5px; color: var(--muted);
   padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 7px; background: var(--panel-2);
 }
-.review-line .ic { font-family: "SF Mono", Menlo, monospace; font-weight: 700; flex-shrink: 0; }
+.review-line .ic { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700; flex-shrink: 0; }
 .review-line .ic.ok { color: var(--green); }
 .review-line .ic.no { color: var(--red); }
 .review-line .mini { display: flex; gap: 3px; flex-shrink: 0; }
-.review-line .mini .mc { font-family: "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; background: #eef1f8; border-radius: 3px; padding: 1px 3px; color: #11151f; }
+.review-line .mini .mc { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 700; background: #e9ede6; border-radius: 3px; padding: 1px 3px; color: #080c09; }
 .review-line .mini .mc.red { color: #c8203a; }
 .review-list { max-width: 640px; margin: 18px auto 0; }
 footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); line-height: 1.7; }
@@ -194,7 +194,13 @@ footer a:hover { color: var(--accent); }
 @media (max-width: 560px) { .card { width: 38px; height: 52px; } .card .rank { font-size: 16px; } .head-right { width: 100%; margin-left: 0; } }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 <header>
   <div class="title-row">
@@ -564,7 +570,7 @@ function renderQuiz(){
     <div class="deal">
       <div class="cg"><span class="cglabel">${L(UI.yourhand)}</span>${renderHand(item.hole)}</div>`;
   if(item.board) html+=`<div class="cg"><span class="cglabel">${L(UI.board)}</span>${renderHand(item.board, item.turn)}</div>`;
-  else html+=`<div class="cg"><span class="cglabel">${L(UI.board)}</span><div class="hand"><span style="color:var(--dim);font-family:'SF Mono',monospace;font-size:12px;align-self:center">${L(UI.preflop)}</span></div></div>`;
+  else html+=`<div class="cg"><span class="cglabel">${L(UI.board)}</span><div class="hand"><span style="color:var(--dim);font-family:"IBM Plex Mono", "SF Mono", monospace;font-size:12px;align-self:center">${L(UI.preflop)}</span></div></div>`;
   html+=`</div>
     <div class="situation"><span class="stag">${L(UI.spot)}</span><span class="stext">${L(item.ctx)}</span></div>
     <div class="q-text">${L(UI.question)}</div>`;

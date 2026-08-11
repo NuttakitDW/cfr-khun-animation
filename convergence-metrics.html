@@ -6,42 +6,42 @@
 <title>Convergence Metrics — Leduc Poker</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(63,223,142,0.08), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(143,230,74,0.08), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
 }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky;
@@ -100,7 +100,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 }
 .controls button:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
 .controls button.primary { background: var(--accent); color: white; border-color: var(--accent); }
-.controls button.primary:hover { background: #4a8cee; color: white; }
+.controls button.primary:hover { background: #00b850; color: white; }
 .speed-group {
   display: flex;
   background: var(--panel-2);
@@ -128,7 +128,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 .stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat .val {
   color: var(--text);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 15px;
   font-weight: 600;
 }
@@ -172,7 +172,7 @@ main {
   border-radius: 3px;
   font-size: 11px;
   color: var(--yellow);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 /* Live metric cards */
@@ -207,7 +207,7 @@ main {
 .metric-card.regret  .metric-name { color: var(--orange); }
 
 .metric-headline {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 28px;
   font-weight: 700;
   color: var(--text);
@@ -217,7 +217,7 @@ main {
 .metric-unit {
   font-size: 11px;
   color: var(--muted);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   margin-bottom: 10px;
 }
 
@@ -235,7 +235,7 @@ canvas.metric-spark {
   justify-content: space-between;
   font-size: 10.5px;
   color: var(--muted);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .metric-threshold .ok    { color: var(--green); }
 .metric-threshold .close { color: var(--yellow); }
@@ -245,7 +245,7 @@ canvas.metric-spark {
   margin-top: 8px;
   font-size: 10.5px;
   color: var(--muted);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   background: var(--panel-3);
   padding: 6px 8px;
   border-radius: 4px;
@@ -268,7 +268,7 @@ canvas#chart-combined {
   color: var(--muted);
   margin-top: 10px;
 }
-.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-family: "SF Mono", Menlo, monospace; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 .chart-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
 
 /* Explainer cards (one per metric) */
@@ -324,7 +324,7 @@ canvas#chart-combined {
   border-radius: 3px;
   font-size: 10.5px;
   color: var(--yellow);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 /* Comparison table */
@@ -357,7 +357,7 @@ table.compare tbody th {
   letter-spacing: 0.4px;
   width: 200px;
 }
-table.compare td { color: var(--text); font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; }
+table.compare td { color: var(--text); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 11.5px; }
 
 footer {
   padding: 24px 32px;
@@ -369,7 +369,13 @@ footer a { color: var(--muted); text-decoration: none; padding: 0 4px; }
 footer a:hover { color: var(--accent); }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
@@ -1055,7 +1061,7 @@ class Sparkline {
     const { ctx, W, H } = this;
     ctx.clearRect(0, 0, W, H);
     if (this.data.length === 0) {
-      ctx.fillStyle = '#4a5266';
+      ctx.fillStyle = '#55635b';
       ctx.font = '11px -apple-system';
       ctx.textAlign = 'center';
       ctx.fillText('press Play', W / 2, H / 2);
@@ -1144,8 +1150,8 @@ class CombinedChart {
 
     // Grid + Y labels
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.font = '10px "SF Mono", Menlo, monospace';
-    ctx.fillStyle = '#7a8499';
+    ctx.font = '10px "IBM Plex Mono", "SF Mono", Menlo, monospace';
+    ctx.fillStyle = '#8a9990';
     for (let exp = Math.floor(lLo); exp <= Math.ceil(lHi); exp++) {
       const v = Math.pow(10, exp);
       const y = padT + (1 - (Math.log10(v) - lLo) / (lHi - lLo)) * plotH;
@@ -1162,7 +1168,7 @@ class CombinedChart {
     ctx.setLineDash([]);
 
     if (this.data.length === 0) {
-      ctx.fillStyle = '#4a5266';
+      ctx.fillStyle = '#55635b';
       ctx.font = '12px -apple-system';
       ctx.textAlign = 'center';
       ctx.fillText('No data — press Play', W / 2, H / 2);
@@ -1173,7 +1179,7 @@ class CombinedChart {
     // X labels
     const minIter = this.data[0].iter;
     const maxIter = Math.max(this.data[this.data.length - 1].iter, minIter + 1);
-    ctx.fillStyle = '#7a8499';
+    ctx.fillStyle = '#8a9990';
     ctx.textAlign = 'center';
     for (let i = 0; i <= 4; i++) {
       const x = padL + (plotW * i) / 4;
@@ -1185,7 +1191,7 @@ class CombinedChart {
       ctx.fillText(s, x, H - 8);
     }
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#4a5266';
+    ctx.fillStyle = '#55635b';
     ctx.fillText('iter →', padL + plotW, H - 8);
     ctx.textAlign = 'start';
 
@@ -1204,13 +1210,13 @@ class CombinedChart {
       }
       ctx.stroke();
     };
-    drawSeries('normExploit', '#5b9eff');
-    drawSeries('normCI',      '#3fdf8e');
-    drawSeries('normRegret',  '#ff8c42');
+    drawSeries('normExploit', '#00d95f');
+    drawSeries('normCI',      '#8fe64a');
+    drawSeries('normRegret',  '#ff8a3d');
 
     // Threshold label
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.font = '10px "IBM Plex Mono", "SF Mono", Menlo, monospace';
     ctx.fillText('threshold = 1', padL + 6, tY - 4);
   }
 }
@@ -1223,9 +1229,9 @@ class App {
     this.trainer = new CFRTrainer();
     this.ciMon = new CIMonitor();
 
-    this.sparkExploit = new Sparkline(document.getElementById('spark-exploit'), '#5b9eff', TH_EXPLOIT);
-    this.sparkCI      = new Sparkline(document.getElementById('spark-ci'),      '#3fdf8e', TH_CI);
-    this.sparkRegret  = new Sparkline(document.getElementById('spark-regret'),  '#ff8c42', TH_REGRET);
+    this.sparkExploit = new Sparkline(document.getElementById('spark-exploit'), '#00d95f', TH_EXPLOIT);
+    this.sparkCI      = new Sparkline(document.getElementById('spark-ci'),      '#8fe64a', TH_CI);
+    this.sparkRegret  = new Sparkline(document.getElementById('spark-regret'),  '#ff8a3d', TH_REGRET);
     this.combined     = new CombinedChart(document.getElementById('chart-combined'));
 
     this.elIter   = document.getElementById('stat-iter');

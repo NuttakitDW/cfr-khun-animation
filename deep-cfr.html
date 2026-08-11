@@ -6,22 +6,22 @@
 <title>Watching a Poker Bot Learn — Deep CFR on Kuhn Poker</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
   --shadow-glow: 0 0 24px;
 }
 
@@ -29,10 +29,10 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -41,12 +41,12 @@ body {
   overflow-x: hidden;
 }
 
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky;
@@ -110,7 +110,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 }
 .controls button:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
 .controls button.primary { background: var(--accent); color: white; border-color: var(--accent); }
-.controls button.primary:hover { background: #4a8cee; color: white; }
+.controls button.primary:hover { background: #00b850; color: white; }
 .speed-group {
   display: flex;
   background: var(--panel-2);
@@ -141,7 +141,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 .stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat .val {
   color: var(--text);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 15px;
   font-weight: 600;
 }
@@ -195,22 +195,22 @@ main {
 .card {
   width: 60px;
   height: 86px;
-  background: linear-gradient(160deg, #f5f7fa 0%, #e1e7ef 100%);
+  background: linear-gradient(160deg, #f2f4ef 0%, #dde2d8 100%);
   border-radius: 8px;
-  border: 1px solid #c1c7d0;
+  border: 1px solid #c3cbc2;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 38px;
   font-weight: 800;
-  color: #0a0e1a;
-  font-family: "SF Mono", Menlo, monospace;
+  color: #050706;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 -2px 0 rgba(0,0,0,0.06);
   transition: transform 0.4s, box-shadow 0.3s;
   position: relative;
 }
 .card.facedown {
-  background: linear-gradient(135deg, #2a3245 25%, #131826 75%);
+  background: linear-gradient(135deg, #1f2a22 25%, #0b0f0c 75%);
   color: var(--accent);
   font-size: 28px;
 }
@@ -221,9 +221,9 @@ main {
 .card.dealing {
   animation: dealCard 0.5s ease-out;
 }
-.card.king { box-shadow: 0 0 24px rgba(255,213,74,0.5), 0 4px 12px rgba(0,0,0,0.4); }
-.card.queen { box-shadow: 0 0 24px rgba(191,140,255,0.4), 0 4px 12px rgba(0,0,0,0.4); }
-.card.jack { box-shadow: 0 0 18px rgba(91,158,255,0.4), 0 4px 12px rgba(0,0,0,0.4); }
+.card.king { box-shadow: 0 0 24px rgba(255,197,61,0.5), 0 4px 12px rgba(0,0,0,0.4); }
+.card.queen { box-shadow: 0 0 24px rgba(157,124,255,0.4), 0 4px 12px rgba(0,0,0,0.4); }
+.card.jack { box-shadow: 0 0 18px rgba(0,217,95,0.4), 0 4px 12px rgba(0,0,0,0.4); }
 .card .suit { font-size: 12px; position: absolute; top: 6px; left: 8px; font-weight: 600; opacity: 0.7; }
 .card .suit-br { font-size: 12px; position: absolute; bottom: 6px; right: 8px; font-weight: 600; opacity: 0.7; transform: rotate(180deg); }
 
@@ -253,10 +253,10 @@ svg.tree { width: 100%; height: 360px; display: block; }
   stroke-width: 2.5;
 }
 .tree-node.visited circle.bg {
-  fill: rgba(91,158,255,0.12);
+  fill: rgba(0,217,95,0.12);
 }
 .tree-node text {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11px;
   fill: var(--text);
   text-anchor: middle;
@@ -290,7 +290,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
 .tree-edge.dimmed { stroke: var(--dim); opacity: 0.45; }
 
 .tree-edge-label {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 10px;
   fill: var(--muted);
   text-anchor: middle;
@@ -326,7 +326,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
   font-size: 12.5px;
   color: var(--text);
   min-height: 64px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   line-height: 1.55;
 }
 .trace .step-tag {
@@ -385,7 +385,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
 .iset-card.player2 { border-left: 3px solid var(--purple); }
 .iset-card.active {
   border-color: var(--gold);
-  box-shadow: 0 0 16px rgba(255,213,74,0.25);
+  box-shadow: 0 0 16px rgba(255,197,61,0.25);
   transform: translateY(-1px);
   background: var(--panel-3);
 }
@@ -423,30 +423,30 @@ svg.tree { width: 100%; height: 360px; display: block; }
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
-.iset-card.player1 .who-tag { background: rgba(91,158,255,0.18); color: var(--accent); }
-.iset-card.player2 .who-tag { background: rgba(191,140,255,0.18); color: var(--purple); }
+.iset-card.player1 .who-tag { background: rgba(0,217,95,0.18); color: var(--accent); }
+.iset-card.player2 .who-tag { background: rgba(157,124,255,0.18); color: var(--purple); }
 .iset-card .holding {
   display: inline-block;
   width: 18px;
   height: 22px;
-  background: linear-gradient(160deg, #f5f7fa, #e1e7ef);
-  color: #0a0e1a;
+  background: linear-gradient(160deg, #f2f4ef, #dde2d8);
+  color: #050706;
   border-radius: 3px;
   text-align: center;
   font-size: 13px;
   font-weight: 800;
   line-height: 22px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   vertical-align: middle;
 }
-.iset-card .holding.king { box-shadow: 0 0 6px rgba(255,213,74,0.5); }
-.iset-card .holding.queen { box-shadow: 0 0 6px rgba(191,140,255,0.5); }
-.iset-card .holding.jack { box-shadow: 0 0 6px rgba(91,158,255,0.5); }
+.iset-card .holding.king { box-shadow: 0 0 6px rgba(255,197,61,0.5); }
+.iset-card .holding.queen { box-shadow: 0 0 6px rgba(157,124,255,0.5); }
+.iset-card .holding.jack { box-shadow: 0 0 6px rgba(0,217,95,0.5); }
 
 .iset-history {
   font-size: 10.5px;
   color: var(--muted);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 .iset-strat {
@@ -459,7 +459,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
 }
 .iset-strat .action {
   color: var(--muted);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 10px;
 }
 .iset-strat .pct {
@@ -467,7 +467,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
   flex-direction: column;
   align-items: flex-end;
   line-height: 1.15;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .iset-strat .pct .now {
   font-weight: 700;
@@ -491,7 +491,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
   border-radius: 3px;
   transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
-.bar-fill.pass { background: linear-gradient(90deg, var(--accent), #7eb6ff); }
+.bar-fill.pass { background: linear-gradient(90deg, var(--accent), #8fe64a); }
 .bar-fill.bet { background: linear-gradient(90deg, var(--orange), var(--gold)); }
 
 .bar-fill.nash-target {
@@ -536,7 +536,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
   position: relative;
   display: flex;
   align-items: center;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 10px;
   padding: 0 4px;
   font-weight: 600;
@@ -549,8 +549,8 @@ svg.tree { width: 100%; height: 360px; display: block; }
   top: 0;
   transition: width 0.4s;
 }
-.regret-cell .rfill.pos { background: rgba(63,223,142,0.55); }
-.regret-cell .rfill.neg { background: rgba(255,94,122,0.4); }
+.regret-cell .rfill.pos { background: rgba(143,230,74,0.55); }
+.regret-cell .rfill.neg { background: rgba(255,75,92,0.4); }
 .regret-cell .rval { position: relative; z-index: 1; }
 .regret-cell.pos .rval { color: var(--green); }
 .regret-cell.neg .rval { color: var(--red); }
@@ -560,7 +560,7 @@ svg.tree { width: 100%; height: 360px; display: block; }
   animation: flashUpdate 0.6s ease-out;
 }
 @keyframes flashUpdate {
-  0% { background: rgba(255,213,74,0.35); }
+  0% { background: rgba(255,197,61,0.35); }
   100% { background: rgba(255,255,255,0.04); }
 }
 
@@ -588,7 +588,7 @@ canvas#chart {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .chart-legend i {
   display: inline-block;
@@ -626,7 +626,7 @@ canvas#chart {
 .inspector-select:focus { outline: 1px solid var(--accent); }
 .inspector-tag {
   margin-left: auto;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11px;
   color: var(--muted);
 }
@@ -684,7 +684,7 @@ canvas#chart {
   background: var(--panel-3);
   border-radius: 6px;
   margin-bottom: 8px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   border-left: 3px solid var(--border);
 }
@@ -734,7 +734,7 @@ canvas#chart {
 .ev-row .avg-line .num { color: var(--text); font-weight: 600; }
 
 .formula-line {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11.5px;
   background: var(--panel-3);
   padding: 6px 10px;
@@ -753,9 +753,9 @@ canvas#chart {
 .formula-line.result {
   border-left: 3px solid var(--green);
   font-weight: 600;
-  background: rgba(63,223,142,0.07);
+  background: rgba(143,230,74,0.07);
 }
-.formula-line.result.neg { border-left-color: var(--red); background: rgba(255,94,122,0.07); }
+.formula-line.result.neg { border-left-color: var(--red); background: rgba(255,75,92,0.07); }
 .formula-line.result.zero { border-left-color: var(--muted); background: var(--panel-3); }
 
 .subhead {
@@ -776,14 +776,14 @@ canvas#chart {
   font-size: 11.5px;
 }
 .strat-bar-row .name {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-weight: 600;
 }
 .strat-bar-row.pass .name { color: var(--accent); }
 .strat-bar-row.bet  .name { color: var(--orange); }
 .strat-bar-row .pct {
   text-align: right;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-weight: 600;
   color: var(--text);
 }
@@ -799,7 +799,7 @@ canvas#chart {
   border-radius: 3px;
   transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
-.strat-bar-row.pass .fill { background: linear-gradient(90deg, var(--accent), #7eb6ff); }
+.strat-bar-row.pass .fill { background: linear-gradient(90deg, var(--accent), #8fe64a); }
 .strat-bar-row.bet  .fill { background: linear-gradient(90deg, var(--orange), var(--gold)); }
 
 .iset-card { cursor: pointer; }
@@ -816,7 +816,7 @@ canvas#chart {
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--gold);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 /* ===== Bottom row ===== */
@@ -844,7 +844,7 @@ canvas#chart {
   background: var(--panel-3);
   padding: 8px 12px;
   border-radius: 6px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11.5px;
   color: var(--gold);
   margin: 8px 0;
@@ -861,7 +861,13 @@ footer a { color: var(--muted); text-decoration: none; }
 footer a:hover { color: var(--accent); }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
@@ -1009,7 +1015,7 @@ footer a:hover { color: var(--accent); }
         <code class="formula">θ_p ← argmin_θ  E<sub>(I, t, r̃)~M_V,p</sub> [ t · Σ<sub>a</sub> ( r̃(a) − V(I, a | θ) )<sup>2</sup> ]</code>
         <p><b>4. Strategy = regret matching on network output.</b> Once trained, V(I, ·) plays the role the regret table used to play. When all predicted advantages are negative, pick the highest-advantage action with prob 1 (the paper's ablation: this beats uniform under approximation error).</p>
         <p><b>Why this matters:</b> the first non-tabular CFR variant that actually scales. In Heads-Up Limit Hold'em, Deep CFR loses to a 3.3·10<sup>8</sup>-bucket tabular abstraction by only 11 mbb/g and beats Neural Fictitious Self-Play by 43 mbb/g — with <em>no</em> domain knowledge. Pluribus (multi-player No-Limit) and ReBeL build on this foundation.</p>
-        <p style="margin-top:14px;padding:10px 12px;background:rgba(255,140,66,0.08);border-left:3px solid var(--orange);border-radius:4px"><b>About this visualization.</b> Kuhn poker has only 12 info-sets — a regret table fits comfortably and the network is strictly worse than tabular here. Expect convergence to be slower and noisier than CFR+/DCFR on the other pages. The point is to show <em>how</em> the algorithm works, not why it wins. The win shows up only at scale.</p>
+        <p style="margin-top:14px;padding:10px 12px;background:rgba(255,138,61,0.08);border-left:3px solid var(--orange);border-radius:4px"><b>About this visualization.</b> Kuhn poker has only 12 info-sets — a regret table fits comfortably and the network is strictly worse than tabular here. Expect convergence to be slower and noisier than CFR+/DCFR on the other pages. The point is to show <em>how</em> the algorithm works, not why it wins. The win shows up only at scale.</p>
       </div>
     </section>
   </div>
@@ -1973,11 +1979,11 @@ class ConvergenceChart {
     this.history = [];   // [{iter, values: {key: avg[1]}}]
     this.maxPoints = 800;
     this.tracked = [
-      { key: '0|K|',   color: '#5b9eff', label: 'P1 bet K (root)' },
-      { key: '0|J|',   color: '#bf8cff', label: 'P1 bluff J (root)' },
-      { key: '1|K|p',  color: '#3fdf8e', label: 'P2 bet K (after check)' },
-      { key: '1|J|p',  color: '#ff8c42', label: 'P2 bluff J (after check)' },
-      { key: '0|Q|pb', color: '#ffc857', label: 'P1 call Q (after check-bet)' },
+      { key: '0|K|',   color: '#00d95f', label: 'P1 bet K (root)' },
+      { key: '0|J|',   color: '#9d7cff', label: 'P1 bluff J (root)' },
+      { key: '1|K|p',  color: '#8fe64a', label: 'P2 bet K (after check)' },
+      { key: '1|J|p',  color: '#ff8a3d', label: 'P2 bluff J (after check)' },
+      { key: '0|Q|pb', color: '#f2b01e', label: 'P1 call Q (after check-bet)' },
     ];
     this.nashTargets = {
       '0|K|':   1.0,            // K always bet (3α at α=1/3 = 1)
@@ -2039,8 +2045,8 @@ class ConvergenceChart {
     // grid
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
-    ctx.font = '10px "SF Mono", Menlo, monospace';
-    ctx.fillStyle = '#7a8499';
+    ctx.font = '10px "IBM Plex Mono", "SF Mono", Menlo, monospace';
+    ctx.fillStyle = '#8a9990';
 
     for (let i = 0; i <= 4; i++) {
       const y = padT + (plotH * i) / 4;
@@ -2052,7 +2058,7 @@ class ConvergenceChart {
     }
 
     if (this.history.length === 0) {
-      ctx.fillStyle = '#4a5266';
+      ctx.fillStyle = '#55635b';
       ctx.font = '12px -apple-system';
       ctx.fillText('No data yet — start training', W / 2 - 80, H / 2);
       return;
@@ -2062,8 +2068,8 @@ class ConvergenceChart {
     const maxIter = Math.max(this.history[this.history.length - 1].iter, minIter + 1);
 
     // x axis ticks
-    ctx.fillStyle = '#7a8499';
-    ctx.font = '10px "SF Mono", Menlo, monospace';
+    ctx.fillStyle = '#8a9990';
+    ctx.font = '10px "IBM Plex Mono", "SF Mono", Menlo, monospace';
     ctx.textAlign = 'center';
     for (let i = 0; i <= 4; i++) {
       const x = padL + (plotW * i) / 4;
@@ -2072,7 +2078,7 @@ class ConvergenceChart {
     }
     // small "iter" hint at far right (won't collide with ticks)
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#4a5266';
+    ctx.fillStyle = '#55635b';
     ctx.fillText('iter →', padL + plotW, H - 6);
     ctx.textAlign = 'start';
 

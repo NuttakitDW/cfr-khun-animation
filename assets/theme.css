@@ -1,0 +1,410 @@
+/* ============================================================================
+   PHOSPHOR LEDGER — nuttakitkundum.com
+   A research-terminal design system: near-black ground, phosphor-green signal,
+   editorial serif display against a technical grotesque and Plex Mono numerals.
+
+   Loaded AFTER each page's inline <style>, so plain-specificity rules win.
+   ========================================================================= */
+
+:root {
+  /* ---- ground ------------------------------------------------------ */
+  --ink:        #050706;   /* canvas — never pure black */
+  --ink-2:      #080c09;   /* deep well */
+  --ink-3:      #0b0f0c;   /* panel */
+  --ink-4:      #111714;   /* raised surface */
+  --ink-5:      #18201a;   /* control / hover */
+  --edge-line:  #1f2a22;   /* hairline */
+  --edge-lit:   #2e4034;   /* hairline, emphasised */
+
+  /* ---- signal ------------------------------------------------------ */
+  --signal:     #00d95f;   /* phosphor — the brand carrier */
+  --signal-deep:#00a84a;
+  --moss:       #0a3d22;   /* deep fill / glow bed */
+  --lime:       #8fe64a;   /* chartreuse — positive, second green */
+
+  /* ---- ink on light / light on signal ------------------------------ */
+  --on-signal:  #03150a;
+
+  /* ---- type -------------------------------------------------------- */
+  --pale:       #e8f2ea;
+  --ash-1:      #8a9990;
+  --ash-2:      #55635b;
+
+  --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  --sans: "Familjen Grotesk", "Helvetica Neue", Helvetica, sans-serif;
+  --display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+
+  /* ---- legacy token remap (every page speaks this vocabulary) ------- */
+  --bg:      var(--ink);
+  --bg-2:    var(--ink-2);
+  --panel:   var(--ink-3);
+  --panel-2: var(--ink-4);
+  --panel-3: var(--ink-5);
+  --border:  var(--edge-line);
+  --text:    var(--pale);
+  --muted:   var(--ash-1);
+  --dim:     var(--ash-2);
+
+  --accent:  var(--signal);
+  --green:   var(--lime);
+  --red:     #ff4b5c;
+  --yellow:  #f2b01e;
+  --gold:    #ffc53d;
+  --orange:  #ff8a3d;
+  --purple:  #9d7cff;
+  --cyan:    #35cfe0;
+
+  --suit-s: var(--pale);
+  --suit-h: #ff4b5c;
+  --suit-d: #35cfe0;
+  --suit-c: var(--lime);
+
+  --shadow-glow: 0 0 24px;
+}
+
+/* ============================================================================
+   ATMOSPHERE
+   Background lives on <html> so the fixed overlays below can sit above the
+   canvas paint but behind every element in the flow.
+   ========================================================================= */
+
+html {
+  background:
+    radial-gradient(ellipse 85% 48% at 10% -12%,  rgba(0, 217, 95, 0.17), transparent 66%),
+    radial-gradient(ellipse 55% 38% at 98% 4%,    rgba(0, 168, 74, 0.11), transparent 70%),
+    radial-gradient(ellipse 75% 55% at 88% 106%,  rgba(10, 61, 34, 0.72), transparent 72%),
+    var(--ink);
+  background-attachment: fixed;
+}
+
+body {
+  background: transparent;
+  font-family: var(--sans);
+  color: var(--pale);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* etched survey grid, faded toward the fold */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 217, 95, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 95, 0.07) 1px, transparent 1px);
+  background-size: 68px 68px;
+  -webkit-mask-image: radial-gradient(ellipse 110% 85% at 50% -5%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse 110% 85% at 50% -5%, #000 0%, transparent 78%);
+}
+
+/* scanline tooth + corner vignette */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.014) 0px,
+      rgba(255, 255, 255, 0.014) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse 120% 90% at 50% 50%, transparent 45%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ============================================================================
+   TYPE
+   ========================================================================= */
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--sans); }
+
+h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: 0.1px;
+}
+
+/* the site-wide gradient wordmark is retired — flat pale, phosphor punctuation */
+header h1 {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: var(--pale);
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 25px;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
+}
+
+/* Most pages use `.panel > h2` as a small uppercase eyebrow label. Pages that
+   ship their own `.eyebrow` element (kholdem) use h2 as a real headline —
+   leave those alone. */
+section.panel:not(:has(.eyebrow)) h2,
+.panel:not(:has(.eyebrow)) h2 {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--signal);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+section.panel:not(:has(.eyebrow)) h2::before,
+.panel:not(:has(.eyebrow)) h2::before {
+  content: "";
+  width: 14px;
+  height: 1px;
+  background: var(--signal);
+  flex: none;
+  opacity: 0.7;
+}
+
+section.panel:not(:has(.eyebrow)) h3,
+.panel:not(:has(.eyebrow)) h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 21px;
+  letter-spacing: 0.1px;
+  color: var(--pale);
+}
+
+.mono,
+code, pre, kbd, samp,
+[class*="mono"] {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+code, kbd {
+  background: rgba(0, 217, 95, 0.07);
+  border: 1px solid rgba(0, 217, 95, 0.16);
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+  color: var(--signal);
+  font-size: 0.9em;
+}
+pre code { background: none; border: 0; padding: 0; color: inherit; }
+
+pre {
+  background: var(--ink-2);
+  border: 1px solid var(--edge-line);
+  border-left: 2px solid var(--signal-deep);
+  border-radius: 6px;
+}
+
+a { color: var(--signal); text-decoration-color: rgba(0, 217, 95, 0.35); }
+a:hover { color: var(--lime); }
+
+em, i { font-style: italic; }
+strong, b { font-weight: 700; color: var(--pale); }
+
+::selection { background: var(--moss); color: #ffffff; }
+
+/* ============================================================================
+   CHROME — header, footer
+   ========================================================================= */
+
+header {
+  background: linear-gradient(180deg, rgba(5, 7, 6, 0.94), rgba(5, 7, 6, 0.80));
+  border-bottom: 1px solid var(--edge-line);
+  box-shadow: 0 1px 0 rgba(0, 217, 95, 0.14), 0 12px 32px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+header .sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: var(--ash-1);
+}
+
+header .home,
+header .nav-link { font-family: var(--mono); }
+
+footer {
+  border-top: 1px solid var(--edge-line);
+  margin-top: 40px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  color: var(--ash-2);
+}
+footer a { color: var(--ash-1); text-decoration: none; }
+footer a:hover { color: var(--signal); }
+
+/* ============================================================================
+   SURFACES
+   ========================================================================= */
+
+/* NOTE: `.card` is deliberately excluded — several pages use it for rendered
+   playing cards, which must stay bone-white. */
+section.panel,
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 120px),
+    var(--ink-3);
+  border: 1px solid var(--edge-line);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(232, 242, 234, 0.035),
+    0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+hr { border: 0; border-top: 1px solid var(--edge-line); }
+
+/* ============================================================================
+   CONTROLS
+   ========================================================================= */
+
+button,
+.btn,
+.nav-link,
+.controls button,
+.seg button,
+nav.tabs button {
+  font-family: var(--sans);
+  letter-spacing: 0.1px;
+  transition: background 0.16s ease, border-color 0.16s ease,
+              color 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+}
+
+.btn,
+.nav-link,
+.controls button {
+  background: var(--ink-4);
+  border: 1px solid var(--edge-line);
+  color: var(--pale);
+  border-radius: 6px;
+}
+
+.btn:hover,
+.nav-link:hover,
+.controls button:hover:not(:disabled) {
+  background: var(--ink-5);
+  border-color: var(--edge-lit);
+  color: var(--pale);
+  box-shadow: 0 0 0 1px rgba(0, 217, 95, 0.10), 0 0 18px -6px rgba(0, 217, 95, 0.45);
+}
+
+.btn.primary,
+.controls button.primary,
+button.primary {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--on-signal);
+  font-weight: 700;
+  box-shadow: 0 0 22px -8px rgba(0, 217, 95, 0.9);
+}
+.btn.primary:hover,
+.controls button.primary:hover:not(:disabled),
+button.primary:hover:not(:disabled) {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--on-signal);
+  box-shadow: 0 0 26px -6px rgba(143, 230, 74, 0.75);
+}
+
+.nav-link:hover { color: var(--signal); }
+
+.seg button.active,
+nav.tabs button.active,
+.tabs button.active {
+  background: rgba(0, 217, 95, 0.12);
+  border-color: rgba(0, 217, 95, 0.38);
+  color: var(--signal);
+}
+
+button:disabled,
+.btn:disabled { opacity: 0.4; box-shadow: none; }
+
+input, select, textarea {
+  font-family: var(--mono);
+  background: var(--ink-2);
+  border: 1px solid var(--edge-line);
+  color: var(--pale);
+  border-radius: 6px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--signal-deep);
+  box-shadow: 0 0 0 3px rgba(0, 217, 95, 0.14);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+input[type="range"] { accent-color: var(--signal); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--signal); }
+progress { accent-color: var(--signal); }
+
+/* ============================================================================
+   DATA
+   ========================================================================= */
+
+table { border-color: var(--edge-line); }
+
+th {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ash-1);
+}
+
+td { font-variant-numeric: tabular-nums; }
+
+/* ============================================================================
+   MOTION — one orchestrated arrival, then stillness
+   ========================================================================= */
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+section.panel {
+  animation: rise-in 0.55s cubic-bezier(0.2, 0.75, 0.3, 1) backwards;
+}
+section.panel:nth-of-type(1) { animation-delay: 0.04s; }
+section.panel:nth-of-type(2) { animation-delay: 0.10s; }
+section.panel:nth-of-type(3) { animation-delay: 0.16s; }
+section.panel:nth-of-type(4) { animation-delay: 0.22s; }
+section.panel:nth-of-type(5) { animation-delay: 0.28s; }
+section.panel:nth-of-type(n + 6) { animation-delay: 0.34s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR
+   ========================================================================= */
+
+* { scrollbar-color: var(--edge-lit) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ink-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--edge-lit);
+  border: 2px solid var(--ink-2);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--signal-deep); }

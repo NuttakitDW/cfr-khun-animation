@@ -6,39 +6,39 @@
 <title>Leduc-NL Re-solver — Custom Bet Sizes On Demand</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text); line-height: 1.55; min-height: 100vh;
 }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px; border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 30;
 }
@@ -65,7 +65,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 }
 .btn:hover:not(:disabled) { background: var(--panel-3); border-color: var(--dim); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e1a; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #050706; }
 .btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
 .btn.ghost { background: transparent; }
 
@@ -95,7 +95,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .panel p { color: var(--text); margin: 0 0 8px; font-size: 13px; }
 .panel p.muted { color: var(--muted); font-size: 12.5px; }
 .panel strong { color: var(--text); }
-.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 12.5px; }
+.kw { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; color: var(--accent); font-size: 12.5px; }
 
 /* Two-column layout for spot config */
 .spot-grid {
@@ -120,7 +120,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11.5px; font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px; font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .chip .k { color: var(--muted); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; }
 .chip .v { color: var(--text); font-weight: 600; }
@@ -143,7 +143,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 }
 .size-toggle:hover { background: var(--panel-3); color: var(--text); }
 .size-toggle.active { background: var(--panel-3); color: var(--text); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.size-toggle .frac { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); }
+.size-toggle .frac { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 11px; color: var(--muted); }
 .size-toggle.active .frac { color: var(--accent); }
 .size-toggle.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 .size-toggle.required { background: var(--panel-3); color: var(--text); border-color: var(--gold); cursor: default; }
@@ -151,7 +151,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 
 .menu-info {
   margin-top: 12px; padding: 8px 12px; border-radius: 8px;
-  background: rgba(255,213,74,0.06); border: 1px solid rgba(255,213,74,0.25);
+  background: rgba(255,197,61,0.06); border: 1px solid rgba(255,197,61,0.25);
   font-size: 12px; color: var(--muted);
 }
 .menu-info strong { color: var(--gold); }
@@ -182,13 +182,13 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 }
 .card-cell .card-rank {
   font-size: 28px; font-weight: 700; line-height: 1;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .card-cell .card-rank.J { color: var(--orange); }
 .card-cell .card-rank.Q { color: var(--accent); }
 .card-cell .card-rank.K { color: var(--green); }
 .card-cell .ev {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11.5px; padding: 3px 8px; border-radius: 4px;
   background: var(--panel-3); color: var(--muted);
 }
@@ -202,7 +202,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .stacked-bar .seg {
   height: 100%; transition: width 0.25s;
   display: inline-flex; align-items: center; justify-content: center;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 9.5px; color: rgba(0,0,0,0.55); font-weight: 700;
   overflow: hidden; white-space: nowrap;
 }
@@ -210,7 +210,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .action-row {
   display: flex; align-items: center; gap: 8px;
   padding: 4px 6px; border-radius: 5px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11.5px;
 }
 .action-row .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
@@ -219,14 +219,14 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .action-row.dim { opacity: 0.5; }
 
 /* Action color tokens */
-.col-x { background: #7a8499; }
-.col-h { background: #3fdf8e; }
-.col-p { background: #5b9eff; }
-.col-t { background: #ff8c42; }
-.col-a { background: #ffd54a; }
-.col-c { background: #bf8cff; }
-.col-f { background: #ff5e7a; }
-.col-custom { background: #bf8cff; }
+.col-x { background: #8a9990; }
+.col-h { background: #8fe64a; }
+.col-p { background: #00d95f; }
+.col-t { background: #ff8a3d; }
+.col-a { background: #ffc53d; }
+.col-c { background: #9d7cff; }
+.col-f { background: #ff4b5c; }
+.col-custom { background: #9d7cff; }
 
 /* Range bar for opponent */
 .range-row {
@@ -257,15 +257,15 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 canvas#convChart { display: block; width: 100%; height: 200px; }
 
 .note {
-  background: linear-gradient(135deg, rgba(91,158,255,0.06), rgba(191,140,255,0.04));
+  background: linear-gradient(135deg, rgba(0,217,95,0.06), rgba(157,124,255,0.04));
   border: 1px solid var(--border); border-left: 3px solid var(--accent);
   border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--text);
   line-height: 1.6; margin-top: 8px;
 }
 .note strong { color: var(--accent); }
-.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,213,74,0.06), rgba(255,140,66,0.04)); }
+.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,197,61,0.06), rgba(255,138,61,0.04)); }
 .note.gold strong { color: var(--gold); }
-.note.warn { border-left-color: var(--red); background: rgba(255,94,122,0.06); }
+.note.warn { border-left-color: var(--red); background: rgba(255,75,92,0.06); }
 .note.warn strong { color: var(--red); }
 
 /* Translation calculator (Section 7) */
@@ -288,7 +288,7 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
   width: 100%;
   padding: 10px 12px; border-radius: 8px;
   background: var(--panel-3); border: 1px solid var(--border);
-  color: var(--text); font-family: "SF Mono", Menlo, Consolas, monospace;
+  color: var(--text); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 16px; font-weight: 600;
 }
 .translate-input input[type=number]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
@@ -297,7 +297,7 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
 }
 .translate-arrow {
   text-align: center; font-size: 24px; color: var(--gold);
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .translate-output {
   background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
@@ -309,7 +309,7 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
 }
 .translate-output .row:last-child { border-bottom: none; }
 .translate-output .lab {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px; color: var(--muted); width: 70px;
 }
 .translate-output .name {
@@ -322,14 +322,14 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
   height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold));
 }
 .translate-output .pct {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px; color: var(--gold); font-weight: 600; min-width: 50px; text-align: right;
 }
 
 .formula-block {
   background: var(--panel-3); border: 1px solid var(--border);
   border-radius: 8px; padding: 12px 14px; margin-top: 12px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px; color: var(--text); line-height: 1.7;
 }
 .formula-block .formula-line { color: var(--accent); }
@@ -372,11 +372,11 @@ canvas#convChart { display: block; width: 100%; height: 200px; }
   background: var(--panel-2); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px 16px; position: relative;
 }
-.flow-step.s1 { border-color: rgba(91,158,255,0.4); }
-.flow-step.s2 { border-color: rgba(191,140,255,0.4); }
-.flow-step.s3 { border-color: rgba(255,213,74,0.4); }
+.flow-step.s1 { border-color: rgba(0,217,95,0.4); }
+.flow-step.s2 { border-color: rgba(157,124,255,0.4); }
+.flow-step.s3 { border-color: rgba(255,197,61,0.4); }
 .flow-step .num {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 6px;
 }
 .flow-step.s1 .num { color: var(--accent); }
@@ -411,11 +411,11 @@ table.walk th {
 }
 table.walk td.step {
   width: 18%; font-weight: 700;
-  font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--gold);
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; color: var(--gold);
   letter-spacing: 0.4px;
 }
 table.walk td.compute { width: 50%; color: var(--text); }
-table.walk td.result  { width: 32%; color: var(--muted); font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+table.walk td.result  { width: 32%; color: var(--muted); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 12px; }
 
 footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
 footer a { color: var(--muted); text-decoration: none; }
@@ -426,7 +426,13 @@ footer a:hover { color: var(--accent); }
 }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
@@ -2259,7 +2265,7 @@ class MiniChart {
     const W = this.W, H = this.H;
     ctx.clearRect(0, 0, W, H);
     if (this.points.length < 2) {
-      ctx.fillStyle = '#7a8499';
+      ctx.fillStyle = '#8a9990';
       ctx.font = '11px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Subgame ε will plot here once solving begins.', W / 2, H / 2);
@@ -2269,11 +2275,11 @@ class MiniChart {
     // a flat line is uninformative. Show a "converged" overlay instead.
     const allAtFloor = this.points.every(p => p.expl <= 0.011);
     if (allAtFloor) {
-      ctx.fillStyle = 'rgba(63, 223, 142, 0.85)';
+      ctx.fillStyle = 'rgba(143,230,74, 0.85)';
       ctx.font = '600 14px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Subgame ε ≈ 0  ·  Hero has found the best response', W / 2, H / 2 - 10);
-      ctx.fillStyle = 'rgba(122, 132, 153, 0.85)';
+      ctx.fillStyle = 'rgba(138,153,144, 0.85)';
       ctx.font = '12px -apple-system, system-ui, sans-serif';
       ctx.fillText('Strategy is stable — click Stop to read the result', W / 2, H / 2 + 12);
       return;
@@ -2289,16 +2295,16 @@ class MiniChart {
     }
     const logLo = Math.log10(Math.max(1e-2, lo * 0.5));
     const logHi = Math.log10(Math.max(hi * 1.2, lo * 2));
-    ctx.strokeStyle = '#232b3f'; ctx.lineWidth = 1;
+    ctx.strokeStyle = '#18201a'; ctx.lineWidth = 1;
     for (let g = Math.floor(logLo); g <= Math.ceil(logHi); g++) {
       const y = padT + (1 - (g - logLo) / (logHi - logLo)) * innerH;
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillStyle = '#7a8499';
-      ctx.font = '10px "SF Mono", Menlo, monospace';
+      ctx.fillStyle = '#8a9990';
+      ctx.font = '10px "IBM Plex Mono", "SF Mono", Menlo, monospace';
       ctx.textAlign = 'right';
       ctx.fillText(`10^${g}`, padL - 6, y + 4);
     }
-    ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#ffc53d'; ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < this.points.length; i++) {
       const p = this.points[i];

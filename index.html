@@ -4,541 +4,867 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>nuttakitkundum.com</title>
+<meta name="description" content="Poker theory, counterfactual regret minimization, and learning experiments — interactive solvers, self-grading drills, and study notes.">
+<meta name="theme-color" content="#050706">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
 <style>
-:root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --purple: #bf8cff;
-  --gold: #ffd54a;
-  --orange: #ff8c42;
-  --cyan: #3fc8d4;
-}
-
+html { scroll-behavior: smooth; }
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
-  color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-header {
-  padding: 18px 28px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+/* ---------------------------------------------------------------- topbar */
+header.topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 clamp(16px, 4vw, 42px);
+  height: 54px;
+  border-bottom: 1px solid var(--edge-line);
+  background: linear-gradient(180deg, rgba(5,7,6,0.95), rgba(5,7,6,0.82));
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  box-shadow: 0 1px 0 rgba(0,217,95,0.14);
 }
-.title-row {
+header.topbar .mark {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--pale);
+  text-decoration: none;
+  white-space: nowrap;
+}
+header.topbar .mark b { color: var(--signal); font-weight: 700; }
+
+nav.jump {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-right: auto;
+  min-width: 0;
+  -webkit-mask-image: linear-gradient(90deg, #000 97%, transparent);
+  mask-image: linear-gradient(90deg, #000 97%, transparent);
+}
+nav.jump::-webkit-scrollbar { display: none; }
+nav.jump a {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--ash-1);
+  text-decoration: none;
+  padding: 5px 9px;
+  border-radius: 5px;
+  white-space: nowrap;
+  transition: color 0.16s, background 0.16s;
+}
+nav.jump a:hover { color: var(--signal); background: rgba(0,217,95,0.08); }
+
+header.topbar .est {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  color: var(--ash-2);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ hero */
+.hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(52px, 11vw, 116px) clamp(16px, 4vw, 42px) clamp(38px, 6vw, 62px);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin: 0 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  max-width: 220px;
+  background: linear-gradient(90deg, var(--signal), transparent);
+}
+.hero h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(40px, 7.4vw, 82px);
+  line-height: 1.02;
+  letter-spacing: -0.5px;
+  margin: 0 0 26px;
+  color: var(--pale);
+  max-width: 15ch;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--signal);
+  text-shadow: 0 0 42px rgba(0,217,95,0.35);
+}
+.hero .lede {
+  font-size: clamp(14.5px, 1.5vw, 16.5px);
+  color: var(--ash-1);
+  max-width: 62ch;
+  margin: 0 0 34px;
+  line-height: 1.65;
+}
+.hero .lede strong { color: var(--pale); font-weight: 600; }
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--edge-line);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 760px;
+  background: var(--ink-3);
+}
+.strip div {
+  flex: 1 1 130px;
+  padding: 13px 18px;
+  border-right: 1px solid var(--edge-line);
+}
+.strip div:last-child { border-right: 0; }
+.strip dt {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--ash-2);
+  margin: 0 0 5px;
+}
+.strip dd {
+  font-family: var(--mono);
+  font-size: 16.5px;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--pale);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.strip dd span { color: var(--signal); }
+
+/* -------------------------------------------------------------- sections */
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 42px) 40px;
+}
+
+section.ledger { margin-bottom: 58px; scroll-margin-top: 68px; }
+
+.ledger-head {
   display: flex;
   align-items: baseline;
-  gap: 18px;
-  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--edge-line);
+  position: relative;
 }
-header h1 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(120deg, var(--accent), var(--purple) 60%, var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: -0.3px;
-}
-header .sub { color: var(--muted); font-size: 12px; }
-
-main {
-  padding: 32px 28px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-section.panel {
-  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-2) 100%);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
-}
-section.panel h2 {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-section.panel h3 {
-  margin: 0 0 18px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.tile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-
-.tile {
-  display: block;
-  text-decoration: none;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 18px;
-  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-}
-.tile:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(91,158,255,0.18);
-}
-.tile .label {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  font-family: "SF Mono", Menlo, monospace;
-  padding: 2px 6px;
-  border-radius: 3px;
-  margin-bottom: 10px;
-}
-.tile .label.poker  { background: rgba(255,140,66,0.15);  color: var(--orange); }
-.tile .label.cfr    { background: rgba(91,158,255,0.15);  color: var(--accent); }
-.tile .label.metric { background: rgba(63,223,142,0.15);  color: var(--green); }
-.tile .label.mccfr  { background: rgba(191,140,255,0.15); color: var(--purple); }
-.tile .label.deep   { background: rgba(255,213,74,0.15);  color: var(--gold); }
-.tile .label.note   { background: rgba(255,94,122,0.15);  color: #ff5e7a; }
-.tile .label.paper  { background: rgba(63,200,212,0.15);  color: var(--cyan); }
-.tile .label.quant  { background: rgba(255,200,87,0.15);  color: #ffc857; }
-.tile .label.review { background: rgba(63,200,212,0.15);  color: var(--cyan); }
-.tile .label.music  { background: rgba(191,140,255,0.15); color: var(--purple); }
-.tile .label.tool   { background: rgba(122,132,153,0.18); color: #9aa6bd; }
-.tile .name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 4px;
-}
-.tile .desc {
-  font-size: 12.5px;
-  color: var(--muted);
-  margin: 0;
-  line-height: 1.55;
-}
-.tile .arrow {
-  color: var(--accent);
-  font-family: "SF Mono", Menlo, monospace;
-  font-size: 12px;
-  margin-top: 10px;
-  display: block;
-}
-.tile .host {
-  display: block;
-  margin-top: 10px;
-  font-family: "SF Mono", Menlo, monospace;
-  font-size: 11px;
-  color: var(--muted);
-  word-break: break-all;
-}
-.tile.external::after {
-  content: "↗";
+.ledger-head::after {
+  content: "";
   position: absolute;
-  top: 12px;
-  right: 14px;
-  color: var(--muted);
-  font-size: 13px;
+  left: 0;
+  bottom: -1px;
+  width: 56px;
+  height: 1px;
+  background: var(--signal);
+  box-shadow: 0 0 12px rgba(0,217,95,0.7);
 }
-.tile { position: relative; }
+.ledger-head .idx {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--signal);
+  padding-top: 6px;
+}
+.ledger-head h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(24px, 3.2vw, 33px);
+  letter-spacing: 0.1px;
+  color: var(--pale);
+  margin: 0;
+  line-height: 1.15;
+}
+.ledger-head .sub {
+  font-size: 13px;
+  color: var(--ash-1);
+  margin: 4px 0 0;
+}
+.ledger-head .count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ash-2);
+  white-space: nowrap;
+}
 
-.section-spacer { height: 18px; }
+/* --------------------------------------------------------------- entries */
+.entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1px;
+  border: 1px solid var(--edge-line);
+  border-radius: 10px;
+  overflow: hidden;
+  counter-reset: entry;
+}
 
-.notes-warning {
+/* a lone entry reads as a featured row rather than a third of an empty sheet */
+.entries:has(> .entry:only-child) { grid-template-columns: minmax(0, 1fr); }
+.entries:has(> .entry:only-child) .entry p { max-width: 88ch; }
+
+.entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  background: var(--ink-3);
+  padding: 20px 22px 22px;
+  transition: background 0.2s ease;
+  overflow: hidden;
+  /* draws the hairline into the 1px grid gap, so empty cells stay empty */
+  box-shadow: 0 0 0 1px var(--edge-line);
+}
+.entry::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--signal);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.28s cubic-bezier(0.2,0.75,0.3,1);
+}
+.entry::after {
+  counter-increment: entry;
+  content: counter(entry, decimal-leading-zero);
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--ash-2);
+  transition: color 0.2s;
+}
+.entry:hover {
+  background:
+    linear-gradient(120deg, rgba(0,217,95,0.055), transparent 55%),
+    var(--ink-4);
+}
+.entry:hover::before { transform: scaleY(1); }
+.entry:hover::after { color: var(--signal); }
+
+.entry .tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 3px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+.tag.drill  { color: var(--signal); border-color: rgba(0,217,95,0.32);   background: rgba(0,217,95,0.08); }
+.tag.quiz   { color: var(--lime);   border-color: rgba(143,230,74,0.32); background: rgba(143,230,74,0.08); }
+.tag.cfr    { color: var(--signal); border-color: rgba(0,217,95,0.32);   background: rgba(0,217,95,0.08); }
+.tag.deep   { color: var(--cyan);   border-color: rgba(53,207,224,0.30); background: rgba(53,207,224,0.07); }
+.tag.metric { color: var(--gold);   border-color: rgba(255,197,61,0.30); background: rgba(255,197,61,0.07); }
+.tag.mccfr  { color: var(--purple); border-color: rgba(157,124,255,0.30);background: rgba(157,124,255,0.07); }
+.tag.note   { color: var(--red);    border-color: rgba(255,75,92,0.30);  background: rgba(255,75,92,0.07); }
+.tag.paper  { color: var(--orange); border-color: rgba(255,138,61,0.30); background: rgba(255,138,61,0.07); }
+.tag.tool   { color: var(--ash-1);  border-color: var(--edge-lit);       background: rgba(232,242,234,0.03); }
+
+.entry h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 0.1px;
+  color: var(--pale);
+  margin: 0 0 8px;
+  padding-right: 34px;
+}
+.entry:hover h3 { color: var(--signal); }
+.entry p {
+  font-size: 12.8px;
+  line-height: 1.62;
+  color: var(--ash-1);
+  margin: 0 0 18px;
+  flex: 1;
+}
+.entry p strong { color: var(--pale); font-weight: 600; }
+.entry p code {
+  font-size: 11.5px;
+  padding: 0.05em 0.3em;
+}
+
+.entry .path {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  color: var(--ash-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: color 0.2s, gap 0.2s;
+}
+.entry:hover .path { color: var(--signal); gap: 12px; }
+
+/* ---------------------------------------------------------------- notice */
+.notice {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  background: rgba(255,94,122,0.06);
-  border: 1px solid rgba(255,94,122,0.30);
-  border-radius: 10px;
-  padding: 12px 14px;
+  gap: 14px;
+  border: 1px solid rgba(255,75,92,0.28);
+  border-left: 2px solid var(--red);
+  border-radius: 8px;
+  padding: 14px 16px;
   margin-bottom: 18px;
+  background: rgba(255,75,92,0.045);
 }
-.notes-warning .badge {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
-  font-size: 9.5px;
+.notice .badge {
+  font-family: var(--mono);
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(255,94,122,0.18);
-  color: #ff7a91;
-  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: rgba(255,75,92,0.14);
+  color: #ff8590;
+  flex: none;
   margin-top: 1px;
 }
-.notes-warning .text {
-  font-size: 12.5px;
-  color: var(--muted);
-  line-height: 1.5;
+.notice p {
+  font-size: 12.6px;
+  line-height: 1.6;
+  color: var(--ash-1);
+  margin: 0;
 }
-.notes-warning .text strong { color: var(--text); font-weight: 600; }
+.notice p strong { color: var(--pale); font-weight: 600; }
 
-footer {
-  padding: 24px 32px 36px;
-  text-align: center;
-  font-size: 11px;
-  color: var(--dim);
+/* ---------------------------------------------------------------- footer */
+footer.site {
+  border-top: 1px solid var(--edge-line);
+  padding: 30px clamp(16px, 4vw, 42px) 48px;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  color: var(--ash-2);
 }
-footer a { color: var(--muted); text-decoration: none; }
-footer a:hover { color: var(--accent); }
+footer.site a { color: var(--ash-1); text-decoration: none; }
+footer.site a:hover { color: var(--signal); }
+footer.site .rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--signal), transparent 40%);
+  margin-bottom: 22px;
+  opacity: 0.5;
+}
+
+/* ---------------------------------------------------------------- motion */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero > *, section.ledger {
+  animation: rise 0.6s cubic-bezier(0.2,0.75,0.3,1) backwards;
+}
+.hero > *:nth-child(1) { animation-delay: 0.05s; }
+.hero > *:nth-child(2) { animation-delay: 0.12s; }
+.hero > *:nth-child(3) { animation-delay: 0.19s; }
+.hero > *:nth-child(4) { animation-delay: 0.26s; }
+section.ledger { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero > *, section.ledger { animation: none; }
+}
+
+@media (max-width: 860px) {
+  header.topbar .est { display: none; }
+}
+
+@media (max-width: 640px) {
+  .entries { grid-template-columns: 1fr; }
+  .ledger-head { flex-wrap: wrap; }
+  .ledger-head .count { margin-left: 0; width: 100%; }
+  .strip div { flex: 1 1 50%; }
+  .strip div:nth-child(2) { border-right: 0; }
+  .strip div:nth-child(-n+2) { border-bottom: 1px solid var(--edge-line); }
+  .hero h1 { max-width: none; }
+}
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
-<header>
-  <div class="title-row">
-    <h1>nuttakitkundum.com</h1>
-    <span class="sub">Poker theory, CFR, and learning experiments</span>
-  </div>
+<header class="topbar">
+  <a class="mark" href="/">NK<b>.</b></a>
+  <nav class="jump">
+    <a href="#trainers">Trainers</a>
+    <a href="#equity">Equity</a>
+    <a href="#review">Review</a>
+    <a href="#tabular">Tabular CFR</a>
+    <a href="#leduc">Leduc</a>
+    <a href="#neural">Neural</a>
+    <a href="#unreviewed">Unreviewed</a>
+    <a href="#notes">Notes</a>
+    <a href="#quant">Quant</a>
+    <a href="#systems">Systems</a>
+    <a href="#music">Music</a>
+  </nav>
+  <span class="est">nuttakitkundum.com</span>
 </header>
 
+<div class="hero">
+  <p class="eyebrow">Index</p>
+  <h1>Poker theory, <em>counterfactual regret,</em> and learning experiments.</h1>
+  <p class="lede">Interactive solvers that learn Kuhn and Leduc hold'em from scratch, self-grading drills for the nine-game mix, and study notes on the algorithms behind modern poker bots. <strong>Everything runs in the browser.</strong></p>
+  <dl class="strip">
+    <div><dt>Pages</dt><dd>30</dd></div>
+    <div><dt>Sections</dt><dd>12</dd></div>
+    <div><dt>Solvers</dt><dd>CFR+ · <span>DCFR</span></dd></div>
+    <div><dt>Toy games</dt><dd>Kuhn · Leduc</dd></div>
+  </dl>
+</div>
+
 <main>
-  <section class="panel">
-    <h2>Poker Trainers</h2>
-    <h3>Drills &amp; quizzes for real-table skills</h3>
 
-    <div class="tile-grid">
-      <a class="tile" href="/outs-drill">
-        <span class="label poker">Drill</span>
-        <p class="name">Counting Outs Drill</p>
-        <p class="desc">Practice counting outs across the 9-game mix — Hold'em, Omaha (Hi-Lo), Stud, Razz, and 2-7 Draw. Exact deck-accurate answers, live-card discounting in Stud/Razz, the two-hole-card rule in Omaha, and per-game accuracy tracking.</p>
-        <span class="arrow">/outs-drill →</span>
+  <!-- 01 ------------------------------------------------------------- -->
+  <section class="ledger" id="trainers">
+    <div class="ledger-head">
+      <span class="idx">01</span>
+      <div>
+        <h2>Poker Trainers</h2>
+        <p class="sub">Drills &amp; quizzes for real-table skills</p>
+      </div>
+      <span class="count">8 entries</span>
+    </div>
+
+    <div class="entries">
+      <a class="entry" href="/outs-drill">
+        <span class="tag drill">Drill</span>
+        <h3>Counting Outs Drill</h3>
+        <p>Practice counting outs across the 9-game mix — Hold'em, Omaha (Hi-Lo), Stud, Razz, and 2-7 Draw. Exact deck-accurate answers, live-card discounting in Stud/Razz, the two-hole-card rule in Omaha, and per-game accuracy tracking.</p>
+        <span class="path">/outs-drill -&gt;</span>
       </a>
 
-      <a class="tile" href="/stack-journey">
-        <span class="label poker">Drill</span>
-        <p class="name">Stack Journey</p>
-        <p class="desc">Live stack-tracking the way it happens at the table — action streams one card at a time, no rewinding, and the run never stops. Keep a running count through bets, calls, wins, and losses; gold checkpoints test the number you've been holding. Chips and big-blind modes.</p>
-        <span class="arrow">/stack-journey →</span>
+      <a class="entry" href="/stack-journey">
+        <span class="tag drill">Drill</span>
+        <h3>Stack Journey</h3>
+        <p>Live stack-tracking the way it happens at the table — action streams one card at a time, no rewinding, and the run never stops. Keep a running count through bets, calls, wins, and losses; gold checkpoints test the number you've been holding. Chips and big-blind modes.</p>
+        <span class="path">/stack-journey -&gt;</span>
       </a>
 
-      <a class="tile" href="/plo-starting-hands">
-        <span class="label poker">Quiz</span>
-        <p class="name">PLO Starting Hands</p>
-        <p class="desc">Classify Pot-Limit Omaha hands as premium, speculative, marginal, or trash, then make preflop decisions in a $2/$5 game — built on Jeff Hwang's "Big Play" framework. Two self-grading quizzes with full explanations, rendered poker cards, and a primer on the four tiers and the structural flaws (danglers, top gaps, non-nut draws) that demote a hand. Bilingual: English / ไทย.</p>
-        <span class="arrow">/plo-starting-hands →</span>
+      <a class="entry" href="/plo-starting-hands">
+        <span class="tag quiz">Quiz</span>
+        <h3>PLO Starting Hands</h3>
+        <p>Classify Pot-Limit Omaha hands as premium, speculative, marginal, or trash, then make preflop decisions in a $2/$5 game — built on Jeff Hwang's "Big Play" framework. Two self-grading quizzes with full explanations, rendered poker cards, and a primer on the four tiers and the structural flaws (danglers, top gaps, non-nut draws) that demote a hand. Bilingual: English / ไทย.</p>
+        <span class="path">/plo-starting-hands -&gt;</span>
       </a>
 
-      <a class="tile" href="/plo-situations">
-        <span class="label poker">Quiz</span>
-        <p class="name">PLO Post-Flop Situations</p>
-        <p class="desc">32 post-flop decision spots — sets, wraps, nut flush draws, two pair, full houses — where you read the hand, board, and action, then choose your play. Drills the core Chapter-6 skills: don't slow-play monsters, get big draws in, and fold the second-best to pressure. Bilingual: English / ไทย.</p>
-        <span class="arrow">/plo-situations →</span>
+      <a class="entry" href="/plo-situations">
+        <span class="tag quiz">Quiz</span>
+        <h3>PLO Post-Flop Situations</h3>
+        <p>32 post-flop decision spots — sets, wraps, nut flush draws, two pair, full houses — where you read the hand, board, and action, then choose your play. Drills the core Chapter-6 skills: don't slow-play monsters, get big draws in, and fold the second-best to pressure. Bilingual: English / ไทย.</p>
+        <span class="path">/plo-situations -&gt;</span>
       </a>
 
-      <a class="tile" href="/plo-hilo">
-        <span class="label poker">Quiz</span>
-        <p class="name">PLO Hi/Lo Split</p>
-        <p class="desc">24 questions on Pot-Limit Omaha Hi/Lo strategy and starting hands — scoop-or-fold, suited-ace two-way hands, position, "fold the nuts" spots, and which hand values shift from limit. Built on the key concepts from Chapter 9. Bilingual: English / ไทย.</p>
-        <span class="arrow">/plo-hilo →</span>
+      <a class="entry" href="/plo-hilo">
+        <span class="tag quiz">Quiz</span>
+        <h3>PLO Hi/Lo Split</h3>
+        <p>24 questions on Pot-Limit Omaha Hi/Lo strategy and starting hands — scoop-or-fold, suited-ace two-way hands, position, "fold the nuts" spots, and which hand values shift from limit. Built on the key concepts from Chapter 9. Bilingual: English / ไทย.</p>
+        <span class="path">/plo-hilo -&gt;</span>
       </a>
 
-      <a class="tile" href="/triple-draw-hands">
-        <span class="label poker">Learn</span>
-        <p class="name">Triple Draw Starting Hands</p>
-        <p class="desc">Pre-draw strategy for Ace-to-Five Triple Draw — the probability of strong starting hands, first-in open ranges by position, 3-bet/call/fold responses, BB defense, and facing a 3-bet, all on log-scaled charts and tables. Then a self-grading quiz, plus a keep-or-toss draw drill across A-5, 2-7, and Badugi that grades every discard against the optimal play.</p>
-        <span class="arrow">/triple-draw-hands →</span>
+      <a class="entry" href="/triple-draw-hands">
+        <span class="tag quiz">Learn</span>
+        <h3>Triple Draw Starting Hands</h3>
+        <p>Pre-draw strategy for Ace-to-Five Triple Draw — the probability of strong starting hands, first-in open ranges by position, 3-bet/call/fold responses, BB defense, and facing a 3-bet, all on log-scaled charts and tables. Then a self-grading quiz, plus a keep-or-toss draw drill across A-5, 2-7, and Badugi that grades every discard against the optimal play.</p>
+        <span class="path">/triple-draw-hands -&gt;</span>
       </a>
 
-      <a class="tile" href="/mixed-game-quizzes">
-        <span class="label poker">Learn</span>
-        <p class="name">Mixed Game Quizzes</p>
-        <p class="desc">Tutorials and self-grading quizzes for all 14 games in the WSOP mixed-event rotations — Hold'em (NL/Limit), Pot-Limit Omaha, Omaha Hi-Lo, Big O, Stud, Stud Hi-Lo, Razz, 2-7 (single + triple draw), A-5 Triple Draw, Badugi, and 5-Card Double Draw. Pick a game, read the rules, then quiz yourself tournament-ready. Includes a hand-rankings reference for high, A-5 low, and 2-7 low.</p>
-        <span class="arrow">/mixed-game-quizzes →</span>
+      <a class="entry" href="/mixed-game-quizzes">
+        <span class="tag quiz">Learn</span>
+        <h3>Mixed Game Quizzes</h3>
+        <p>Tutorials and self-grading quizzes for all 14 games in the WSOP mixed-event rotations — Hold'em (NL/Limit), Pot-Limit Omaha, Omaha Hi-Lo, Big O, Stud, Stud Hi-Lo, Razz, 2-7 (single + triple draw), A-5 Triple Draw, Badugi, and 5-Card Double Draw. Pick a game, read the rules, then quiz yourself tournament-ready. Includes a hand-rankings reference for high, A-5 low, and 2-7 low.</p>
+        <span class="path">/mixed-game-quizzes -&gt;</span>
       </a>
 
-      <a class="tile" href="/badugi">
-        <span class="label poker">Poker</span>
-        <p class="name">Badugi Tutorial</p>
-        <p class="desc">Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
-        <span class="arrow">/badugi →</span>
+      <a class="entry" href="/badugi">
+        <span class="tag quiz">Poker</span>
+        <h3>Badugi Tutorial</h3>
+        <p>Rules, strategy, and hand rankings for Badugi — a four-card lowball draw game.</p>
+        <span class="path">/badugi -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 02 ------------------------------------------------------------- -->
+  <section class="ledger" id="equity">
+    <div class="ledger-head">
+      <span class="idx">02</span>
+      <div>
+        <h2>Equity Tables</h2>
+        <p class="sub">Exact enumeration output, filterable</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Hand Review</h2>
-    <h3>Sessions graded against a published framework</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/hand-review">
-        <span class="label review">Review</span>
-        <p class="name">PLO Preflop — Hwang Method</p>
-        <p class="desc">355 hands of GG PLO micro, every preflop decision scored against Jeff Hwang&rsquo;s <em>Big Play Strategy</em> tiers. Hand valuation from pair, nut-suit and wrap equity; accuracy split by effective seat and action faced; all 346 spots filterable by leak type. Verdict: <strong>90.5%</strong> — sound selection, too passive with big pairs, too loose in the small blind.</p>
-        <span class="arrow">/hand-review →</span>
+    <div class="entries">
+      <a class="entry" href="/deuce-equity">
+        <span class="tag metric">Table</span>
+        <h3>2-7 Class Equity Table</h3>
+        <p>All <strong>7,462</strong> deuce-to-seven value classes — rank multiset plus flush flag — each with its exact percentile equity against a uniform random hand. Built by full enumeration of all <strong>2,598,960</strong> five-card hands, no sampling. Filter by category and ranks, page through the table, and read the equity distribution histogram; median sits at <code>0.500</code>. Generated by <code>poker-bot equity-json</code>.</p>
+        <span class="path">/deuce-equity -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 03 ------------------------------------------------------------- -->
+  <section class="ledger" id="review">
+    <div class="ledger-head">
+      <span class="idx">03</span>
+      <div>
+        <h2>Hand Review</h2>
+        <p class="sub">Sessions graded against a published framework</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Tabular CFR</h2>
-    <h3>Counterfactual Regret Minimization on Kuhn poker</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/cfr-simulation">
-        <span class="label cfr">CFR</span>
-        <p class="name">CFR Simulation</p>
-        <p class="desc">Watch a poker bot learn Kuhn poker from scratch via vanilla Counterfactual Regret Minimization. Includes a glossary and live math walkthrough.</p>
-        <span class="arrow">/cfr-simulation →</span>
-      </a>
-
-      <a class="tile" href="/cfr-plus">
-        <span class="label cfr">CFR+</span>
-        <p class="name">CFR+ on Kuhn Poker</p>
-        <p class="desc">Floor cumulative regret at zero and use weighted strategy averaging — converges roughly an order of magnitude faster than vanilla CFR. Tammelin, 2014.</p>
-        <span class="arrow">/cfr-plus →</span>
-      </a>
-
-      <a class="tile" href="/dcfr">
-        <span class="label cfr">DCFR</span>
-        <p class="name">Discounted CFR</p>
-        <p class="desc">Discount past regret and strategy contributions with α/β/γ weights. The modern default for tabular CFR. Brown &amp; Sandholm, 2019.</p>
-        <span class="arrow">/dcfr →</span>
-      </a>
-
-      <a class="tile" href="/mccfr">
-        <span class="label mccfr">MCCFR</span>
-        <p class="name">External Sampling MCCFR</p>
-        <p class="desc">Sample a single chance outcome per iteration instead of walking all 6 deals. Trades variance for speed. Lanctot et al., 2009.</p>
-        <span class="arrow">/mccfr →</span>
-      </a>
-
-      <a class="tile" href="/mccfr-variants">
-        <span class="label mccfr">Sampling</span>
-        <p class="name">MCCFR Variants</p>
-        <p class="desc">Side-by-side comparison of Chance, External, and Outcome sampling — three ways to sample the tree, one clear winner in practice.</p>
-        <span class="arrow">/mccfr-variants →</span>
-      </a>
-
-      <a class="tile" href="/convergence-metrics">
-        <span class="label metric">Metrics</span>
-        <p class="name">Convergence Metrics</p>
-        <p class="desc">Exploitability, average-strategy distance, and other indicators of how CFR approaches Nash equilibrium.</p>
-        <span class="arrow">/convergence-metrics →</span>
+    <div class="entries">
+      <a class="entry" href="/hand-review">
+        <span class="tag metric">Review</span>
+        <h3>PLO Preflop — Hwang Method</h3>
+        <p>355 hands of GG PLO micro, every preflop decision scored against Jeff Hwang&rsquo;s <em>Big Play Strategy</em> tiers. Hand valuation from pair, nut-suit and wrap equity; accuracy split by effective seat and action faced; all 346 spots filterable by leak type. Verdict: <strong>90.5%</strong> — sound selection, too passive with big pairs, too loose in the small blind.</p>
+        <span class="path">/hand-review -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 04 ------------------------------------------------------------- -->
+  <section class="ledger" id="tabular">
+    <div class="ledger-head">
+      <span class="idx">04</span>
+      <div>
+        <h2>Tabular CFR</h2>
+        <p class="sub">Counterfactual Regret Minimization on Kuhn poker</p>
+      </div>
+      <span class="count">6 entries</span>
+    </div>
 
-  <section class="panel">
-    <h2>Scaling Up: Leduc Hold&rsquo;em</h2>
-    <h3>From Kuhn toward No-Limit</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/leduc-cfr">
-        <span class="label cfr">Leduc</span>
-        <p class="name">Leduc Hold'em — Tabular CFR</p>
-        <p class="desc">One rung above Kuhn — 6 cards, public board, two betting rounds. Same CFR algorithm; converges to ε &lt; 10 mbb/g in seconds. The standard research stepping stone toward NLH.</p>
-        <span class="arrow">/leduc-cfr →</span>
+    <div class="entries">
+      <a class="entry" href="/cfr-simulation">
+        <span class="tag cfr">CFR</span>
+        <h3>CFR Simulation</h3>
+        <p>Watch a poker bot learn Kuhn poker from scratch via vanilla Counterfactual Regret Minimization. Includes a glossary and live math walkthrough.</p>
+        <span class="path">/cfr-simulation -&gt;</span>
       </a>
 
-      <a class="tile" href="/leduc-nl-cfr">
-        <span class="label cfr">Leduc-NL</span>
-        <p class="name">Leduc-NL — Custom Bet Sizes</p>
-        <p class="desc">Same Leduc engine, but bets come from a menu of pot fractions (½ pot, pot, 2× pot, all-in). Action abstraction at toy scale — the first place the NL bet-sizing problem actually appears.</p>
-        <span class="arrow">/leduc-nl-cfr →</span>
+      <a class="entry" href="/cfr-plus">
+        <span class="tag cfr">CFR+</span>
+        <h3>CFR+ on Kuhn Poker</h3>
+        <p>Floor cumulative regret at zero and use weighted strategy averaging — converges roughly an order of magnitude faster than vanilla CFR. Tammelin, 2014.</p>
+        <span class="path">/cfr-plus -&gt;</span>
       </a>
 
-      <a class="tile" href="/leduc-nl-resolver">
-        <span class="label deep">Resolver</span>
-        <p class="name">Leduc-NL Re-solver</p>
-        <p class="desc">Pick a spot, pick a custom bet menu (with sizes that don't exist in the blueprint), click solve. Watch the strategy and EV change. The architecture Pluribus and DeepStack run every decision — at toy scale.</p>
-        <span class="arrow">/leduc-nl-resolver →</span>
+      <a class="entry" href="/dcfr">
+        <span class="tag cfr">DCFR</span>
+        <h3>Discounted CFR</h3>
+        <p>Discount past regret and strategy contributions with α/β/γ weights. The modern default for tabular CFR. Brown &amp; Sandholm, 2019.</p>
+        <span class="path">/dcfr -&gt;</span>
       </a>
 
-      <a class="tile" href="/isomorphism">
-        <span class="label deep">Concept</span>
-        <p class="name">Card Isomorphism</p>
-        <p class="desc">Why suits don't matter (until they do) and how poker solvers exploit suit symmetry for a free 24× speedup. Includes an interactive canonicalizer — type any hand+board and see its equivalence class size live.</p>
-        <span class="arrow">/isomorphism →</span>
+      <a class="entry" href="/mccfr">
+        <span class="tag mccfr">MCCFR</span>
+        <h3>External Sampling MCCFR</h3>
+        <p>Sample a single chance outcome per iteration instead of walking all 6 deals. Trades variance for speed. Lanctot et al., 2009.</p>
+        <span class="path">/mccfr -&gt;</span>
+      </a>
+
+      <a class="entry" href="/mccfr-variants">
+        <span class="tag mccfr">Sampling</span>
+        <h3>MCCFR Variants</h3>
+        <p>Side-by-side comparison of Chance, External, and Outcome sampling — three ways to sample the tree, one clear winner in practice.</p>
+        <span class="path">/mccfr-variants -&gt;</span>
+      </a>
+
+      <a class="entry" href="/convergence-metrics">
+        <span class="tag metric">Metrics</span>
+        <h3>Convergence Metrics</h3>
+        <p>Exploitability, average-strategy distance, and other indicators of how CFR approaches Nash equilibrium.</p>
+        <span class="path">/convergence-metrics -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 05 ------------------------------------------------------------- -->
+  <section class="ledger" id="leduc">
+    <div class="ledger-head">
+      <span class="idx">05</span>
+      <div>
+        <h2>Scaling Up: Leduc Hold&rsquo;em</h2>
+        <p class="sub">From Kuhn toward No-Limit</p>
+      </div>
+      <span class="count">4 entries</span>
+    </div>
 
-  <section class="panel">
-    <h2>Neural &amp; Deep CFR</h2>
-    <h3>Replacing the regret table with a network</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/deep-cfr-explained">
-        <span class="label deep">Concept</span>
-        <p class="name">Deep CFR Explained</p>
-        <p class="desc">Conceptual walkthrough of how CFR drops its lookup table for a neural-network function approximator — and why that lets it scale beyond toy games.</p>
-        <span class="arrow">/deep-cfr-explained →</span>
+    <div class="entries">
+      <a class="entry" href="/leduc-cfr">
+        <span class="tag cfr">Leduc</span>
+        <h3>Leduc Hold'em — Tabular CFR</h3>
+        <p>One rung above Kuhn — 6 cards, public board, two betting rounds. Same CFR algorithm; converges to ε &lt; 10 mbb/g in seconds. The standard research stepping stone toward NLH.</p>
+        <span class="path">/leduc-cfr -&gt;</span>
       </a>
 
-      <a class="tile" href="/deep-cfr">
-        <span class="label deep">Deep CFR</span>
-        <p class="name">Deep CFR on Kuhn Poker</p>
-        <p class="desc">Tabular regret tables replaced by a neural network. Same convergence guarantees, no per-info-set bookkeeping. Brown, Lerer, Gross, Sandholm — ICML 2019.</p>
-        <span class="arrow">/deep-cfr →</span>
+      <a class="entry" href="/leduc-nl-cfr">
+        <span class="tag cfr">Leduc-NL</span>
+        <h3>Leduc-NL — Custom Bet Sizes</h3>
+        <p>Same Leduc engine, but bets come from a menu of pot fractions (½ pot, pot, 2× pot, all-in). Action abstraction at toy scale — the first place the NL bet-sizing problem actually appears.</p>
+        <span class="path">/leduc-nl-cfr -&gt;</span>
       </a>
 
-      <a class="tile" href="/leduc-deepstack">
-        <span class="label deep">DeepStack</span>
-        <p class="name">Leduc DeepStack — Value Network</p>
-        <p class="desc">Train a small MLP to predict round-2 counterfactual values, replacing the blueprint entirely. Compare neural-net predictions against an exact CFR solver. Validates DeepStack-style depth-limited solving at toy scale.</p>
-        <span class="arrow">/leduc-deepstack →</span>
+      <a class="entry" href="/leduc-nl-resolver">
+        <span class="tag deep">Resolver</span>
+        <h3>Leduc-NL Re-solver</h3>
+        <p>Pick a spot, pick a custom bet menu (with sizes that don't exist in the blueprint), click solve. Watch the strategy and EV change. The architecture Pluribus and DeepStack run every decision — at toy scale.</p>
+        <span class="path">/leduc-nl-resolver -&gt;</span>
       </a>
 
-      <a class="tile" href="/postflop-solver">
-        <span class="label deep">Engine</span>
-        <p class="name">Inside postflop-solver</p>
-        <p class="desc">Code walk through the open-source Rust NLH solver that the author claims beats PioSOLVER and GTO+. Customized DCFR (α=1.5, β=0, γ=3, with a power-of-4 strategy reset), no card abstraction, SIMD-tuned. ~10k lines.</p>
-        <span class="arrow">/postflop-solver →</span>
+      <a class="entry" href="/isomorphism">
+        <span class="tag deep">Concept</span>
+        <h3>Card Isomorphism</h3>
+        <p>Why suits don't matter (until they do) and how poker solvers exploit suit symmetry for a free 24× speedup. Includes an interactive canonicalizer — type any hand+board and see its equivalence class size live.</p>
+        <span class="path">/isomorphism -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 06 ------------------------------------------------------------- -->
+  <section class="ledger" id="neural">
+    <div class="ledger-head">
+      <span class="idx">06</span>
+      <div>
+        <h2>Neural &amp; Deep CFR</h2>
+        <p class="sub">Replacing the regret table with a network</p>
+      </div>
+      <span class="count">4 entries</span>
+    </div>
 
-  <section class="panel">
-    <h2>Needs Review</h2>
-    <h3>Built but not yet verified against the source</h3>
+    <div class="entries">
+      <a class="entry" href="/deep-cfr-explained">
+        <span class="tag deep">Concept</span>
+        <h3>Deep CFR Explained</h3>
+        <p>Conceptual walkthrough of how CFR drops its lookup table for a neural-network function approximator — and why that lets it scale beyond toy games.</p>
+        <span class="path">/deep-cfr-explained -&gt;</span>
+      </a>
 
-    <div class="notes-warning">
+      <a class="entry" href="/deep-cfr">
+        <span class="tag deep">Deep CFR</span>
+        <h3>Deep CFR on Kuhn Poker</h3>
+        <p>Tabular regret tables replaced by a neural network. Same convergence guarantees, no per-info-set bookkeeping. Brown, Lerer, Gross, Sandholm — ICML 2019.</p>
+        <span class="path">/deep-cfr -&gt;</span>
+      </a>
+
+      <a class="entry" href="/leduc-deepstack">
+        <span class="tag deep">DeepStack</span>
+        <h3>Leduc DeepStack — Value Network</h3>
+        <p>Train a small MLP to predict round-2 counterfactual values, replacing the blueprint entirely. Compare neural-net predictions against an exact CFR solver. Validates DeepStack-style depth-limited solving at toy scale.</p>
+        <span class="path">/leduc-deepstack -&gt;</span>
+      </a>
+
+      <a class="entry" href="/postflop-solver">
+        <span class="tag deep">Engine</span>
+        <h3>Inside postflop-solver</h3>
+        <p>Code walk through the open-source Rust NLH solver that the author claims beats PioSOLVER and GTO+. Customized DCFR (α=1.5, β=0, γ=3, with a power-of-4 strategy reset), no card abstraction, SIMD-tuned. ~10k lines.</p>
+        <span class="path">/postflop-solver -&gt;</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 07 ------------------------------------------------------------- -->
+  <section class="ledger" id="unreviewed">
+    <div class="ledger-head">
+      <span class="idx">07</span>
+      <div>
+        <h2>Needs Review</h2>
+        <p class="sub">Built but not yet verified against the source</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
+
+    <div class="notice">
       <span class="badge">Unreviewed</span>
-      <p class="text">These pages are <strong>complete and usable, but their contents have not yet been checked against the source material</strong> — numbers, hands, or boards may contain transcription errors. <strong>Do not rely on them until reviewed.</strong> Once verified against the book, they graduate to the section above.</p>
+      <p>These pages are <strong>complete and usable, but their contents have not yet been checked against the source material</strong> — numbers, hands, or boards may contain transcription errors. <strong>Do not rely on them until reviewed.</strong> Once verified against the book, they graduate to the section above.</p>
     </div>
 
-    <div class="tile-grid">
-      <a class="tile" href="/odds-drill">
-        <span class="label note">Drill</span>
-        <p class="name">Odds Calculation Drill</p>
-        <p class="desc">Master pot odds, outs, and equity by working the math, not memorizing it. Self-grading drills across nine reference charts — odds⇄percentage conversion, the Rule of 2 &amp; 4, exact outs-to-equity, pot odds by bet size, bluff and hero-call break-evens, preflop matchups, and SPR commitment. Every answer shows the formula and the exact book value, with per-topic mastery tracking. <strong>Chart values pending review against the source.</strong></p>
-        <span class="arrow">/odds-drill →</span>
+    <div class="entries">
+      <a class="entry" href="/odds-drill">
+        <span class="tag note">Drill</span>
+        <h3>Odds Calculation Drill</h3>
+        <p>Master pot odds, outs, and equity by working the math, not memorizing it. Self-grading drills across nine reference charts — odds⇄percentage conversion, the Rule of 2 &amp; 4, exact outs-to-equity, pot odds by bet size, bluff and hero-call break-evens, preflop matchups, and SPR commitment. Every answer shows the formula and the exact book value, with per-topic mastery tracking. <strong>Chart values pending review against the source.</strong></p>
+        <span class="path">/odds-drill -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 08 ------------------------------------------------------------- -->
+  <section class="ledger" id="notes">
+    <div class="ledger-head">
+      <span class="idx">08</span>
+      <div>
+        <h2>Personal Notes</h2>
+        <p class="sub">Study notes — not authoritative</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Personal Notes</h2>
-    <h3>Study notes — not authoritative</h3>
-
-    <div class="notes-warning">
+    <div class="notice">
       <span class="badge">Unverified</span>
-      <p class="text">These are <strong>personal study notes</strong> written while learning. They have not been peer-reviewed, cite no primary measurements, and may contain mistakes or oversimplifications. <strong>Do not cite these as a source.</strong> For anything load-bearing, follow the linked papers and original references inside each note.</p>
+      <p>These are <strong>personal study notes</strong> written while learning. They have not been peer-reviewed, cite no primary measurements, and may contain mistakes or oversimplifications. <strong>Do not cite these as a source.</strong> For anything load-bearing, follow the linked papers and original references inside each note.</p>
     </div>
 
-    <div class="tile-grid">
-      <a class="tile" href="/custom-bet-solver">
-        <span class="label note">Note</span>
-        <p class="name">Building a Custom Bet-Size Solver</p>
-        <p class="desc">Why a Deep CFR blueprint alone can't handle arbitrary bet sizes — and how Pluribus/DeepStack add action translation and depth-limited re-solving to get there. Personal summary, unverified.</p>
-        <span class="arrow">/custom-bet-solver →</span>
+    <div class="entries">
+      <a class="entry" href="/custom-bet-solver">
+        <span class="tag note">Note</span>
+        <h3>Building a Custom Bet-Size Solver</h3>
+        <p>Why a Deep CFR blueprint alone can't handle arbitrary bet sizes — and how Pluribus/DeepStack add action translation and depth-limited re-solving to get there. Personal summary, unverified.</p>
+        <span class="path">/custom-bet-solver -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 09 ------------------------------------------------------------- -->
+  <section class="ledger" id="quant">
+    <div class="ledger-head">
+      <span class="idx">09</span>
+      <div>
+        <h2>Quant</h2>
+        <p class="sub">Finance papers and asset-pricing notes</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Quant</h2>
-    <h3>Finance papers and asset-pricing notes</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/rd-investments-paper">
-        <span class="label paper">Paper</span>
-        <p class="name">R&amp;D Investments &amp; Past Returns</p>
-        <p class="desc">Maletic 2019 — when high R&amp;D spending predicts higher future stock returns depends on whether you mean the <em>level</em> or the <em>change</em>, and on past performance. Two interactions, opposite signs.</p>
-        <span class="arrow">/rd-investments-paper →</span>
+    <div class="entries">
+      <a class="entry" href="/rd-investments-paper">
+        <span class="tag paper">Paper</span>
+        <h3>R&amp;D Investments &amp; Past Returns</h3>
+        <p>Maletic 2019 — when high R&amp;D spending predicts higher future stock returns depends on whether you mean the <em>level</em> or the <em>change</em>, and on past performance. Two interactions, opposite signs.</p>
+        <span class="path">/rd-investments-paper -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 10 ------------------------------------------------------------- -->
+  <section class="ledger" id="systems">
+    <div class="ledger-head">
+      <span class="idx">10</span>
+      <div>
+        <h2>Systems &amp; Tooling</h2>
+        <p class="sub">Software architecture studies &amp; reverse-engineering notes</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Systems &amp; Tooling</h2>
-    <h3>Software architecture studies &amp; reverse-engineering notes</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/kholdem">
-        <span class="label tool">Study</span>
-        <p class="name">kHold'em — Architecture &amp; Integration</p>
-        <p class="desc">Read-only teardown of the kHold'em poker-room suite (eShark / LiPoker): the client&nbsp;↔&nbsp;server WCF model where the server owns every write, the SQL Server system of record (145 tables), cloud sync, DPAPI-locked secrets, and the native Bounty/PKO schema. Ends with four ranked integration surfaces — from the .kpl addon SDK to why you should never write raw SQL.</p>
-        <span class="arrow">/kholdem →</span>
+    <div class="entries">
+      <a class="entry" href="/kholdem">
+        <span class="tag tool">Study</span>
+        <h3>kHold'em — Architecture &amp; Integration</h3>
+        <p>Read-only teardown of the kHold'em poker-room suite (eShark / LiPoker): the client&nbsp;↔&nbsp;server WCF model where the server owns every write, the SQL Server system of record (145 tables), cloud sync, DPAPI-locked secrets, and the native Bounty/PKO schema. Ends with four ranked integration surfaces — from the .kpl addon SDK to why you should never write raw SQL.</p>
+        <span class="path">/kholdem -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 11 ------------------------------------------------------------- -->
+  <section class="ledger" id="music">
+    <div class="ledger-head">
+      <span class="idx">11</span>
+      <div>
+        <h2>Music</h2>
+        <p class="sub">Tools for music notation and input</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Music</h2>
-    <h3>Tools for music notation and input</h3>
-
-    <div class="tile-grid">
-      <a class="tile" href="/thai-music-ime">
-        <span class="label music">IME</span>
-        <p class="name">Thai Music IME</p>
-        <p class="desc">An input method editor for Thai classical music notation — type Thai music symbols directly with a custom keyboard mapping.</p>
-        <span class="arrow">/thai-music-ime →</span>
+    <div class="entries">
+      <a class="entry" href="/thai-music-ime">
+        <span class="tag tool">IME</span>
+        <h3>Thai Music IME</h3>
+        <p>An input method editor for Thai classical music notation — type Thai music symbols directly with a custom keyboard mapping.</p>
+        <span class="path">/thai-music-ime -&gt;</span>
       </a>
     </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- 12 ------------------------------------------------------------- -->
+  <section class="ledger" id="external">
+    <div class="ledger-head">
+      <span class="idx">12</span>
+      <div>
+        <h2>Further Reading</h2>
+        <p class="sub">External resources worth your time</p>
+      </div>
+      <span class="count">1 entry</span>
+    </div>
 
-  <section class="panel">
-    <h2>Further Reading</h2>
-    <h3>External resources worth your time</h3>
-
-    <div class="tile-grid">
-      <a class="tile external" href="https://brianberns.github.io/Hearts/" target="_blank" rel="noopener">
-        <span class="label deep">Deep CFR</span>
-        <p class="name">Hearts via Deep CFR</p>
-        <p class="desc">Brian Berns's interactive Hearts bot trained with Deep CFR — a much larger game than Kuhn poker. Useful concrete reference for how Deep CFR scales beyond toy domains.</p>
-        <span class="host">brianberns.github.io/Hearts</span>
+    <div class="entries">
+      <a class="entry" href="https://brianberns.github.io/Hearts/" target="_blank" rel="noopener">
+        <span class="tag deep">Deep CFR</span>
+        <h3>Hearts via Deep CFR</h3>
+        <p>Brian Berns's interactive Hearts bot trained with Deep CFR — a much larger game than Kuhn poker. Useful concrete reference for how Deep CFR scales beyond toy domains.</p>
+        <span class="path">brianberns.github.io/Hearts -&gt;</span>
       </a>
     </div>
   </section>
+
 </main>
 
-<footer>
-  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+<footer class="site">
+  <div class="rule"></div>
+  <span>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> — All rights reserved.</span>
+  <span>Built in the browser · No trackers beyond page counts</span>
 </footer>
 
 </body>

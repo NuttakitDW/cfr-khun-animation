@@ -6,43 +6,43 @@
 <title>Counting Outs Drill — Mixed Games</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
-  --cyan: #3fc8d4;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
+  --cyan: #35cfe0;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
 }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 16px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 20;
@@ -72,7 +72,7 @@ main { padding: 22px 28px 8px; max-width: 1180px; margin: 0 auto; }
 }
 .btn:hover { border-color: var(--accent); }
 .btn:active { transform: translateY(1px); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #06122b; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #03150a; }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.ghost { background: transparent; }
 
@@ -84,12 +84,12 @@ main { padding: 22px 28px 8px; max-width: 1180px; margin: 0 auto; }
 }
 .seg button:hover { color: var(--text); }
 .seg button.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
-.seg button.active.mix { background: rgba(91,158,255,0.18); color: var(--accent); border-color: rgba(91,158,255,0.4); }
+.seg button.active.mix { background: rgba(0,217,95,0.18); color: var(--accent); border-color: rgba(0,217,95,0.4); }
 
 .stats-row { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
 .stat { text-align: right; }
 .stat .lab { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
-.stat .val { font-family: "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; color: var(--text); }
+.stat .val { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; color: var(--text); }
 .stat .val.green { color: var(--green); }
 .stat .val.gold { color: var(--gold); }
 
@@ -104,15 +104,15 @@ section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: v
 
 .spot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
 .game-badge {
-  font-family: "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 10px; font-weight: 700;
   letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
-  background: rgba(255,140,66,0.15); color: var(--orange);
+  background: rgba(255,138,61,0.15); color: var(--orange);
 }
-.game-badge.holdem { background: rgba(91,158,255,0.15); color: var(--accent); }
-.game-badge.omaha  { background: rgba(191,140,255,0.15); color: var(--purple); }
-.game-badge.stud   { background: rgba(63,200,212,0.15); color: var(--cyan); }
-.game-badge.low    { background: rgba(63,223,142,0.15); color: var(--green); }
-.street-tag { font-size: 11px; color: var(--muted); font-family: "SF Mono", Menlo, monospace; }
+.game-badge.holdem { background: rgba(0,217,95,0.15); color: var(--accent); }
+.game-badge.omaha  { background: rgba(157,124,255,0.15); color: var(--purple); }
+.game-badge.stud   { background: rgba(53,207,224,0.15); color: var(--cyan); }
+.game-badge.low    { background: rgba(143,230,74,0.15); color: var(--green); }
+.street-tag { font-size: 11px; color: var(--muted); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 .card-block { margin: 14px 0; }
 .card-block .clab { font-size: 9.5px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin-bottom: 7px; }
@@ -120,10 +120,10 @@ section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: v
 
 .pcard {
   width: 46px; height: 64px; border-radius: 7px;
-  background: linear-gradient(180deg, #f4f6fb, #dfe5ef);
-  border: 1px solid #b9c2d4; color: #14233f;
+  background: linear-gradient(180deg, #f2f4ef, #dde2d8);
+  border: 1px solid #c3cbc2; color: #0a2a19;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-family: "SF Mono", Menlo, monospace; font-weight: 700;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700;
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   position: relative; flex-shrink: 0;
 }
@@ -153,13 +153,13 @@ section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: v
 .numpad { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .numpad button {
   width: 40px; height: 40px; border-radius: 8px; font: inherit; font-weight: 700;
-  font-family: "SF Mono", Menlo, monospace; font-size: 15px; cursor: pointer;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 15px; cursor: pointer;
   background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
 }
 .numpad button:hover { border-color: var(--accent); color: var(--accent); }
 .answer-row { display: flex; gap: 8px; align-items: center; }
 .answer-row input {
-  font: inherit; font-family: "SF Mono", Menlo, monospace; font-size: 18px; font-weight: 700;
+  font: inherit; font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 18px; font-weight: 700;
   width: 84px; padding: 8px 12px; border-radius: 8px; text-align: center;
   background: var(--bg); border: 1px solid var(--border); color: var(--text);
 }
@@ -169,23 +169,23 @@ section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: v
 .verdict { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .verdict.ok { color: var(--green); }
 .verdict.no { color: var(--red); }
-.verdict .pill { font-family: "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
+.verdict .pill { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--panel-3); color: var(--text); }
 .explain { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
 .explain b { color: var(--text); }
 .outs-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .chip {
-  font-family: "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
-  padding: 3px 7px; border-radius: 5px; background: rgba(255,213,74,0.13);
-  border: 1px solid rgba(255,213,74,0.4); color: var(--gold);
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 700;
+  padding: 3px 7px; border-radius: 5px; background: rgba(255,197,61,0.13);
+  border: 1px solid rgba(255,197,61,0.4); color: var(--gold);
 }
-.chip.red { color: #ff8aa0; background: rgba(255,94,122,0.12); border-color: rgba(255,94,122,0.4); }
+.chip.red { color: #ff8aa0; background: rgba(255,75,92,0.12); border-color: rgba(255,75,92,0.4); }
 
 .hidden { display: none !important; }
 
 /* right column */
 .kv { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .kv .k { color: var(--muted); }
-.kv .v { font-family: "SF Mono", Menlo, monospace; font-weight: 700; }
+.kv .v { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700; }
 .gamestat { margin-bottom: 12px; }
 .gamestat .gname { font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
 .gamestat .gname b { color: var(--text); font-weight: 600; }
@@ -196,7 +196,7 @@ section.panel h3 { margin: 0 0 16px; font-size: 18px; font-weight: 600; color: v
 .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
 .toggle-row input { accent-color: var(--accent); width: 15px; height: 15px; }
 
-.hint-box { margin-top: 10px; font-size: 12.5px; color: var(--cyan); background: rgba(63,200,212,0.07); border: 1px solid rgba(63,200,212,0.25); border-radius: 8px; padding: 9px 12px; }
+.hint-box { margin-top: 10px; font-size: 12.5px; color: var(--cyan); background: rgba(53,207,224,0.07); border: 1px solid rgba(53,207,224,0.25); border-radius: 8px; padding: 9px 12px; }
 
 footer { padding: 26px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
 footer a { color: var(--muted); text-decoration: none; }
@@ -218,20 +218,20 @@ footer a:hover { color: var(--accent); }
 .rules-intro { font-size: 14px; color: var(--text); line-height: 1.65; }
 .rules-intro b { color: var(--gold); }
 .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; margin-top: 4px; }
-.rule-card h3 .sys { font-family: "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); font-weight: 600; }
+.rule-card h3 .sys { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); font-weight: 600; }
 .rule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .rule-table th, .rule-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
 .rule-table th { color: var(--muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
-.rule-table td.mono { font-family: "SF Mono", Menlo, monospace; }
+.rule-table td.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 .rule-table tr:last-child td { border-bottom: none; }
 .yes { color: var(--green); font-weight: 700; }
 .no2 { color: var(--red); font-weight: 700; }
-.best-low { font-family: "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; }
+.best-low { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; }
 .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .gtag { font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 6px; background: var(--panel-3); border: 1px solid var(--border); color: var(--text); }
-.gtag.a5 { background: rgba(63,223,142,0.12); border-color: rgba(63,223,142,0.4); color: var(--green); }
-.gtag.d7 { background: rgba(255,94,122,0.12); border-color: rgba(255,94,122,0.4); color: #ff8aa0; }
-.gtag.bad { background: rgba(191,140,255,0.12); border-color: rgba(191,140,255,0.4); color: var(--purple); }
+.gtag.a5 { background: rgba(143,230,74,0.12); border-color: rgba(143,230,74,0.4); color: var(--green); }
+.gtag.d7 { background: rgba(255,75,92,0.12); border-color: rgba(255,75,92,0.4); color: #ff8aa0; }
+.gtag.bad { background: rgba(157,124,255,0.12); border-color: rgba(157,124,255,0.4); color: var(--purple); }
 .note-card { margin-top: 16px; }
 .note-card ul { margin: 8px 0 0; padding-left: 18px; }
 .note-card li { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 6px; }
@@ -241,16 +241,16 @@ footer a:hover { color: var(--accent); }
 @media (max-width: 900px){ .rules-grid { grid-template-columns: 1fr; } }
 
 /* ---- time attack + leaderboard ---- */
-.challenge-btn { background: linear-gradient(120deg, var(--purple), var(--accent)); border-color: transparent; color: #08122b; }
+.challenge-btn { background: linear-gradient(120deg, var(--purple), var(--accent)); border-color: transparent; color: #05140c; }
 .challenge-btn:hover { filter: brightness(1.08); border-color: transparent; }
 .ta-banner { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 18px; border-radius: 12px;
-  background: linear-gradient(180deg, rgba(191,140,255,0.12), rgba(91,158,255,0.05)); border: 1px solid rgba(191,140,255,0.4); }
-.ta-banner .ta-clock { font-family: "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--gold); letter-spacing: 1px; min-width: 86px; }
+  background: linear-gradient(180deg, rgba(157,124,255,0.12), rgba(0,217,95,0.05)); border: 1px solid rgba(157,124,255,0.4); }
+.ta-banner .ta-clock { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 30px; font-weight: 700; color: var(--gold); letter-spacing: 1px; min-width: 86px; }
 .ta-banner .ta-clock.warn { color: var(--red); }
 .ta-stat { display: flex; flex-direction: column; }
 .ta-stat .l { font-size: 9px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
-.ta-stat .v { font-family: "SF Mono", Menlo, monospace; font-size: 20px; font-weight: 700; }
-.ta-flash { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 20px; min-width: 24px; opacity: 0; transition: opacity .12s; }
+.ta-stat .v { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 20px; font-weight: 700; }
+.ta-flash { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700; font-size: 20px; min-width: 24px; opacity: 0; transition: opacity .12s; }
 .ta-flash.ok { color: var(--green); opacity: 1; } .ta-flash.no { color: var(--red); opacity: 1; }
 .ta-banner .spacer { margin-left: auto; }
 body.ta-on #gameSeg, body.ta-on #hintBtn, body.ta-on #revealBtn, body.ta-on .toggle-row, body.ta-on #newBtn, body.ta-on #challengeBtn, body.ta-on .stats-row { display: none !important; }
@@ -266,7 +266,7 @@ body.ta-on .tabs { pointer-events: none; opacity: .4; }
 .res-grid { display: flex; gap: 10px; margin-bottom: 20px; }
 .res-cell { flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
 .res-cell .l { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-.res-cell .v { font-family: "SF Mono", Menlo, monospace; font-size: 26px; font-weight: 700; color: var(--text); }
+.res-cell .v { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 26px; font-weight: 700; color: var(--text); }
 .res-cell .v.big { color: var(--gold); }
 .modal label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
 .modal input[type=text] { width: 100%; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 8px; background: var(--bg);
@@ -281,9 +281,9 @@ body.ta-on .tabs { pointer-events: none; opacity: .4; }
   display: flex; align-items: center; justify-content: center; z-index: 60; }
 .cd-inner { text-align: center; }
 .cd-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
-.cd-num { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 150px; line-height: 1; color: var(--gold);
-  text-shadow: 0 0 50px rgba(255,213,74,0.35); }
-.cd-num.go { color: var(--green); font-size: 120px; text-shadow: 0 0 50px rgba(63,223,142,0.5); }
+.cd-num { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700; font-size: 150px; line-height: 1; color: var(--gold);
+  text-shadow: 0 0 50px rgba(255,197,61,0.35); }
+.cd-num.go { color: var(--green); font-size: 120px; text-shadow: 0 0 50px rgba(143,230,74,0.5); }
 .cd-num.pop { animation: cdpop .55s cubic-bezier(.2,.8,.2,1); }
 @keyframes cdpop { 0% { transform: scale(.3); opacity: 0; } 45% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -294,16 +294,22 @@ body.ta-on .tabs { pointer-events: none; opacity: .4; }
 .board-table th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); }
 .board-table th.num, .board-table td.num { text-align: right; }
 .board-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.board-table td.rank { font-family: "SF Mono", Menlo, monospace; color: var(--muted); width: 44px; }
+.board-table td.rank { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; color: var(--muted); width: 44px; }
 .board-table tbody tr:first-child td.rank { color: var(--gold); font-weight: 700; }
 .board-table td.name { font-weight: 600; color: var(--text); }
-.board-table td.num { font-family: "SF Mono", Menlo, monospace; color: var(--muted); }
+.board-table td.num { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; color: var(--muted); }
 .board-table td.num.score { color: var(--green); font-weight: 700; font-size: 15px; }
 
 @media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } .stats-row { margin-left: 0; width:100%; } }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>

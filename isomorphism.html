@@ -6,28 +6,28 @@
 <title>Card Isomorphism — Free 24× Speedup</title>
 <style>
 :root {
-  --bg: #0a0e1a; --bg-2: #0f1424; --panel: #131826; --panel-2: #1a2030;
-  --panel-3: #232b3f; --border: #2a3245; --text: #e4e9f2; --muted: #7a8499;
-  --dim: #4a5266; --accent: #5b9eff; --green: #3fdf8e; --red: #ff5e7a;
-  --yellow: #ffc857; --purple: #bf8cff; --orange: #ff8c42; --gold: #ffd54a;
-  --suit-s: #e4e9f2; --suit-h: #ff5e7a; --suit-d: #5b9eff; --suit-c: #3fdf8e;
+  --bg: #050706; --bg-2: #080c09; --panel: #0b0f0c; --panel-2: #111714;
+  --panel-3: #18201a; --border: #1f2a22; --text: #e8f2ea; --muted: #8a9990;
+  --dim: #55635b; --accent: #00d95f; --green: #8fe64a; --red: #ff4b5c;
+  --yellow: #f2b01e; --purple: #9d7cff; --orange: #ff8a3d; --gold: #ffc53d;
+  --suit-s: #e8f2ea; --suit-h: #ff4b5c; --suit-d: #00d95f; --suit-c: #8fe64a;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text); line-height: 1.55; min-height: 100vh;
 }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px; border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 30;
 }
@@ -69,12 +69,12 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .panel ul li { margin-bottom: 6px; }
 .panel ul li::marker { color: var(--dim); }
 .panel strong { color: var(--text); }
-.kw { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); font-size: 12.5px; }
+.kw { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; color: var(--accent); font-size: 12.5px; }
 
 /* Card display */
 .card {
   display: inline-flex; align-items: center; justify-content: center;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   background: var(--panel-3); border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 8px; font-size: 14px; font-weight: 700;
@@ -123,7 +123,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .slot-row .lbl { font-size: 9.5px; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; min-width: 60px; }
 .slot {
   display: inline-flex; align-items: center; justify-content: center;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   background: var(--panel-3); border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 8px; font-size: 14px; font-weight: 700;
@@ -146,7 +146,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .picker .pgrid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; }
 @media (max-width: 600px) { .picker .pgrid { grid-template-columns: repeat(13, 1fr); } }
 .picker .pcard {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11px; font-weight: 700;
   padding: 5px 2px; text-align: center;
   background: var(--panel-3); border: 1px solid var(--border); border-radius: 4px;
@@ -162,7 +162,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
   display: grid; grid-template-columns: 60px 1fr; gap: 8px; align-items: center; margin-bottom: 4px;
 }
 .picker .suit-row .label-l {
-  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; font-weight: 700; text-align: center;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 13px; font-weight: 700; text-align: center;
 }
 .picker .suit-row.s .label-l { color: var(--suit-s); }
 .picker .suit-row.h .label-l { color: var(--suit-h); }
@@ -176,7 +176,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
   color: var(--text); cursor: pointer; transition: all 0.18s; font-family: inherit;
 }
 .btn:hover { background: var(--panel); border-color: var(--dim); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e1a; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #050706; }
 .btn.primary:hover { filter: brightness(1.1); }
 
 .output-card {
@@ -187,7 +187,7 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .output-card .row { padding: 8px 0; border-bottom: 1px solid var(--border); }
 .output-card .row:last-child { border-bottom: none; }
 .output-card .rl { font-size: 9.5px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.output-card .rv { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; font-weight: 600; color: var(--text); }
+.output-card .rv { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-size: 14px; font-weight: 600; color: var(--text); }
 .output-card .rv .num { color: var(--gold); }
 
 .equiv-list {
@@ -198,20 +198,20 @@ main { padding: 24px 28px 40px; max-width: 1180px; margin: 0 auto; display: grid
 .savings-table th, .savings-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
 .savings-table th { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 700; background: rgba(255,255,255,0.02); }
 .savings-table td.scope { width: 28%; font-weight: 700; color: var(--text); }
-.savings-table td.no-iso { width: 24%; color: var(--red); font-family: "SF Mono", Menlo, Consolas, monospace; }
-.savings-table td.with-iso { width: 24%; color: var(--green); font-family: "SF Mono", Menlo, Consolas, monospace; }
-.savings-table td.speedup { width: 24%; color: var(--gold); font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; }
+.savings-table td.no-iso { width: 24%; color: var(--red); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
+.savings-table td.with-iso { width: 24%; color: var(--green); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
+.savings-table td.speedup { width: 24%; color: var(--gold); font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; font-weight: 700; }
 
 .note {
-  background: linear-gradient(135deg, rgba(91,158,255,0.06), rgba(191,140,255,0.04));
+  background: linear-gradient(135deg, rgba(0,217,95,0.06), rgba(157,124,255,0.04));
   border: 1px solid var(--border); border-left: 3px solid var(--accent);
   border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--text);
   line-height: 1.6; margin-top: 8px;
 }
 .note strong { color: var(--accent); }
-.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,213,74,0.06), rgba(255,140,66,0.04)); }
+.note.gold { border-left-color: var(--gold); background: linear-gradient(135deg, rgba(255,197,61,0.06), rgba(255,138,61,0.04)); }
 .note.gold strong { color: var(--gold); }
-.note.red { border-left-color: var(--red); background: rgba(255,94,122,0.06); }
+.note.red { border-left-color: var(--red); background: rgba(255,75,92,0.06); }
 .note.red strong { color: var(--red); }
 
 footer { padding: 24px 32px 36px; text-align: center; font-size: 11px; color: var(--dim); }
@@ -223,7 +223,13 @@ footer a:hover { color: var(--accent); }
 }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
@@ -406,7 +412,7 @@ footer a:hover { color: var(--accent); }
           <td class="with-iso">~123K</td>
           <td class="speedup">~21×</td>
         </tr>
-        <tr style="background: rgba(255,213,74,0.04);">
+        <tr style="background: rgba(255,197,61,0.04);">
           <td class="scope">Full HUNL game tree (effective)</td>
           <td class="no-iso">~10<sup>160</sup> states</td>
           <td class="with-iso">~10<sup>156</sup>–10<sup>158</sup></td>

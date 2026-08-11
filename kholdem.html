@@ -1,24 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050706">
 <title>kHold'em — Architecture &amp; Integration Study</title>
 <style>
   :root {
-    --bg: #0a0e1a;
-    --bg-2: #0f1424;
-    --panel: #131826;
-    --panel-2: #1a2030;
-    --panel-3: #232b3f;
-    --border: #2a3245;
-    --text: #e4e9f2;
-    --muted: #7a8499;
-    --dim: #4a5266;
-    --accent: #5b9eff;
-    --green: #3fdf8e;
-    --red: #ff5e7a;
-    --yellow: #ffc857;
-    --purple: #bf8cff;
-    --orange: #ff8c42;
-    --gold: #ffd54a;
-    --mono: "SF Mono", Menlo, Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    --bg: #050706;
+    --bg-2: #080c09;
+    --panel: #0b0f0c;
+    --panel-2: #111714;
+    --panel-3: #18201a;
+    --border: #1f2a22;
+    --text: #e8f2ea;
+    --muted: #8a9990;
+    --dim: #55635b;
+    --accent: #00d95f;
+    --green: #8fe64a;
+    --red: #ff4b5c;
+    --yellow: #f2b01e;
+    --purple: #9d7cff;
+    --orange: #ff8a3d;
+    --gold: #ffc53d;
+    --mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+    --sans: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   }
 
   * { box-sizing: border-box; }
@@ -28,8 +34,8 @@
     font-family: var(--sans);
     color: var(--text);
     background:
-      radial-gradient(1100px 700px at 0% 0%, rgba(91,158,255,0.10), transparent 55%),
-      radial-gradient(1000px 700px at 100% 100%, rgba(191,140,255,0.10), transparent 55%),
+      radial-gradient(1100px 700px at 0% 0%, rgba(0,217,95,0.10), transparent 55%),
+      radial-gradient(1000px 700px at 100% 100%, rgba(157,124,255,0.10), transparent 55%),
       var(--bg);
     line-height: 1.55;
     font-size: 14px;
@@ -45,7 +51,7 @@
     top: 0;
     z-index: 50;
     backdrop-filter: blur(14px);
-    background: rgba(10,14,26,0.72);
+    background: rgba(5,7,6,0.72);
     border-bottom: 1px solid var(--border);
     padding: 14px 26px;
   }
@@ -81,7 +87,7 @@
     white-space: nowrap;
   }
   .chip .k { color: var(--muted); }
-  .chip.ok { border-color: rgba(63,223,142,0.4); color: var(--green); background: rgba(63,223,142,0.08); }
+  .chip.ok { border-color: rgba(143,230,74,0.4); color: var(--green); background: rgba(143,230,74,0.08); }
 
   /* ---------- Layout ---------- */
   main {
@@ -142,7 +148,7 @@
     border: 1px solid var(--border);
     border-radius: 5px;
     padding: 1px 5px;
-    color: #cdd6ea;
+    color: #8a9990;
     white-space: nowrap;
   }
 
@@ -211,11 +217,11 @@
   }
   td {
     padding: 9px 12px;
-    border-bottom: 1px solid rgba(42,50,69,0.55);
+    border-bottom: 1px solid rgba(31,42,34,0.55);
     vertical-align: top;
   }
   tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: rgba(91,158,255,0.045); }
+  tbody tr:hover { background: rgba(0,217,95,0.045); }
   td.mono, td .mono { font-family: var(--mono); font-size: 12px; }
   .col-c { color: var(--accent); }
 
@@ -230,11 +236,11 @@
     letter-spacing: 0.02em;
     white-space: nowrap;
   }
-  .b-blue { background: rgba(91,158,255,0.14); color: var(--accent); border: 1px solid rgba(91,158,255,0.35); }
-  .b-purple { background: rgba(191,140,255,0.14); color: var(--purple); border: 1px solid rgba(191,140,255,0.35); }
-  .b-green { background: rgba(63,223,142,0.14); color: var(--green); border: 1px solid rgba(63,223,142,0.35); }
-  .b-yellow { background: rgba(255,200,87,0.14); color: var(--yellow); border: 1px solid rgba(255,200,87,0.35); }
-  .b-red { background: rgba(255,94,122,0.14); color: var(--red); border: 1px solid rgba(255,94,122,0.35); }
+  .b-blue { background: rgba(0,217,95,0.14); color: var(--accent); border: 1px solid rgba(0,217,95,0.35); }
+  .b-purple { background: rgba(157,124,255,0.14); color: var(--purple); border: 1px solid rgba(157,124,255,0.35); }
+  .b-green { background: rgba(143,230,74,0.14); color: var(--green); border: 1px solid rgba(143,230,74,0.35); }
+  .b-yellow { background: rgba(242,176,30,0.14); color: var(--yellow); border: 1px solid rgba(242,176,30,0.35); }
+  .b-red { background: rgba(255,75,92,0.14); color: var(--red); border: 1px solid rgba(255,75,92,0.35); }
   .b-dim { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
 
   .port {
@@ -242,9 +248,9 @@
     font-size: 11.5px;
     padding: 2px 7px;
     border-radius: 6px;
-    background: rgba(91,158,255,0.10);
-    border: 1px solid rgba(91,158,255,0.28);
-    color: #a9c8ff;
+    background: rgba(0,217,95,0.10);
+    border: 1px solid rgba(0,217,95,0.28);
+    color: #b9f2cf;
     margin-right: 4px;
     display: inline-block;
   }
@@ -267,14 +273,14 @@
   }
   .node .t { font-weight: 600; }
   .node .d { color: var(--muted); font-size: 11px; margin-top: 2px; }
-  .node.client { border-color: rgba(91,158,255,0.35); }
+  .node.client { border-color: rgba(0,217,95,0.35); }
   .node.server {
     border-color: var(--gold);
-    background: rgba(255,213,74,0.06);
-    box-shadow: 0 0 0 1px rgba(255,213,74,0.15), 0 0 24px rgba(255,213,74,0.10);
+    background: rgba(255,197,61,0.06);
+    box-shadow: 0 0 0 1px rgba(255,197,61,0.15), 0 0 24px rgba(255,197,61,0.10);
   }
-  .node.db { border-color: rgba(63,223,142,0.4); background: rgba(63,223,142,0.05); }
-  .node.cloud { border-color: rgba(191,140,255,0.4); background: rgba(191,140,255,0.05); }
+  .node.db { border-color: rgba(143,230,74,0.4); background: rgba(143,230,74,0.05); }
+  .node.cloud { border-color: rgba(157,124,255,0.4); background: rgba(157,124,255,0.05); }
   .wire-link {
     display: flex;
     flex-direction: column;
@@ -366,7 +372,7 @@
     display: flex;
     gap: 14px;
     padding: 14px 0;
-    border-bottom: 1px solid rgba(42,50,69,0.55);
+    border-bottom: 1px solid rgba(31,42,34,0.55);
   }
   .step:last-child { border-bottom: none; }
   .step-n {
@@ -378,9 +384,9 @@
     font-family: var(--mono);
     font-weight: 700;
     font-size: 14px;
-    background: rgba(91,158,255,0.12);
+    background: rgba(0,217,95,0.12);
     color: var(--accent);
-    border: 1px solid rgba(91,158,255,0.3);
+    border: 1px solid rgba(0,217,95,0.3);
   }
   .step-body { flex: 1; }
   .step-body .st { font-weight: 600; }
@@ -391,11 +397,11 @@
     gap: 12px;
     padding: 14px 16px;
     border-radius: 11px;
-    background: rgba(63,223,142,0.06);
-    border: 1px solid rgba(63,223,142,0.28);
+    background: rgba(143,230,74,0.06);
+    border: 1px solid rgba(143,230,74,0.28);
     font-size: 13px;
   }
-  .callout.warn { background: rgba(255,200,87,0.06); border-color: rgba(255,200,87,0.3); }
+  .callout.warn { background: rgba(242,176,30,0.06); border-color: rgba(242,176,30,0.3); }
   .callout .tag {
     font-family: var(--mono);
     font-weight: 700;
@@ -421,7 +427,7 @@
   .dot.red { background: var(--red); }
 
   .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 26px; }
-  .quick-grid .qrow { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(42,50,69,0.5); font-size: 12.5px; }
+  .quick-grid .qrow { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(31,42,34,0.5); font-size: 12.5px; }
   .quick-grid .qk { color: var(--muted); }
   .quick-grid .qv { font-family: var(--mono); color: var(--text); text-align: right; }
 
@@ -447,6 +453,12 @@
     * { animation: none !important; }
   }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+</head>
+<body>
 
 <header>
   <div class="head-row">
@@ -508,7 +520,7 @@
       </div>
       <div class="wire-col">
         <div class="node server"><div class="t">kHoldemServer</div><div class="d">core app server — business logic, caches, sole DB connection</div></div>
-        <div class="node" style="border-color:rgba(91,158,255,0.3)"><div class="t">kHoldemWebServer</div><div class="d">OWIN + ASP.NET Web API on 5855</div></div>
+        <div class="node" style="border-color:rgba(0,217,95,0.3)"><div class="t">kHoldemWebServer</div><div class="d">OWIN + ASP.NET Web API on 5855</div></div>
       </div>
       <div class="wire-link">
         <div class="proto">Trusted<br>SSPI</div>
@@ -613,7 +625,7 @@
   </div>
 
   <!-- Bounty / PKO -->
-  <section class="panel" id="bounty" style="border-color:rgba(255,213,74,0.28)">
+  <section class="panel" id="bounty" style="border-color:rgba(255,197,61,0.28)">
     <div class="eyebrow"><span class="num">07</span> Poker Bounty / PKO</div>
     <h2>It already exists — you configure it, not build it</h2>
     <div class="callout" style="margin-top:12px">
@@ -623,7 +635,7 @@
 
     <div class="grid-2" style="margin-top:16px">
       <div>
-        <h3><span class="badge b-gold" style="background:rgba(255,213,74,0.14);color:var(--gold);border:1px solid rgba(255,213,74,0.35)">Tournament</span> &nbsp;bounty configuration</h3>
+        <h3><span class="badge b-gold" style="background:rgba(255,197,61,0.14);color:var(--gold);border:1px solid rgba(255,197,61,0.35)">Tournament</span> &nbsp;bounty configuration</h3>
         <div class="table-wrap">
           <table style="min-width:0">
             <thead><tr><th>Column</th><th>Type</th><th>Meaning</th></tr></thead>
@@ -759,5 +771,8 @@
 
 <footer>
   Investigation was strictly read-only — file reads and <code class="mono">SELECT</code> queries only. No kHold'em file, service, registry value, or database row was created, altered, or deleted.
-  <br>© 2026 · kHold'em architecture &amp; integration study
+  <br>Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> — All rights reserved. · kHold'em architecture &amp; integration study
 </footer>
+
+</body>
+</html>

@@ -6,22 +6,22 @@
 <title>Deep CFR Explained — Tabular Table to Neural Network</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
   --shadow-glow: 0 0 24px;
 }
 
@@ -29,10 +29,10 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -41,12 +41,12 @@ body {
   overflow-x: hidden;
 }
 
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky;
@@ -106,7 +106,7 @@ header .sub { color: var(--muted); font-size: 12px; }
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0a0e1a;
+  color: #050706;
 }
 .btn.primary:hover { filter: brightness(1.1); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -155,7 +155,7 @@ header .sub { color: var(--muted); font-size: 12px; }
   font-weight: 600;
 }
 .stat .value {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
@@ -317,7 +317,7 @@ main {
   padding: 0;
   overflow: hidden;
   flex: 1;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   position: relative;
 }
@@ -354,8 +354,8 @@ main {
   color: var(--red);
   margin-top: 8px;
   padding: 8px 12px;
-  background: rgba(255,94,122,0.08);
-  border: 1px solid rgba(255,94,122,0.25);
+  background: rgba(255,75,92,0.08);
+  border: 1px solid rgba(255,75,92,0.25);
   border-radius: 6px;
   text-align: center;
 }
@@ -373,8 +373,8 @@ main {
   color: var(--green);
   margin-top: 8px;
   padding: 8px 12px;
-  background: rgba(63,223,142,0.08);
-  border: 1px solid rgba(63,223,142,0.25);
+  background: rgba(143,230,74,0.08);
+  border: 1px solid rgba(143,230,74,0.25);
   border-radius: 6px;
   text-align: center;
 }
@@ -397,11 +397,11 @@ main {
 }
 .loop-step.active {
   border-color: var(--gold);
-  box-shadow: var(--shadow-glow) rgba(255,213,74,0.18);
+  box-shadow: var(--shadow-glow) rgba(255,197,61,0.18);
   transform: translateY(-2px);
 }
 .loop-step .step-num {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 10px;
   font-weight: 700;
   color: var(--gold);
@@ -459,7 +459,7 @@ main {
   margin: 0 0 8px;
 }
 .loop-detail .formula {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   background: var(--panel-3);
   border: 1px solid var(--border);
@@ -516,7 +516,7 @@ main {
   margin-bottom: 8px;
 }
 .bar-label {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   color: var(--text);
   font-weight: 600;
@@ -544,12 +544,12 @@ main {
   border-radius: 4px;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.bar-fill.pos { background: linear-gradient(90deg, var(--green), rgba(63,223,142,0.6)); }
-.bar-fill.neg { background: linear-gradient(270deg, var(--red), rgba(255,94,122,0.6)); }
-.bar-fill.policy { background: linear-gradient(90deg, var(--accent), var(--purple)); }
+.bar-fill.pos { background: linear-gradient(90deg, var(--green), rgba(143,230,74,0.6)); }
+.bar-fill.neg { background: linear-gradient(270deg, var(--red), rgba(255,75,92,0.6)); }
+.bar-fill.policy { background: linear-gradient(90deg, var(--signal-deep), var(--signal) 55%, var(--lime)); }
 .bar-fill.zero { background: var(--dim); width: 4px !important; opacity: 0.3; }
 .bar-value {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   text-align: right;
   font-weight: 600;
@@ -559,7 +559,7 @@ main {
 .bar-value.zero { color: var(--dim); }
 .bar-value.policy { color: var(--accent); }
 .bar-stage .formula-line {
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
@@ -571,7 +571,7 @@ main {
   font-size: 12px;
   color: var(--muted);
   margin-top: 8px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 /* Two-network panel */
@@ -598,8 +598,8 @@ main {
   font-weight: 700;
   margin-bottom: 10px;
 }
-.twonet-card.deep .tag { background: rgba(255,140,66,0.15); color: var(--orange); }
-.twonet-card.sd .tag { background: rgba(63,223,142,0.15); color: var(--green); }
+.twonet-card.deep .tag { background: rgba(255,138,61,0.15); color: var(--orange); }
+.twonet-card.sd .tag { background: rgba(143,230,74,0.15); color: var(--green); }
 .twonet-card h4 {
   margin: 0 0 10px;
   font-size: 16px;
@@ -611,7 +611,7 @@ main {
   border-radius: 8px;
   padding: 12px;
   margin: 10px 0;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
 }
 .twonet-card .net-line {
@@ -636,18 +636,18 @@ main {
 
 /* Inline highlights */
 .kw {
-  background: rgba(91,158,255,0.12);
+  background: rgba(0,217,95,0.12);
   color: var(--accent);
   padding: 1px 6px;
   border-radius: 4px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 12px;
   font-weight: 600;
 }
-.kw.purple { background: rgba(191,140,255,0.12); color: var(--purple); }
-.kw.green  { background: rgba(63,223,142,0.12); color: var(--green); }
-.kw.gold   { background: rgba(255,213,74,0.12); color: var(--gold); }
-.kw.red    { background: rgba(255,94,122,0.12); color: var(--red); }
+.kw.purple { background: rgba(157,124,255,0.12); color: var(--purple); }
+.kw.green  { background: rgba(143,230,74,0.12); color: var(--green); }
+.kw.gold   { background: rgba(255,197,61,0.12); color: var(--gold); }
+.kw.red    { background: rgba(255,75,92,0.12); color: var(--red); }
 
 /* Footer */
 footer {
@@ -663,8 +663,8 @@ footer a:hover { color: var(--accent); }
 
 /* Q-callout */
 .q-callout {
-  background: linear-gradient(120deg, rgba(91,158,255,0.10), rgba(191,140,255,0.10));
-  border: 1px solid rgba(91,158,255,0.25);
+  background: linear-gradient(120deg, rgba(0,217,95,0.10), rgba(157,124,255,0.10));
+  border: 1px solid rgba(0,217,95,0.25);
   border-radius: 12px;
   padding: 18px 20px;
   margin-bottom: 20px;
@@ -690,7 +690,13 @@ footer a:hover { color: var(--accent); }
 .q-callout .a-text strong { color: var(--green); }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
@@ -778,58 +784,58 @@ footer a:hover { color: var(--accent); }
         <svg class="network-svg" viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">
           <!-- Input layer -->
           <g id="inputs">
-            <text x="50" y="22" text-anchor="middle" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">FEATURES</text>
-            <circle cx="50" cy="50" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="54" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">cards</text>
-            <circle cx="50" cy="80" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="84" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">pot</text>
-            <circle cx="50" cy="110" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="114" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">stack</text>
-            <circle cx="50" cy="140" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="144" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">history</text>
-            <circle cx="50" cy="170" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="174" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">street</text>
-            <circle cx="50" cy="200" r="9" fill="#5b9eff" opacity="0.85"/>
-            <text x="14" y="204" font-size="9" fill="#e4e9f2" font-family="SF Mono, Menlo, monospace" text-anchor="end">position</text>
+            <text x="50" y="22" text-anchor="middle" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">FEATURES</text>
+            <circle cx="50" cy="50" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="54" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">cards</text>
+            <circle cx="50" cy="80" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="84" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">pot</text>
+            <circle cx="50" cy="110" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="114" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">stack</text>
+            <circle cx="50" cy="140" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="144" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">history</text>
+            <circle cx="50" cy="170" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="174" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">street</text>
+            <circle cx="50" cy="200" r="9" fill="#00d95f" opacity="0.85"/>
+            <text x="14" y="204" font-size="9" fill="#e8f2ea" font-family="SF Mono, Menlo, monospace" text-anchor="end">position</text>
           </g>
 
           <!-- Hidden layers -->
           <g id="h1">
-            <text x="135" y="22" text-anchor="middle" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">HIDDEN</text>
-            <circle cx="135" cy="55" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="80" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="105" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="130" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="155" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="180" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="135" cy="205" r="7" fill="#bf8cff" opacity="0.7"/>
+            <text x="135" y="22" text-anchor="middle" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">HIDDEN</text>
+            <circle cx="135" cy="55" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="80" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="105" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="130" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="155" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="180" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="135" cy="205" r="7" fill="#9d7cff" opacity="0.7"/>
           </g>
           <g id="h2">
-            <circle cx="220" cy="55" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="80" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="105" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="130" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="155" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="180" r="7" fill="#bf8cff" opacity="0.7"/>
-            <circle cx="220" cy="205" r="7" fill="#bf8cff" opacity="0.7"/>
+            <circle cx="220" cy="55" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="80" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="105" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="130" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="155" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="180" r="7" fill="#9d7cff" opacity="0.7"/>
+            <circle cx="220" cy="205" r="7" fill="#9d7cff" opacity="0.7"/>
           </g>
 
           <!-- Output -->
           <g id="outputs">
-            <text x="310" y="22" text-anchor="middle" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">REGRET</text>
-            <circle cx="310" cy="80" r="10" fill="#3fdf8e" opacity="0.85"/>
-            <text x="346" y="84" font-size="11" fill="#3fdf8e" font-family="SF Mono, Menlo, monospace">+2.3</text>
-            <text x="346" y="96" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace">fold</text>
-            <circle cx="310" cy="130" r="10" fill="#ff5e7a" opacity="0.85"/>
-            <text x="346" y="134" font-size="11" fill="#ff5e7a" font-family="SF Mono, Menlo, monospace">-1.1</text>
-            <text x="346" y="146" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace">call</text>
-            <circle cx="310" cy="180" r="10" fill="#3fdf8e" opacity="0.85"/>
-            <text x="346" y="184" font-size="11" fill="#3fdf8e" font-family="SF Mono, Menlo, monospace">+0.5</text>
-            <text x="346" y="196" font-size="9" fill="#7a8499" font-family="SF Mono, Menlo, monospace">raise</text>
+            <text x="310" y="22" text-anchor="middle" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace" letter-spacing="1.2">REGRET</text>
+            <circle cx="310" cy="80" r="10" fill="#8fe64a" opacity="0.85"/>
+            <text x="346" y="84" font-size="11" fill="#8fe64a" font-family="SF Mono, Menlo, monospace">+2.3</text>
+            <text x="346" y="96" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace">fold</text>
+            <circle cx="310" cy="130" r="10" fill="#ff4b5c" opacity="0.85"/>
+            <text x="346" y="134" font-size="11" fill="#ff4b5c" font-family="SF Mono, Menlo, monospace">-1.1</text>
+            <text x="346" y="146" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace">call</text>
+            <circle cx="310" cy="180" r="10" fill="#8fe64a" opacity="0.85"/>
+            <text x="346" y="184" font-size="11" fill="#8fe64a" font-family="SF Mono, Menlo, monospace">+0.5</text>
+            <text x="346" y="196" font-size="9" fill="#8a9990" font-family="SF Mono, Menlo, monospace">raise</text>
           </g>
 
           <!-- Connections (low opacity) -->
-          <g stroke="#2a3245" stroke-width="0.6" opacity="0.55">
+          <g stroke="#1f2a22" stroke-width="0.6" opacity="0.55">
             <!-- input to h1 -->
             <line x1="59" y1="50" x2="128" y2="55"/>
             <line x1="59" y1="50" x2="128" y2="80"/>
@@ -927,80 +933,80 @@ footer a:hover { color: var(--accent); }
 
     <svg class="tree-svg" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg">
       <!-- Edges -->
-      <g stroke="#2a3245" stroke-width="1.5" fill="none">
+      <g stroke="#1f2a22" stroke-width="1.5" fill="none">
         <!-- Root (P1, traverser) -> 3 children all explored -->
-        <line x1="450" y1="50" x2="180" y2="130" stroke="#5b9eff" stroke-width="2"/>
-        <line x1="450" y1="50" x2="450" y2="130" stroke="#5b9eff" stroke-width="2"/>
-        <line x1="450" y1="50" x2="720" y2="130" stroke="#5b9eff" stroke-width="2"/>
+        <line x1="450" y1="50" x2="180" y2="130" stroke="#00d95f" stroke-width="2"/>
+        <line x1="450" y1="50" x2="450" y2="130" stroke="#00d95f" stroke-width="2"/>
+        <line x1="450" y1="50" x2="720" y2="130" stroke="#00d95f" stroke-width="2"/>
         <!-- Left subtree: P2 (opponent), only one sampled -->
-        <line x1="180" y1="130" x2="100" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
-        <line x1="180" y1="130" x2="180" y2="220" stroke="#bf8cff" stroke-width="2"/>
-        <line x1="180" y1="130" x2="260" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="180" y1="130" x2="100" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="180" y1="130" x2="180" y2="220" stroke="#9d7cff" stroke-width="2"/>
+        <line x1="180" y1="130" x2="260" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
         <!-- middle subtree: P2 -->
-        <line x1="450" y1="130" x2="380" y2="220" stroke="#bf8cff" stroke-width="2"/>
-        <line x1="450" y1="130" x2="450" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
-        <line x1="450" y1="130" x2="520" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="450" y1="130" x2="380" y2="220" stroke="#9d7cff" stroke-width="2"/>
+        <line x1="450" y1="130" x2="450" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="450" y1="130" x2="520" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
         <!-- right subtree: chance node -->
-        <line x1="720" y1="130" x2="650" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
-        <line x1="720" y1="130" x2="720" y2="220" stroke="#ffd54a" stroke-width="2"/>
-        <line x1="720" y1="130" x2="800" y2="220" stroke="#4a5266" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="720" y1="130" x2="650" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="720" y1="130" x2="720" y2="220" stroke="#ffc53d" stroke-width="2"/>
+        <line x1="720" y1="130" x2="800" y2="220" stroke="#55635b" stroke-width="1" stroke-dasharray="4,4"/>
         <!-- Below P2 (left): P1 traverser again -> all explored -->
-        <line x1="180" y1="220" x2="120" y2="310" stroke="#5b9eff" stroke-width="2"/>
-        <line x1="180" y1="220" x2="240" y2="310" stroke="#5b9eff" stroke-width="2"/>
+        <line x1="180" y1="220" x2="120" y2="310" stroke="#00d95f" stroke-width="2"/>
+        <line x1="180" y1="220" x2="240" y2="310" stroke="#00d95f" stroke-width="2"/>
         <!-- Middle bottom -->
-        <line x1="380" y1="220" x2="340" y2="310" stroke="#5b9eff" stroke-width="2"/>
-        <line x1="380" y1="220" x2="430" y2="310" stroke="#5b9eff" stroke-width="2"/>
+        <line x1="380" y1="220" x2="340" y2="310" stroke="#00d95f" stroke-width="2"/>
+        <line x1="380" y1="220" x2="430" y2="310" stroke="#00d95f" stroke-width="2"/>
         <!-- Right bottom -->
-        <line x1="720" y1="220" x2="680" y2="310" stroke="#5b9eff" stroke-width="2"/>
-        <line x1="720" y1="220" x2="770" y2="310" stroke="#5b9eff" stroke-width="2"/>
+        <line x1="720" y1="220" x2="680" y2="310" stroke="#00d95f" stroke-width="2"/>
+        <line x1="720" y1="220" x2="770" y2="310" stroke="#00d95f" stroke-width="2"/>
       </g>
 
       <!-- Nodes -->
       <!-- root -->
-      <circle cx="450" cy="50" r="14" fill="#5b9eff"/>
-      <text x="450" y="55" text-anchor="middle" font-size="11" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
-      <text x="478" y="42" font-size="10" fill="#7a8499" font-family="SF Mono, Menlo, monospace">root · traverser</text>
+      <circle cx="450" cy="50" r="14" fill="#00d95f"/>
+      <text x="450" y="55" text-anchor="middle" font-size="11" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
+      <text x="478" y="42" font-size="10" fill="#8a9990" font-family="SF Mono, Menlo, monospace">root · traverser</text>
 
       <!-- level 2 (left, mid, right) -->
-      <circle cx="180" cy="130" r="13" fill="#bf8cff"/>
-      <text x="180" y="135" text-anchor="middle" font-size="11" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P2</text>
-      <circle cx="450" cy="130" r="13" fill="#bf8cff"/>
-      <text x="450" y="135" text-anchor="middle" font-size="11" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P2</text>
-      <circle cx="720" cy="130" r="13" fill="#ffd54a"/>
-      <text x="720" y="135" text-anchor="middle" font-size="11" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">C</text>
+      <circle cx="180" cy="130" r="13" fill="#9d7cff"/>
+      <text x="180" y="135" text-anchor="middle" font-size="11" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P2</text>
+      <circle cx="450" cy="130" r="13" fill="#9d7cff"/>
+      <text x="450" y="135" text-anchor="middle" font-size="11" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P2</text>
+      <circle cx="720" cy="130" r="13" fill="#ffc53d"/>
+      <text x="720" y="135" text-anchor="middle" font-size="11" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">C</text>
 
       <!-- level 3 sampled / skipped -->
-      <circle cx="100" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
-      <circle cx="180" cy="220" r="11" fill="#5b9eff"/>
-      <text x="180" y="225" text-anchor="middle" font-size="10" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
-      <circle cx="260" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="100" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="180" cy="220" r="11" fill="#00d95f"/>
+      <text x="180" y="225" text-anchor="middle" font-size="10" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
+      <circle cx="260" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
 
-      <circle cx="380" cy="220" r="11" fill="#5b9eff"/>
-      <text x="380" y="225" text-anchor="middle" font-size="10" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
-      <circle cx="450" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
-      <circle cx="520" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="380" cy="220" r="11" fill="#00d95f"/>
+      <text x="380" y="225" text-anchor="middle" font-size="10" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
+      <circle cx="450" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="520" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
 
-      <circle cx="650" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
-      <circle cx="720" cy="220" r="11" fill="#5b9eff"/>
-      <text x="720" y="225" text-anchor="middle" font-size="10" fill="#0a0e1a" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
-      <circle cx="800" cy="220" r="9" fill="transparent" stroke="#4a5266" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="650" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="720" cy="220" r="11" fill="#00d95f"/>
+      <text x="720" y="225" text-anchor="middle" font-size="10" fill="#050706" font-weight="700" font-family="SF Mono, Menlo, monospace">P1</text>
+      <circle cx="800" cy="220" r="9" fill="transparent" stroke="#55635b" stroke-width="1.5" stroke-dasharray="3,3"/>
 
       <!-- terminals -->
-      <rect x="110" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
-      <rect x="230" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
-      <rect x="330" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
-      <rect x="420" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
-      <rect x="670" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
-      <rect x="760" y="300" width="20" height="20" fill="#4a5266" rx="3"/>
+      <rect x="110" y="300" width="20" height="20" fill="#55635b" rx="3"/>
+      <rect x="230" y="300" width="20" height="20" fill="#55635b" rx="3"/>
+      <rect x="330" y="300" width="20" height="20" fill="#55635b" rx="3"/>
+      <rect x="420" y="300" width="20" height="20" fill="#55635b" rx="3"/>
+      <rect x="670" y="300" width="20" height="20" fill="#55635b" rx="3"/>
+      <rect x="760" y="300" width="20" height="20" fill="#55635b" rx="3"/>
 
       <!-- Annotations -->
-      <text x="20" y="30" font-size="11" fill="#5b9eff" font-family="SF Mono, Menlo, monospace" font-weight="700">P1 ACTS HERE</text>
-      <text x="20" y="44" font-size="10" fill="#7a8499" font-family="SF Mono, Menlo, monospace">→ explore ALL actions</text>
-      <text x="20" y="120" font-size="11" fill="#bf8cff" font-family="SF Mono, Menlo, monospace" font-weight="700">P2 / CHANCE HERE</text>
-      <text x="20" y="134" font-size="10" fill="#7a8499" font-family="SF Mono, Menlo, monospace">→ sample ONE action</text>
+      <text x="20" y="30" font-size="11" fill="#00d95f" font-family="SF Mono, Menlo, monospace" font-weight="700">P1 ACTS HERE</text>
+      <text x="20" y="44" font-size="10" fill="#8a9990" font-family="SF Mono, Menlo, monospace">→ explore ALL actions</text>
+      <text x="20" y="120" font-size="11" fill="#9d7cff" font-family="SF Mono, Menlo, monospace" font-weight="700">P2 / CHANCE HERE</text>
+      <text x="20" y="134" font-size="10" fill="#8a9990" font-family="SF Mono, Menlo, monospace">→ sample ONE action</text>
 
       <!-- Net call examples -->
-      <text x="450" y="370" text-anchor="middle" font-size="11" fill="#7a8499" font-family="SF Mono, Menlo, monospace">terminal payoffs propagate up · regret computed at every blue node visited</text>
+      <text x="450" y="370" text-anchor="middle" font-size="11" fill="#8a9990" font-family="SF Mono, Menlo, monospace">terminal payoffs propagate up · regret computed at every blue node visited</text>
     </svg>
 
     <div class="legend">
@@ -1142,20 +1148,20 @@ footer a:hover { color: var(--accent); }
           <!-- Grid bg -->
           <defs>
             <radialGradient id="g1" cx="0.3" cy="0.3" r="0.6">
-              <stop offset="0%" stop-color="#3fdf8e" stop-opacity="0.45"/>
-              <stop offset="100%" stop-color="#3fdf8e" stop-opacity="0"/>
+              <stop offset="0%" stop-color="#8fe64a" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#8fe64a" stop-opacity="0"/>
             </radialGradient>
             <radialGradient id="g2" cx="0.7" cy="0.55" r="0.5">
-              <stop offset="0%" stop-color="#5b9eff" stop-opacity="0.45"/>
-              <stop offset="100%" stop-color="#5b9eff" stop-opacity="0"/>
+              <stop offset="0%" stop-color="#00d95f" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#00d95f" stop-opacity="0"/>
             </radialGradient>
             <radialGradient id="g3" cx="0.4" cy="0.85" r="0.45">
-              <stop offset="0%" stop-color="#ff5e7a" stop-opacity="0.45"/>
-              <stop offset="100%" stop-color="#ff5e7a" stop-opacity="0"/>
+              <stop offset="0%" stop-color="#ff4b5c" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#ff4b5c" stop-opacity="0"/>
             </radialGradient>
             <radialGradient id="g4" cx="0.85" cy="0.2" r="0.35">
-              <stop offset="0%" stop-color="#ffd54a" stop-opacity="0.4"/>
-              <stop offset="100%" stop-color="#ffd54a" stop-opacity="0"/>
+              <stop offset="0%" stop-color="#ffc53d" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#ffc53d" stop-opacity="0"/>
             </radialGradient>
           </defs>
 
@@ -1166,45 +1172,45 @@ footer a:hover { color: var(--accent); }
           <rect x="0" y="0" width="400" height="320" fill="url(#g4)"/>
 
           <!-- axes -->
-          <line x1="40" y1="280" x2="380" y2="280" stroke="#2a3245" stroke-width="1"/>
-          <line x1="40" y1="40" x2="40" y2="280" stroke="#2a3245" stroke-width="1"/>
-          <text x="210" y="305" text-anchor="middle" font-size="11" fill="#7a8499" font-family="SF Mono, Menlo, monospace">feature dim 1 (e.g. hand strength)</text>
-          <text x="22" y="160" text-anchor="middle" font-size="11" fill="#7a8499" font-family="SF Mono, Menlo, monospace" transform="rotate(-90 22 160)">feature dim 2 (e.g. pot odds)</text>
+          <line x1="40" y1="280" x2="380" y2="280" stroke="#1f2a22" stroke-width="1"/>
+          <line x1="40" y1="40" x2="40" y2="280" stroke="#1f2a22" stroke-width="1"/>
+          <text x="210" y="305" text-anchor="middle" font-size="11" fill="#8a9990" font-family="SF Mono, Menlo, monospace">feature dim 1 (e.g. hand strength)</text>
+          <text x="22" y="160" text-anchor="middle" font-size="11" fill="#8a9990" font-family="SF Mono, Menlo, monospace" transform="rotate(-90 22 160)">feature dim 2 (e.g. pot odds)</text>
 
           <!-- Cluster 1: greens (raise-heavy regret) -->
-          <circle cx="120" cy="100" r="5" fill="#3fdf8e"/>
-          <circle cx="138" cy="115" r="5" fill="#3fdf8e"/>
-          <circle cx="105" cy="118" r="5" fill="#3fdf8e"/>
-          <circle cx="125" cy="135" r="5" fill="#3fdf8e"/>
-          <circle cx="148" cy="90" r="5" fill="#3fdf8e"/>
-          <circle cx="92" cy="100" r="5" fill="#3fdf8e"/>
+          <circle cx="120" cy="100" r="5" fill="#8fe64a"/>
+          <circle cx="138" cy="115" r="5" fill="#8fe64a"/>
+          <circle cx="105" cy="118" r="5" fill="#8fe64a"/>
+          <circle cx="125" cy="135" r="5" fill="#8fe64a"/>
+          <circle cx="148" cy="90" r="5" fill="#8fe64a"/>
+          <circle cx="92" cy="100" r="5" fill="#8fe64a"/>
 
           <!-- Cluster 2: blues (call-heavy) -->
-          <circle cx="270" cy="170" r="5" fill="#5b9eff"/>
-          <circle cx="285" cy="155" r="5" fill="#5b9eff"/>
-          <circle cx="295" cy="178" r="5" fill="#5b9eff"/>
-          <circle cx="262" cy="190" r="5" fill="#5b9eff"/>
-          <circle cx="282" cy="200" r="5" fill="#5b9eff"/>
-          <circle cx="305" cy="160" r="5" fill="#5b9eff"/>
+          <circle cx="270" cy="170" r="5" fill="#00d95f"/>
+          <circle cx="285" cy="155" r="5" fill="#00d95f"/>
+          <circle cx="295" cy="178" r="5" fill="#00d95f"/>
+          <circle cx="262" cy="190" r="5" fill="#00d95f"/>
+          <circle cx="282" cy="200" r="5" fill="#00d95f"/>
+          <circle cx="305" cy="160" r="5" fill="#00d95f"/>
 
           <!-- Cluster 3: reds (fold-heavy) -->
-          <circle cx="155" cy="240" r="5" fill="#ff5e7a"/>
-          <circle cx="170" cy="225" r="5" fill="#ff5e7a"/>
-          <circle cx="180" cy="250" r="5" fill="#ff5e7a"/>
-          <circle cx="140" cy="255" r="5" fill="#ff5e7a"/>
-          <circle cx="160" cy="265" r="5" fill="#ff5e7a"/>
+          <circle cx="155" cy="240" r="5" fill="#ff4b5c"/>
+          <circle cx="170" cy="225" r="5" fill="#ff4b5c"/>
+          <circle cx="180" cy="250" r="5" fill="#ff4b5c"/>
+          <circle cx="140" cy="255" r="5" fill="#ff4b5c"/>
+          <circle cx="160" cy="265" r="5" fill="#ff4b5c"/>
 
           <!-- Cluster 4: gold (raise+all-in mix) -->
-          <circle cx="335" cy="80" r="5" fill="#ffd54a"/>
-          <circle cx="345" cy="65" r="5" fill="#ffd54a"/>
-          <circle cx="318" cy="92" r="5" fill="#ffd54a"/>
-          <circle cx="350" cy="95" r="5" fill="#ffd54a"/>
+          <circle cx="335" cy="80" r="5" fill="#ffc53d"/>
+          <circle cx="345" cy="65" r="5" fill="#ffc53d"/>
+          <circle cx="318" cy="92" r="5" fill="#ffc53d"/>
+          <circle cx="350" cy="95" r="5" fill="#ffc53d"/>
 
           <!-- Labels -->
-          <text x="120" y="80" font-size="10" fill="#3fdf8e" font-family="SF Mono, Menlo, monospace" font-weight="700">raise zone</text>
-          <text x="290" y="140" font-size="10" fill="#5b9eff" font-family="SF Mono, Menlo, monospace" font-weight="700">call zone</text>
-          <text x="150" y="215" font-size="10" fill="#ff5e7a" font-family="SF Mono, Menlo, monospace" font-weight="700">fold zone</text>
-          <text x="320" y="55" font-size="10" fill="#ffd54a" font-family="SF Mono, Menlo, monospace" font-weight="700">all-in zone</text>
+          <text x="120" y="80" font-size="10" fill="#8fe64a" font-family="SF Mono, Menlo, monospace" font-weight="700">raise zone</text>
+          <text x="290" y="140" font-size="10" fill="#00d95f" font-family="SF Mono, Menlo, monospace" font-weight="700">call zone</text>
+          <text x="150" y="215" font-size="10" fill="#ff4b5c" font-family="SF Mono, Menlo, monospace" font-weight="700">fold zone</text>
+          <text x="320" y="55" font-size="10" fill="#ffc53d" font-family="SF Mono, Menlo, monospace" font-weight="700">all-in zone</text>
         </svg>
         <div class="cluster-callout">Each dot is one info set the network has trained on. Smooth color regions show the network's learned regret surface — new info sets falling near a cluster inherit a similar regret estimate without ever being seen.</div>
       </div>

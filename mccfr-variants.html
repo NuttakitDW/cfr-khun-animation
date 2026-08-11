@@ -6,43 +6,43 @@
 <title>MCCFR Variants — CS vs ES vs OS</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.08), transparent 60%),
-    radial-gradient(ellipse at 50% 100%, rgba(63,223,142,0.08), transparent 60%),
-    radial-gradient(ellipse at 80% 0%, rgba(255,140,66,0.08), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.08), transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(143,230,74,0.08), transparent 60%),
+    radial-gradient(ellipse at 80% 0%, rgba(255,138,61,0.08), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
 }
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky;
@@ -119,7 +119,7 @@ main {
   border-radius: 3px;
   font-size: 11px;
   color: var(--yellow);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 /* Algorithm comparison cards */
@@ -152,7 +152,7 @@ main {
   padding: 3px 8px;
   letter-spacing: 0.6px;
   border-radius: 0 0 4px 4px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 .algo-name {
@@ -173,11 +173,11 @@ main {
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
-.algo-card.cs .algo-tag { background: rgba(91,158,255,0.18); color: var(--accent); }
-.algo-card.es .algo-tag { background: rgba(63,223,142,0.18); color: var(--green); }
-.algo-card.os .algo-tag { background: rgba(255,140,66,0.18); color: var(--orange); }
+.algo-card.cs .algo-tag { background: rgba(0,217,95,0.18); color: var(--accent); }
+.algo-card.es .algo-tag { background: rgba(143,230,74,0.18); color: var(--green); }
+.algo-card.os .algo-tag { background: rgba(255,138,61,0.18); color: var(--orange); }
 .algo-fullname {
   font-size: 11px;
   color: var(--muted);
@@ -200,7 +200,7 @@ svg.algo-tree { width: 100%; height: 180px; max-width: 280px; }
   text-align: center;
   margin-top: -4px;
   margin-bottom: 10px;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 .algo-attrs {
@@ -226,14 +226,14 @@ svg.algo-tree { width: 100%; height: 180px; max-width: 280px; }
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   background: var(--panel-3);
   color: var(--text);
   margin-right: 4px;
 }
-.pill.high  { background: rgba(255,94,122,0.15);  color: var(--red); }
-.pill.med   { background: rgba(255,200,87,0.15);  color: var(--yellow); }
-.pill.low   { background: rgba(63,223,142,0.15);  color: var(--green); }
+.pill.high  { background: rgba(255,75,92,0.15);  color: var(--red); }
+.pill.med   { background: rgba(242,176,30,0.15);  color: var(--yellow); }
+.pill.low   { background: rgba(143,230,74,0.15);  color: var(--green); }
 .algo-when {
   font-size: 11.5px;
   color: var(--muted);
@@ -276,7 +276,7 @@ table.compare tbody th {
 }
 table.compare td {
   color: var(--text);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 11.5px;
 }
 table.compare td b { color: var(--green); }
@@ -355,7 +355,7 @@ table.compare tr:hover td { background: rgba(255,255,255,0.02); }
   font-size: 11px;
   color: var(--green);
   font-weight: 700;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   letter-spacing: 0.5px;
 }
 .win-card .head {
@@ -387,11 +387,11 @@ footer a:hover { color: var(--accent); }
 .tree-node.p1 circle     { fill: var(--panel-3); stroke: var(--accent); }
 .tree-node.p2 circle     { fill: var(--panel-3); stroke: var(--orange); }
 .tree-node.leaf circle   { fill: var(--panel-3); stroke: var(--dim); }
-.tree-node.enumerated circle { fill: rgba(63,223,142,0.20); stroke: var(--green); stroke-width: 2; }
-.tree-node.sampled    circle { fill: rgba(255,213,74,0.22); stroke: var(--gold); stroke-width: 2; }
+.tree-node.enumerated circle { fill: rgba(143,230,74,0.20); stroke: var(--green); stroke-width: 2; }
+.tree-node.sampled    circle { fill: rgba(255,197,61,0.22); stroke: var(--gold); stroke-width: 2; }
 .tree-node.skipped    { opacity: 0.22; }
 .tree-node text {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   font-size: 8px;
   fill: var(--text);
   text-anchor: middle;
@@ -413,14 +413,20 @@ footer a:hover { color: var(--accent); }
   flex-wrap: wrap;
   justify-content: center;
 }
-.tree-legend span { display: inline-flex; align-items: center; gap: 5px; font-family: "SF Mono", Menlo, monospace; }
+.tree-legend span { display: inline-flex; align-items: center; gap: 5px; font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 .tree-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1px solid; }
-.tree-legend .dot.enum    { background: rgba(63,223,142,0.3); border-color: var(--green); }
-.tree-legend .dot.sample  { background: rgba(255,213,74,0.3); border-color: var(--gold); }
+.tree-legend .dot.enum    { background: rgba(143,230,74,0.3); border-color: var(--green); }
+.tree-legend .dot.sample  { background: rgba(255,197,61,0.3); border-color: var(--gold); }
 .tree-legend .dot.skip    { background: var(--panel-3); border-color: var(--dim); opacity: 0.5; }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>

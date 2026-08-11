@@ -6,32 +6,32 @@
 <title>Glossary — CFR on Kuhn Poker</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --bg-2: #0f1424;
-  --panel: #131826;
-  --panel-2: #1a2030;
-  --panel-3: #232b3f;
-  --border: #2a3245;
-  --text: #e4e9f2;
-  --muted: #7a8499;
-  --dim: #4a5266;
-  --accent: #5b9eff;
-  --green: #3fdf8e;
-  --red: #ff5e7a;
-  --yellow: #ffc857;
-  --purple: #bf8cff;
-  --orange: #ff8c42;
-  --gold: #ffd54a;
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(91,158,255,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(191,140,255,0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(157,124,255,0.10), transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -39,12 +39,12 @@ body {
   min-height: 100vh;
 }
 
-.mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
 
 header {
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 26, 0.72);
+  background: rgba(5,7,6, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   position: sticky;
@@ -187,7 +187,7 @@ main {
   color: var(--text);
 }
 .glossary-entry .symbol {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
   color: var(--gold);
   font-size: 11px;
   font-weight: 500;
@@ -200,11 +200,11 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-left: auto;
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
-.glossary-entry .cat-tag.cfr   { background: rgba(91,158,255,0.15);  color: var(--accent); }
-.glossary-entry .cat-tag.game  { background: rgba(63,223,142,0.15);  color: var(--green); }
-.glossary-entry .cat-tag.poker { background: rgba(255,140,66,0.15);  color: var(--orange); }
+.glossary-entry .cat-tag.cfr   { background: rgba(0,217,95,0.15);  color: var(--accent); }
+.glossary-entry .cat-tag.game  { background: rgba(143,230,74,0.15);  color: var(--green); }
+.glossary-entry .cat-tag.poker { background: rgba(255,138,61,0.15);  color: var(--orange); }
 .glossary-entry .short {
   font-size: 12.5px;
   color: var(--text);
@@ -224,7 +224,7 @@ main {
   border-radius: 3px;
   font-size: 11px;
   color: var(--yellow);
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 .glossary-empty {
   grid-column: 1 / -1;
@@ -245,7 +245,13 @@ footer a { color: var(--muted); text-decoration: none; }
 footer a:hover { color: var(--accent); }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
 </head>
+
 <body>
 
 <header>
