@@ -8,6 +8,7 @@
     { "source": "/thai-music-ime/:path*", "destination": "https://thai-music-ime.vercel.app/:path*" },
     { "source": "/deuce-equity",          "destination": "https://deuce-equity.vercel.app/" },
     { "source": "/deuce-equity/:path*",   "destination": "https://deuce-equity.vercel.app/:path*" },
+    { "source": "/deuce-tree",            "destination": "https://deuce-equity.vercel.app/tree.html" },
     { "source": "/mock-api",              "destination": "https://mockup-lesson.vercel.app/" },
     { "source": "/mock-api/:path*",       "destination": "https://mockup-lesson.vercel.app/:path*" },
     { "source": "/cfr-simulation",        "destination": "/cfr-simulation.html" },

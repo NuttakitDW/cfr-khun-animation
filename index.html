@@ -444,7 +444,8 @@ section.ledger { animation-delay: 0.3s; }
   <a class="mark" href="/">NK<b>.</b></a>
   <nav class="jump">
     <a href="#trainers">Trainers</a>
-    <a href="#equity">Equity</a>
+    <a href="#mixed">Mixed Games</a>
+    <a href="#deuce">2-7</a>
     <a href="#review">Review</a>
     <a href="#tabular">Tabular CFR</a>
     <a href="#leduc">Leduc</a>
@@ -464,8 +465,8 @@ section.ledger { animation-delay: 0.3s; }
   <h1>Poker theory, <em>counterfactual regret,</em> and learning experiments.</h1>
   <p class="lede">Interactive solvers that learn Kuhn and Leduc hold'em from scratch, self-grading drills for the nine-game mix, and study notes on the algorithms behind modern poker bots. <strong>Everything runs in the browser.</strong></p>
   <dl class="strip">
-    <div><dt>Pages</dt><dd>31</dd></div>
-    <div><dt>Sections</dt><dd>13</dd></div>
+    <div><dt>Pages</dt><dd>32</dd></div>
+    <div><dt>Sections</dt><dd>14</dd></div>
     <div><dt>Solvers</dt><dd>CFR+ · <span>DCFR</span></dd></div>
     <div><dt>Toy games</dt><dd>Kuhn · Leduc</dd></div>
   </dl>
@@ -473,7 +474,7 @@ section.ledger { animation-delay: 0.3s; }
 
 <main>
 
-  <!-- 01 ------------------------------------------------------------- -->
+  <!-- 01 --------------------------------------------------------------->
   <section class="ledger" id="trainers">
     <div class="ledger-head">
       <span class="idx">01</span>
@@ -481,7 +482,7 @@ section.ledger { animation-delay: 0.3s; }
         <h2>Poker Trainers</h2>
         <p class="sub">Drills &amp; quizzes for real-table skills</p>
       </div>
-      <span class="count">8 entries</span>
+      <span class="count">5 entries</span>
     </div>
 
     <div class="entries">
@@ -520,18 +521,33 @@ section.ledger { animation-delay: 0.3s; }
         <span class="path">/plo-hilo -&gt;</span>
       </a>
 
-      <a class="entry" href="/triple-draw-hands">
-        <span class="tag quiz">Learn</span>
-        <h3>Triple Draw Starting Hands</h3>
-        <p>Pre-draw strategy for Ace-to-Five Triple Draw — the probability of strong starting hands, first-in open ranges by position, 3-bet/call/fold responses, BB defense, and facing a 3-bet, all on log-scaled charts and tables. Then a self-grading quiz, plus a keep-or-toss draw drill across A-5, 2-7, and Badugi that grades every discard against the optimal play.</p>
-        <span class="path">/triple-draw-hands -&gt;</span>
-      </a>
+    </div>
+  </section>
 
+  <!-- 02 --------------------------------------------------------------->
+  <section class="ledger" id="mixed">
+    <div class="ledger-head">
+      <span class="idx">02</span>
+      <div>
+        <h2>Mixed Games</h2>
+        <p class="sub">The rotation games — draw, stud, and lowball</p>
+      </div>
+      <span class="count">3 entries</span>
+    </div>
+
+    <div class="entries">
       <a class="entry" href="/mixed-game-quizzes">
         <span class="tag quiz">Learn</span>
         <h3>Mixed Game Quizzes</h3>
         <p>Tutorials and self-grading quizzes for all 14 games in the WSOP mixed-event rotations — Hold'em (NL/Limit), Pot-Limit Omaha, Omaha Hi-Lo, Big O, Stud, Stud Hi-Lo, Razz, 2-7 (single + triple draw), A-5 Triple Draw, Badugi, and 5-Card Double Draw. Pick a game, read the rules, then quiz yourself tournament-ready. Includes a hand-rankings reference for high, A-5 low, and 2-7 low.</p>
         <span class="path">/mixed-game-quizzes -&gt;</span>
+      </a>
+
+      <a class="entry" href="/triple-draw-hands">
+        <span class="tag quiz">Learn</span>
+        <h3>Triple Draw Starting Hands</h3>
+        <p>Pre-draw strategy for Ace-to-Five Triple Draw — the probability of strong starting hands, first-in open ranges by position, 3-bet/call/fold responses, BB defense, and facing a 3-bet, all on log-scaled charts and tables. Then a self-grading quiz, plus a keep-or-toss draw drill across A-5, 2-7, and Badugi that grades every discard against the optimal play.</p>
+        <span class="path">/triple-draw-hands -&gt;</span>
       </a>
 
       <a class="entry" href="/badugi">
@@ -543,15 +559,15 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 02 ------------------------------------------------------------- -->
-  <section class="ledger" id="equity">
+  <!-- 03 --------------------------------------------------------------->
+  <section class="ledger" id="deuce">
     <div class="ledger-head">
-      <span class="idx">02</span>
+      <span class="idx">03</span>
       <div>
-        <h2>Equity Tables</h2>
-        <p class="sub">Exact enumeration output, filterable</p>
+        <h2>Deuce-to-Seven Analysis</h2>
+        <p class="sub">Exact enumeration output from poker-bot</p>
       </div>
-      <span class="count">1 entry</span>
+      <span class="count">2 entries</span>
     </div>
 
     <div class="entries">
@@ -561,13 +577,20 @@ section.ledger { animation-delay: 0.3s; }
         <p>All <strong>7,462</strong> deuce-to-seven value classes — rank multiset plus flush flag — each with its exact percentile equity against a uniform random hand. Built by full enumeration of all <strong>2,598,960</strong> five-card hands, no sampling. Filter by category and ranks, page through the table, and read the equity distribution histogram; median sits at <code>0.500</code>. Generated by <code>poker-bot equity-json</code>.</p>
         <span class="path">/deuce-equity -&gt;</span>
       </a>
+
+      <a class="entry" href="/deuce-tree">
+        <span class="tag metric">Tree</span>
+        <h3>2-7 Triple Draw — True Game Tree</h3>
+        <p>The exact public game of heads-up fixed-limit 2-7 Triple Draw: every betting line, every discard count, nothing truncated. Click outcomes and draw cells to walk a line, then switch lenses to watch each abstraction merge the true game — terminal lines, decision points, and infosets at 50 buckets — with the history class your line collapses into shown per row. An abstraction ladder from the true game to a solvable one, counts exact by enumeration. Generated by <code>poker-bot tree-json</code>.</p>
+        <span class="path">/deuce-tree -&gt;</span>
+      </a>
     </div>
   </section>
 
-  <!-- 03 ------------------------------------------------------------- -->
+  <!-- 04 --------------------------------------------------------------->
   <section class="ledger" id="review">
     <div class="ledger-head">
-      <span class="idx">03</span>
+      <span class="idx">04</span>
       <div>
         <h2>Hand Review</h2>
         <p class="sub">Sessions graded against a published framework</p>
@@ -585,10 +608,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 04 ------------------------------------------------------------- -->
+  <!-- 05 --------------------------------------------------------------->
   <section class="ledger" id="tabular">
     <div class="ledger-head">
-      <span class="idx">04</span>
+      <span class="idx">05</span>
       <div>
         <h2>Tabular CFR</h2>
         <p class="sub">Counterfactual Regret Minimization on Kuhn poker</p>
@@ -641,10 +664,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 05 ------------------------------------------------------------- -->
+  <!-- 06 --------------------------------------------------------------->
   <section class="ledger" id="leduc">
     <div class="ledger-head">
-      <span class="idx">05</span>
+      <span class="idx">06</span>
       <div>
         <h2>Scaling Up: Leduc Hold&rsquo;em</h2>
         <p class="sub">From Kuhn toward No-Limit</p>
@@ -683,10 +706,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 06 ------------------------------------------------------------- -->
+  <!-- 07 --------------------------------------------------------------->
   <section class="ledger" id="neural">
     <div class="ledger-head">
-      <span class="idx">06</span>
+      <span class="idx">07</span>
       <div>
         <h2>Neural &amp; Deep CFR</h2>
         <p class="sub">Replacing the regret table with a network</p>
@@ -725,10 +748,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 07 ------------------------------------------------------------- -->
+  <!-- 08 --------------------------------------------------------------->
   <section class="ledger" id="unreviewed">
     <div class="ledger-head">
-      <span class="idx">07</span>
+      <span class="idx">08</span>
       <div>
         <h2>Needs Review</h2>
         <p class="sub">Built but not yet verified against the source</p>
@@ -751,10 +774,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 08 ------------------------------------------------------------- -->
+  <!-- 09 --------------------------------------------------------------->
   <section class="ledger" id="notes">
     <div class="ledger-head">
-      <span class="idx">08</span>
+      <span class="idx">09</span>
       <div>
         <h2>Personal Notes</h2>
         <p class="sub">Study notes — not authoritative</p>
@@ -777,10 +800,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 09 ------------------------------------------------------------- -->
+  <!-- 10 --------------------------------------------------------------->
   <section class="ledger" id="quant">
     <div class="ledger-head">
-      <span class="idx">09</span>
+      <span class="idx">10</span>
       <div>
         <h2>Quant</h2>
         <p class="sub">Finance papers and asset-pricing notes</p>
@@ -798,10 +821,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 10 ------------------------------------------------------------- -->
+  <!-- 11 --------------------------------------------------------------->
   <section class="ledger" id="systems">
     <div class="ledger-head">
-      <span class="idx">10</span>
+      <span class="idx">11</span>
       <div>
         <h2>Systems &amp; Tooling</h2>
         <p class="sub">Software architecture studies &amp; reverse-engineering notes</p>
@@ -819,10 +842,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 11 ------------------------------------------------------------- -->
+  <!-- 12 --------------------------------------------------------------->
   <section class="ledger" id="lessons">
     <div class="ledger-head">
-      <span class="idx">11</span>
+      <span class="idx">12</span>
       <div>
         <h2>Coding for Researchers</h2>
         <p class="sub">Short lessons on building software without the infrastructure</p>
@@ -840,10 +863,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 12 ------------------------------------------------------------- -->
+  <!-- 13 --------------------------------------------------------------->
   <section class="ledger" id="music">
     <div class="ledger-head">
-      <span class="idx">12</span>
+      <span class="idx">13</span>
       <div>
         <h2>Music</h2>
         <p class="sub">Tools for music notation and input</p>
@@ -861,10 +884,10 @@ section.ledger { animation-delay: 0.3s; }
     </div>
   </section>
 
-  <!-- 13 ------------------------------------------------------------- -->
+  <!-- 14 --------------------------------------------------------------->
   <section class="ledger" id="external">
     <div class="ledger-head">
-      <span class="idx">13</span>
+      <span class="idx">14</span>
       <div>
         <h2>Further Reading</h2>
         <p class="sub">External resources worth your time</p>
