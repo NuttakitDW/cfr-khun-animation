@@ -465,7 +465,7 @@ section.ledger { animation-delay: 0.3s; }
   <h1>Poker theory, <em>counterfactual regret,</em> and learning experiments.</h1>
   <p class="lede">Interactive solvers that learn Kuhn and Leduc hold'em from scratch, self-grading drills for the nine-game mix, and study notes on the algorithms behind modern poker bots. <strong>Everything runs in the browser.</strong></p>
   <dl class="strip">
-    <div><dt>Pages</dt><dd>32</dd></div>
+    <div><dt>Pages</dt><dd>33</dd></div>
     <div><dt>Sections</dt><dd>14</dd></div>
     <div><dt>Solvers</dt><dd>CFR+ · <span>DCFR</span></dd></div>
     <div><dt>Toy games</dt><dd>Kuhn · Leduc</dd></div>
@@ -829,7 +829,7 @@ section.ledger { animation-delay: 0.3s; }
         <h2>Systems &amp; Tooling</h2>
         <p class="sub">Software architecture studies &amp; reverse-engineering notes</p>
       </div>
-      <span class="count">1 entry</span>
+      <span class="count">2 entries</span>
     </div>
 
     <div class="entries">
@@ -838,6 +838,13 @@ section.ledger { animation-delay: 0.3s; }
         <h3>kHold'em — Architecture &amp; Integration</h3>
         <p>Read-only teardown of the kHold'em poker-room suite (eShark / LiPoker): the client&nbsp;↔&nbsp;server WCF model where the server owns every write, the SQL Server system of record (145 tables), cloud sync, DPAPI-locked secrets, and the native Bounty/PKO schema. Ends with four ranked integration surfaces — from the .kpl addon SDK to why you should never write raw SQL.</p>
         <span class="path">/kholdem -&gt;</span>
+      </a>
+
+      <a class="entry" href="https://tech-interview-prep-theta.vercel.app/backend-architecture.html" target="_blank" rel="noopener">
+        <span class="tag tool">Study</span>
+        <h3>Backend Architecture — REST, GraphQL, data &amp; microservices</h3>
+        <p>Nine questions a backend interview actually opens with, answered from the mechanism up: what makes an API <strong>RESTful</strong> (and why the interviewer means Richardson level 2), content negotiation and the compression it buys, <strong>SQL vs NoSQL</strong> justified rather than asserted, GraphQL's client-picked response shape and the <em>N+1</em> bill it hands the server, SOLID with the one letter everyone gets wrong, and the three advantages and three costs of splitting into services. Each concept gives the mechanism, the line you say out loud, and the mistake that loses the room — then a quiz makes you produce it from memory.</p>
+        <span class="path">tech-interview-prep-theta.vercel.app/backend-architecture -&gt;</span>
       </a>
     </div>
   </section>
