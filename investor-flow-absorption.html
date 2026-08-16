@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Investor-Flow Absorption — who takes the other side of the foreign bid</title>
+<meta name="description" content="A cross-sectional equity hypothesis: in a market that publishes daily per-security trading by investor category, the informative quantity is not foreign flow but the gap between discretionary domestic flow and mechanical foreign flow.">
+<style>
+:root {
+  --bg: #050706;
+  --bg-2: #080c09;
+  --panel: #0b0f0c;
+  --panel-2: #111714;
+  --panel-3: #18201a;
+  --border: #1f2a22;
+  --text: #e8f2ea;
+  --muted: #8a9990;
+  --dim: #55635b;
+  --accent: #00d95f;
+  --green: #8fe64a;
+  --red: #ff4b5c;
+  --yellow: #f2b01e;
+  --purple: #9d7cff;
+  --orange: #ff8a3d;
+  --gold: #ffc53d;
+  --cyan: #35cfe0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Familjen Grotesk", -apple-system, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(0,217,95,0.10), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(53,207,224,0.08), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.mono { font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace; }
+
+/* ---------------------------------------------------------------- header */
+header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(5,7,6, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+header .sub { color: var(--muted); font-size: 12px; }
+.nav-link {
+  margin-left: auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.nav-link:hover { background: var(--panel-2); }
+
+.stat-row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.stat .value {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat .value.accent { color: var(--accent); }
+.stat .value.gold   { color: var(--gold); }
+.stat .value.cyan   { color: var(--cyan); }
+
+main {
+  padding: 28px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+/* grid items default to min-width:auto, which lets any wide descendant
+   (the prediction table) inflate the whole column. Let them shrink. */
+main > * { min-width: 0; }
+
+/* ---------------------------------------------------------------- panels */
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+}
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.panel h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.panel p { color: var(--text); margin: 0 0 12px; font-size: 14px; }
+.panel p:last-child { margin-bottom: 0; }
+.panel p.muted { color: var(--muted); font-size: 13px; }
+.panel ul { color: var(--text); font-size: 14px; margin: 0 0 12px; padding-left: 20px; }
+.panel ul li { margin-bottom: 6px; }
+.panel ul li::marker { color: var(--dim); }
+.kw {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------------- aha */
+.aha {
+  background:
+    linear-gradient(135deg, rgba(0,217,95,0.10), rgba(53,207,224,0.05) 60%, rgba(255,197,61,0.07));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.aha::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan), var(--gold));
+}
+.aha .tag {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.aha .headline {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+}
+.aha .body { color: var(--text); font-size: 14.5px; margin: 0; }
+.aha .body em { color: var(--gold); font-style: italic; }
+
+/* ------------------------------------------------- two-capital comparison */
+.story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.story-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.story-card.known    { border-left: 3px solid var(--cyan); }
+.story-card.residual { border-left: 3px solid var(--accent); }
+.story-card .tag {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.story-card.known    .tag { color: var(--cyan); }
+.story-card.residual .tag { color: var(--accent); }
+.story-card .head {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.story-card dl { margin: 0 0 10px; display: grid; gap: 7px; }
+.story-card dl div {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.story-card dt {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.story-card dd { margin: 0; font-size: 13px; color: var(--text); }
+.story-card .why { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+.story-card .why strong { color: var(--text); }
+
+/* -------------------------------------------------------- the scale demo */
+.scale-demo { display: grid; gap: 14px; }
+.scale-block {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.scale-block.fail { border-left: 3px solid var(--red); }
+.scale-block.work { border-left: 3px solid var(--accent); }
+.scale-block .cap {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.scale-block.fail .cap { color: var(--red); }
+.scale-block.work .cap { color: var(--accent); }
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.bar-row .name {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+.bar-track {
+  height: 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  animation: grow 0.9s cubic-bezier(0.2,0.75,0.3,1) backwards;
+}
+.bar-fill.foreign {
+  background: linear-gradient(90deg, rgba(53,207,224,0.85), rgba(53,207,224,0.35));
+  animation-delay: 0.1s;
+}
+.bar-fill.dealer {
+  background: linear-gradient(90deg, rgba(0,217,95,0.9), rgba(0,217,95,0.4));
+  animation-delay: 0.22s;
+}
+@keyframes grow { from { width: 0; } }
+.scale-block .verdict { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; }
+.scale-block .verdict strong { color: var(--text); }
+@media (prefers-reduced-motion: reduce) { .bar-fill { animation: none; } }
+
+/* ------------------------------------------------------ construction step */
+.ladder { display: grid; gap: 10px; }
+.rung {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.rung .num {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-top: 3px;
+}
+.rung .title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
+.rung .blurb { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+.rung .blurb strong { color: var(--text); }
+
+/* ------------------------------------------------------- prediction table */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.pred {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.pred th, .pred td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.pred thead th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  font-weight: 600;
+  background: rgba(255,255,255,0.02);
+}
+.pred td.book {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  color: var(--text);
+  font-weight: 600;
+}
+.pred td.sign {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-weight: 700;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.pred td.sign.up   { color: var(--green); }
+.pred td.sign.down { color: var(--red); }
+.pred td.note { color: var(--muted); font-size: 12.5px; }
+
+/* ------------------------------------------------------------- risk cards */
+.risk-list { display: grid; gap: 10px; }
+.risk {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--yellow);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.risk .head {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 5px;
+}
+.risk .blurb { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+.risk .blurb strong { color: var(--text); }
+
+/* --------------------------------------------------------------- variants */
+.axis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.axis {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.axis .acro {
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.axis .name { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+.axis .blurb { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* --------------------------------------------------------------- quotable */
+.pull {
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+.pull strong { color: var(--text); font-style: normal; }
+
+.note-box {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.note-box strong { color: var(--text); }
+
+@media (max-width: 760px) {
+  .story-grid { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 92px 1fr; }
+  .story-card dl div { grid-template-columns: 74px 1fr; }
+  main { padding: 20px 16px; }
+  header { padding: 16px 18px; }
+}
+
+footer {
+  padding: 24px 32px 36px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dim);
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<meta name="theme-color" content="#050706">
+</head>
+
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Investor-Flow Absorption</h1>
+    <span class="sub">Who takes the other side of the foreign bid — and what that says about price</span>
+    <a class="nav-link" href="index.html">Back to index</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat">
+      <span class="label">Market</span>
+      <span class="value">Taiwan · TWSE</span>
+    </div>
+    <div class="stat">
+      <span class="label">Raw material</span>
+      <span class="value accent">Daily per-security investor-category trading</span>
+    </div>
+    <div class="stat">
+      <span class="label">Type</span>
+      <span class="value cyan">Cross-sectional equity</span>
+    </div>
+    <div class="stat">
+      <span class="label">Stage</span>
+      <span class="value gold">Hypothesis</span>
+    </div>
+    <div class="stat">
+      <span class="label">Written</span>
+      <span class="value">16 Aug 2026</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= THE BIG IDEA ================= -->
+  <div class="aha">
+    <div class="tag">The single insight</div>
+    <p class="headline">Everybody watches the foreign flow. Nobody reads <em>who was willing to sell into it.</em></p>
+    <p class="body">Foreign institutional buying in Taiwan is the most-watched number in the market — published, enormous, and traded by every desk in the region. That makes it worthless as an edge. What is <em>not</em> watched is the counterparty: whether local discretionary capital was accumulating alongside that bid or quietly handing it inventory. The claim of this page is that <strong>the gap between the two flows carries information that neither flow carries alone</strong>, and that its sign runs opposite to the conventional wisdom about who the smart money is.</p>
+  </div>
+
+  <!-- ================= SECTION 1 — THE DISCLOSURE ================= -->
+  <section class="panel">
+    <h2>Section 1 · The unusual disclosure</h2>
+    <h3>Taiwan publishes something almost no other market does</h3>
+    <p>Most exchanges publish price and volume. Taiwan publishes <strong>who traded</strong> — a daily, per-security breakdown of buying and selling split by investor category:</p>
+    <ul>
+      <li><strong>Foreign investors</strong> — offshore institutional money.</li>
+      <li><strong>Dealer proprietary desks</strong> — domestic brokers trading their own balance sheet, on their own view.</li>
+      <li><strong>Dealer hedge desks</strong> — the same firms, but trading mechanically to hedge derivatives they have written.</li>
+      <li><strong>Securities trusts</strong> — domestic funds.</li>
+    </ul>
+    <p>This is an accident of a particular regulatory culture, not a data product anybody designed for research. It arrives as a statistical file with no narrative attached, and it is the reason this hypothesis can exist at all: in almost any other market, the counterparty to foreign flow is simply unobservable.</p>
+    <div class="pull">
+      <strong>The disclosure is the asset.</strong> Any idea that depends on it inherits the market's boundary — it cannot be lifted to a venue that does not publish the same breakdown.
+    </div>
+  </section>
+
+  <!-- ================= SECTION 2 — TWO KINDS OF CAPITAL ================= -->
+  <section class="panel">
+    <h2>Section 2 · The core distinction</h2>
+    <h3>Two flows that look alike in the data and are nothing alike underneath</h3>
+    <div class="story-grid">
+      <div class="story-card known">
+        <div class="tag">Flow A · The known flow</div>
+        <h4 class="head">Foreign institutional buying</h4>
+        <dl>
+          <div><dt>Nature</dt><dd>Largely mechanical</dd></div>
+          <div><dt>Driver</dt><dd>Index reconstitution, ETF creation, country-allocation shifts</dd></div>
+          <div><dt>Unit of view</dt><dd>The country</dd></div>
+          <div><dt>Price sensitivity</dt><dd>Low — often none</dd></div>
+        </dl>
+        <p class="why"><strong>Why it moves price without information:</strong> Taiwan is a top-two emerging-market index weight. A large share of the foreign bid is capital that buys Taiwan <em>because it is Taiwan</em>, with no opinion on any individual firm. A fund tracking the index must buy on reconstitution regardless of price, and cannot decline to participate.</p>
+      </div>
+
+      <div class="story-card residual">
+        <div class="tag">Flow B · The residual</div>
+        <h4 class="head">Domestic dealer proprietary trading</h4>
+        <dl>
+          <div><dt>Nature</dt><dd>Discretionary</dd></div>
+          <div><dt>Driver</dt><dd>Own research, own risk, own balance sheet</dd></div>
+          <div><dt>Unit of view</dt><dd>The individual firm</dd></div>
+          <div><dt>Price sensitivity</dt><dd>High — it can always decline</dd></div>
+        </dl>
+        <p class="why"><strong>Why it carries information:</strong> These are local desks reading Chinese-language filings and supply-chain channels, choosing individual names, and putting their own capital behind the choice. Unlike the index fund, a proprietary desk that dislikes the price simply does not trade — so its participation is a <em>revealed</em> judgement rather than a mandated one.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">Both appear in the same file, in the same units, on the same day. Nothing in the data marks one as mandated and the other as chosen — that has to come from knowing how the two participants are constrained.</p>
+  </section>
+
+  <!-- ================= SECTION 3 — THE CLAIM ================= -->
+  <section class="panel">
+    <h2>Section 3 · The hypothesis</h2>
+    <h3>Net domestic accumulation, measured relative to foreign accumulation, predicts positive cross-sectional returns</h3>
+    <p>Stated as a directional claim:</p>
+    <ul>
+      <li><strong>Long</strong> the names where domestic discretionary desks are accumulating <em>relative to</em> the foreign bid.</li>
+      <li><strong>Short</strong> the names where foreign buying has run <em>ahead of</em> domestic participation.</li>
+    </ul>
+    <p>The economic story is price pressure and subsequent correction. Foreign buying that outruns local discretionary participation is, disproportionately, the price-insensitive component: it pushes the price past what an informed local buyer would pay, and the excess unwinds. Where local desks are buying alongside, the move is being validated by capital that had the option to stay out.</p>
+    <div class="pull">
+      Note the direction carefully: this is <strong>contrarian to the conventional read</strong> that foreign institutions are the informed money in emerging markets. The hypothesis says the opposite — that in a market this heavily indexed, a large slice of foreign flow is the <em>least</em> informed capital on the tape, precisely because it is the most mandated.
+    </div>
+    <p>That framing also explains why the effect should persist rather than being arbitraged flat, which is the question any flow idea has to answer.</p>
+  </section>
+
+  <!-- ================= SECTION 4 — WHY IT SURVIVES ================= -->
+  <section class="panel">
+    <h2>Section 4 · Who is on the other side, and why they stay there</h2>
+    <h3>A mandated buyer plus a boring dataset</h3>
+    <p>Two separate frictions have to hold for this to be a durable effect rather than a fact that gets competed away:</p>
+    <div class="ladder">
+      <div class="rung">
+        <span class="num">01</span>
+        <div>
+          <p class="title">The losing side is contractually unable to leave</p>
+          <p class="blurb">An index-tracking fund is not making a mistake it can learn from. Its mandate is to hold the benchmark, and tracking error — not price paid — is what it is measured on. <strong>It will re-supply the same price-insensitive bid on the next reconstitution,</strong> and the one after that. This is the rare case where the counterparty's persistence is structural rather than behavioural.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <span class="num">02</span>
+        <div>
+          <p class="title">The informative step is tedious and unglamorous</p>
+          <p class="blurb">The exchange reports the categories <em>separately</em>. Each one on its own is either well-known (foreign) or small enough to look like noise (dealer). The information appears only after you put two of them on a comparable scale and subtract. <strong>Nobody is paid to read market plumbing</strong> — the work is clerical, the file has no narrative, and the payoff is invisible until the last step.</p>
+        </div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">The second friction is the weaker of the two and the one that decays: clerical work is exactly what gets automated. The first friction is the one worth relying on.</p>
+  </section>
+
+  <!-- ================= SECTION 5 — THE SCALE PROBLEM ================= -->
+  <section class="panel">
+    <h2>Section 5 · The construction problem</h2>
+    <h3>The subtraction only means something after both sides are put on a common scale</h3>
+    <p>There is a trap in building this signal that is easy to walk into and hard to notice afterwards. Foreign flow into Taiwan is roughly an order of magnitude larger in absolute currency terms than dealer proprietary flow. Subtracting one raw series from the other does not produce a residual — it produces the foreign series back, with the dealer term contributing something close to rounding error.</p>
+
+    <div class="scale-demo">
+      <div class="scale-block fail">
+        <div class="cap">Naive · raw magnitudes subtracted</div>
+        <div class="bar-row">
+          <span class="name">foreign net</span>
+          <div class="bar-track"><div class="bar-fill foreign" style="width:100%"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="name">dealer net</span>
+          <div class="bar-track"><div class="bar-fill dealer" style="width:9%"></div></div>
+        </div>
+        <p class="verdict"><strong>Result:</strong> the difference is approximately the negative of the foreign series. The hypothesis has been silently replaced by "short whatever foreigners bought" — a different, much more crowded idea — and no diagnostic on the output would reveal the substitution.</p>
+      </div>
+
+      <div class="scale-block work">
+        <div class="cap">Corrected · each side scored cross-sectionally first</div>
+        <div class="bar-row">
+          <span class="name">foreign score</span>
+          <div class="bar-track"><div class="bar-fill foreign" style="width:72%"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="name">dealer score</span>
+          <div class="bar-track"><div class="bar-fill dealer" style="width:64%"></div></div>
+        </div>
+        <p class="verdict"><strong>Result:</strong> both flows are mapped onto a common bounded scale before differencing, so the output expresses <em>relative standing</em> — "this name is high in domestic accumulation but low in foreign accumulation." That sentence is the hypothesis. The raw version was not.</p>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:14px;">The same transform does a second job for free: it bounds the influence of individual outsized flow days without having to discard them, which matters when a single index event can dominate a month of ordinary trading in one name.</p>
+  </section>
+
+  <!-- ================= SECTION 6 — CONSTRUCTION LOGIC ================= -->
+  <section class="panel">
+    <h2>Section 6 · Construction logic</h2>
+    <h3>Four decisions, each of them load-bearing</h3>
+    <div class="ladder">
+      <div class="rung">
+        <span class="num">01</span>
+        <div>
+          <p class="title">Net, don't total</p>
+          <p class="blurb">Gross buying and gross selling are both dominated by size and liquidity — a large, liquid name shows large values of both regardless of direction. Only the <strong>difference</strong> is economically meaningful: net accumulation or distribution by that category of investor.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <span class="num">02</span>
+        <div>
+          <p class="title">Smooth to the horizon of the mechanism</p>
+          <p class="blurb">The claim is about <em>accumulation over weeks</em> by a class of participant, not about one day's print. A single day of institutional flow is mostly noise, and a signal built on it churns positions far faster than the effect it is trying to capture. The averaging window should follow from the story, not from whichever value scored best.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <span class="num">03</span>
+        <div>
+          <p class="title">Put both flows on a common scale</p>
+          <p class="blurb">The point of Section 5, and the single most consequential choice in the whole construction. Without it the subtraction is a fiction and the attribution between the two sides is impossible to recover after the fact.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <span class="num">04</span>
+        <div>
+          <p class="title">Subtract — the gap <em>is</em> the hypothesis</p>
+          <p class="blurb">Not foreign flow, not domestic flow, but the distance between them. This is what makes the idea falsifiable rather than a fitted blend: if the gap does not beat both of its own components, the framing is wrong and the thing should be abandoned rather than reweighted.</p>
+        </div>
+      </div>
+    </div>
+    <div class="note-box">
+      <strong>Deliberately not done:</strong> gap-filling the missing values. A blank in this file means the security did not trade in that category that day — an <em>informative absence</em>, not a vendor omission. Carrying the previous value forward would manufacture flow that never happened.
+    </div>
+  </section>
+
+  <!-- ================= SECTION 7 — THE DISCRIMINATING TEST ================= -->
+  <section class="panel">
+    <h2>Section 7 · The test that could kill it</h2>
+    <h3>The two dealer books should point in opposite directions</h3>
+    <p>Any flow signal can be rationalised after the fact. The interesting question is whether the hypothesis makes a prediction that is <em>specific enough to fail</em> — and this one does, because of an accident in how the disclosure is structured.</p>
+    <p>The same disclosure splits domestic dealers into two books. <strong>Proprietary</strong> desks trade discretionarily on their own view. <strong>Hedge</strong> desks belong to the same firms, in the same buildings, reported in the same file — but they trade because a hedge ratio told them to, offsetting derivatives the firm has already sold. Their buying contains no opinion about the stock whatsoever.</p>
+    <p>If the hypothesis is really about <em>domestic versus foreign</em>, both dealer books should behave alike. If it is about <em>discretionary versus mechanical</em> — as claimed — they should behave oppositely:</p>
+    <div class="table-wrap">
+    <table class="pred">
+      <thead>
+        <tr>
+          <th>Dealer book</th>
+          <th>Nature of the flow</th>
+          <th>Predicted sign</th>
+          <th>What it would mean if wrong</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="book">Proprietary</td>
+          <td>Discretionary — takes a view, can decline</td>
+          <td class="sign up">→ outperformance</td>
+          <td class="note">If flat, the "informed local capital" reading is unsupported.</td>
+        </tr>
+        <tr>
+          <td class="book">Hedge</td>
+          <td>Mechanical — forced by a hedge ratio</td>
+          <td class="sign down">→ underperformance</td>
+          <td class="note">If it behaves like the proprietary book, the signal is nationality, not information — and the whole framing collapses.</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="muted" style="margin-top:14px;">This is the closest thing to a natural experiment the dataset offers: nationality, market, reporting regime and firm are all held fixed, and only the <em>constraint on the trader</em> varies. A signal that is merely a statistical artefact has no reason to respect that boundary.</p>
+  </section>
+
+  <!-- ================= SECTION 8 — VARIANT AXES ================= -->
+  <section class="panel">
+    <h2>Section 8 · Where the idea has genuine degrees of freedom</h2>
+    <h3>Three axes that ask different questions — and one that doesn't</h3>
+    <div class="axis-grid">
+      <div class="axis">
+        <div class="acro">AXIS A</div>
+        <p class="name">Global versus industry-relative</p>
+        <p class="blurb">Foreign flow into Taiwan concentrates heavily in semiconductors. Scoring each name <em>within its own industry</em> tests whether the effect survives once the sector concentration is removed — i.e. whether this is a flow signal or a disguised sector bet. A real distinction, and the more defensible form if it holds.</p>
+      </div>
+      <div class="axis">
+        <div class="acro">AXIS B</div>
+        <p class="name">Cross-sectional versus self-relative</p>
+        <p class="blurb">Comparing a name against <em>other names</em> asks "who is being accumulated most right now." Comparing it against <em>its own flow history</em> asks "is this unusual for this stock." Different questions with different failure modes, so they are genuinely distinct ideas rather than cosmetic variants.</p>
+      </div>
+      <div class="axis">
+        <div class="acro">AXIS C — NOT AN AXIS</div>
+        <p class="name">The averaging window</p>
+        <p class="blurb">Ten days versus twenty versus sixty is <strong>the same idea at three speeds</strong>. Behaviour should be smooth and monotone across the range — evidence the effect is real rather than a fitted point — but treating the three as separate discoveries would be self-deception.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">The useful discipline: a variant earns its keep only if it would answer a <em>different question</em> when the answer comes back negative.</p>
+  </section>
+
+  <!-- ================= SECTION 9 — HONEST CAVEATS ================= -->
+  <section class="panel">
+    <h2>Section 9 · Ways this could still be wrong</h2>
+    <h3>Three objections, none of them fully retired</h3>
+    <div class="risk-list">
+      <div class="risk">
+        <p class="head">It may be partly a short-term reversal proxy</p>
+        <p class="blurb">Foreign buying correlates with recent price rises, so "short the names foreigners bought" mechanically overlaps with plain reversal. Circumstantial evidence argues against reversal being the whole story — but the objection has <strong>not been isolated directly</strong>, and an explicit reversal control is the honest next test before treating the idea as established.</p>
+      </div>
+      <div class="risk">
+        <p class="head">The broad family has academic precedent</p>
+        <p class="blurb">Foreign-flow price pressure and its reversal in emerging markets is documented in the literature. What appears under-explored is the netting against <em>domestic discretionary</em> flow specifically. This should be read as a well-executed member of a known family, <strong>not as a novel discovery</strong> — and pretending otherwise is how people end up surprised.</p>
+      </div>
+      <div class="risk">
+        <p class="head">One market, one disclosure regime, no external replication</p>
+        <p class="blurb">The idea rests entirely on an unusual reporting practice. It cannot be tested in markets that do not publish per-security investor-type breakdowns, so there is no cross-market confirmation available on demand. <strong>Korea publishes comparable data</strong> and is the obvious out-of-sample check; until that is run, the effect has been observed in exactly one place.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 10 — PROVENANCE ================= -->
+  <section class="panel">
+    <h2>Section 10 · Provenance</h2>
+    <h3>Where the idea actually came from — which is not where you would guess</h3>
+    <p>Worth recording precisely, because the honest version is more interesting than the flattering one.</p>
+    <p>Forty hypotheses were generated on the same day by ten different frontier language models, prompted to produce exactly this kind of flow-and-friction idea. <strong>Every one of the forty was either killed on inspection or turned out to be unbuildable.</strong> None of them proposed this hypothesis; none of them touched investor-category flow at all.</p>
+    <p>What produced it instead were two observations left behind by those failures:</p>
+    <div class="ladder">
+      <div class="rung">
+        <span class="num">01</span>
+        <div>
+          <p class="title">A pattern across the failures, not inside any one of them</p>
+          <p class="blurb">Six consecutive dead hypotheses shared a structural property: all six collapsed a rich per-record field down to a single summary number before using it. The one idea that had shown any life used per-security daily data directly. That observation is invisible from inside any single hypothesis — <strong>it only exists in the comparison</strong> — and it steered the search toward daily per-name flow rather than toward any particular economic story.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <span class="num">02</span>
+        <div>
+          <p class="title">Leftover inventory from an unrelated dead end</p>
+          <p class="blurb">A field listing pulled while working a different, already-killed idea happened to contain the investor-category breakdown. Nothing had used it. It was sitting in a corner of a dataset already known to be live and uncrowded, <strong>attached to a question nobody had asked of it.</strong></p>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:14px;">The framing the idea is built on — <em>a large known flow, plus a structural reason the usual arbitrageur is absent</em> — was itself written into the generator prompt earlier that day. So the shape of the thinking was machine-authored; the hypothesis was not.</p>
+    <div class="note-box">
+      <strong>The honest scoreboard:</strong> forty model-generated hypotheses produced nothing usable. One hand-constructed hypothesis, assembled from the debris those forty left behind, produced the only candidate worth writing up. The models' real contribution was <em>negative information</em> — an efficient map of which mechanisms and which data are already dead. That is genuine value. It is not authorship.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Copyright © 2026 <a href="http://nuttakitkundum.com">nuttakitkundum.com</a> All rights reserved.
+</footer>
+
+</body>
+</html>
